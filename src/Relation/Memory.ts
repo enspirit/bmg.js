@@ -22,7 +22,7 @@ export class MemoryRelation<T> implements Relation<T> {
     return restrict(this, p) as MemoryRelation<T>;
   }
 
-  rename<R extends Renaming<T>(r: R): MemoryRelation<T> {
+  rename<R extends Renaming<T>>(r: R): MemoryRelation<T> {
     return rename(this, r) as MemoryRelation<T>;
   }
 
