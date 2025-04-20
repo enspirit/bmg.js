@@ -1,7 +1,7 @@
 import { AttrName, RelationOperand, Tuple } from "../types";
 import { toOperationalOperand } from "./_helpers";
 
-export const yByX = (operand: RelationOperand, y: AttrName, x: AttrName): Tuple => {
+export const yByX = <T>(operand: RelationOperand<T>, y: AttrName<T>, x: AttrName<T>): Tuple<T> => {
   const op = toOperationalOperand(operand);
   const iterable = op.tuples();
   const hash = {};

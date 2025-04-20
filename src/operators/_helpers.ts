@@ -1,8 +1,8 @@
-import { OperationalOperand, Relation, RelationOperand, Renaming, RenamingFunc } from "@/types";
+import { OperationalOperand, Relation, RelationOperand, Renaming, RenamingFunc, Tuple } from "@/types";
 import { MemoryRelation } from '@/Relation';
 import { isRelation } from "./isRelation";
 
-export const toOperationalOperand = (operand: RelationOperand): OperationalOperand => {
+export const toOperationalOperand = <T>(operand: RelationOperand<T>): OperationalOperand<T> => {
   if (Array.isArray(operand)) {
     return {
       tuples: () => operand,
@@ -10,19 +10,19 @@ export const toOperationalOperand = (operand: RelationOperand): OperationalOpera
     };
   } else if (isRelation(operand)) {
     return {
-      tuples: () => (operand as Relation).toArray(),
-      output: (tuples) => new MemoryRelation(tuples),
+      tuples: () => (operand as Relation<T>).toArray(),
+      output: (tuples: Tuple<T>[]) => new MemoryRelation<T>(tuples),
     };
   } else {
     throw `Unable to iterate ${operand}`
   }
 }
 
-export const toRenamingFunc = (renaming: Renaming): RenamingFunc => {
+export const toRenamingFunc = <T, R extends Renaming<T>>(renaming: R): RenamingFunc<T> => {
   if (typeof(renaming) === 'function') {
     return renaming;
   } else {
-    return (attr) => renaming[attr] || attr;
+    return (attr: keyof R) => renaming[attr] || attr;
   }
 }
 

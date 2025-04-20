@@ -1,7 +1,7 @@
 import { RelationOperand, Tuple } from "../types";
 import { toOperationalOperand, error } from "./_helpers";
 
-export const one = (operand: RelationOperand): Tuple => {
+export const one = <T>(operand: RelationOperand<T>): Tuple<T> => {
   const op = toOperationalOperand(operand);
   const iterable = op.tuples();
   let tuple;
