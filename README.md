@@ -12,7 +12,7 @@ for Typescript/Javascript developers.
 
 Using the Relation abstraction :
 
-```
+```typescript
 import { Bmg } from 'bmg.js'
 
 const suppliers = Bmg([ {sid: 'S1', name: 'Smith'} ])
@@ -21,7 +21,7 @@ const smith = suppliers.restrict({sid: 'S1'}).one()
 
 Simply reusing the algebra operators on your own arrays :
 
-```
+```typescript
 import { restrict } from 'bmg.js'
 
 const suppliers = [ {sid: 'S1', name: 'Smith'} ]
@@ -33,7 +33,7 @@ const smith = restrict(suppliers, {sid: 'S1'})[0]
 Let's admit it, the aim is to finally have a language where one can write beautiful
 functional expressions like this:
 
-```
+```livescript
 { Bmg } = require('bmg.js')
 
 suppliers = Bmg([
@@ -49,3 +49,13 @@ console.log(smith)
 ```
 
 [Lifescript](https://livescript.net) allows.
+
+## Available operators
+
+```typescript
+// Relational operators
+restrict(r: Relation, p: Predicate)         # Keep only tuples accepted by a predicate
+
+// Non relational operators
+one(r: Relation): Tuple                     # Returns the single tuple of r, or raises an error (empty or more than one)
+```

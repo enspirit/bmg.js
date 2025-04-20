@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { SUPPLIERS } from 'tests/fixtures';
 import { restrict } from 'src/operators';
 
-describe('Restrict', () => {
+describe('.restrict', () => {
 
   it('allows filtering relations', () => {
     const smith = SUPPLIERS.restrict((t) => t.sid === 'S1').one()

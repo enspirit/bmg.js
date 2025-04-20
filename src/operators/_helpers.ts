@@ -1,4 +1,4 @@
-import { OperationalOperand, Relation, RelationOperand, Tuple } from "@/types";
+import { OperationalOperand, Relation, RelationOperand } from "@/types";
 import { Bmg } from "..";
 
 export const toOperationalOperand = (operand: RelationOperand): OperationalOperand => {
@@ -15,4 +15,8 @@ export const toOperationalOperand = (operand: RelationOperand): OperationalOpera
   } else {
     throw `Unable to iterate ${operand}`
   }
+}
+
+export const error = (msg: string) => {
+  throw(msg);
 }

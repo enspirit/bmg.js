@@ -2,7 +2,7 @@ import { toPredicateFunc } from "../support/toPredicateFunc";
 import { RelationOperand, Predicate, Tuple } from "../types";
 import { toOperationalOperand } from "./_helpers";
 
-export const restrict = (operand: RelationOperand, p: Predicate): RelationOperand => {
+export const restrict = (operand: RelationOperand, p: Predicate): T => {
   const op = toOperationalOperand(operand);
   const iterable = op.tuples();
   const f = toPredicateFunc(p)

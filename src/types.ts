@@ -5,7 +5,7 @@ export interface Relation {
   toArray(): Tuple[]
 }
 
-export type RelationOperand = Tuple[]|Relation|OperationalOperand
+export type RelationOperand = Relation|Tuple[]
 
 export interface OperationalOperand {
   tuples(): Iterable<Tuple>

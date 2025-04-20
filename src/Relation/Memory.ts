@@ -1,4 +1,4 @@
-import { restrict } from "../operators/restrict";
+import { one, restrict } from "../operators";
 import { Predicate, Relation, Tuple } from "../types";
 
 export class MemoryRelation implements Relation {
@@ -12,12 +12,7 @@ export class MemoryRelation implements Relation {
   }
 
   one(): Tuple {
-    if (this.tuples.length === 0) {
-      throw 'Relation is empty';
-    } else if (this.tuples.length > 1) {
-      throw 'Relation has more than one tuple';
-    }
-    return this.tuples[0];
+    return one(this)
   }
 
   toArray(): Tuple[] {
