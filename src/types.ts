@@ -1,28 +1,30 @@
-export type AttrName = string
-export type Tuple = Record<AttrName, unknown>
+export type AttrName<T> = keyof T
+export type Tuple<T> = T
 
-export interface Relation {
+export interface Relation<T> {
   // Relational
-  restrict(p: Predicate): Relation
-  rename(r: Renaming): Relation
+  restrict(p: Predicate<T>): Relation<T>
+  rename<R extends Renaming<T>(r: R): RenamedRelation<T, R>
 
   // Non relational
-  one(): Tuple
-  yByX(y: AttrName, x: AttrName): Tuple
-  toArray(): Tuple[]
+  one(): Tuple<T>
+  yByX(y: AttrName<T>, x: AttrName<T>): Tuple<T>
+  toArray(): Tuple<T>[]
 }
 
 
-export type RelationOperand = Relation|Tuple[]
+export type RelationOperand<T> = Relation<T>|Tuple<T>[]
 
-export interface OperationalOperand {
-  tuples(): Iterable<Tuple>
-  output(tuples: Tuple[]): RelationOperand
+export interface OperationalOperand<T> {
+  tuples(): Iterable<Tuple<T>>
+  output(tuples: Tuple<T>[]): RelationOperand<T>
 }
 
-export type PredicateFunc = ((t: Tuple) => any)
-export type Predicate = Tuple|PredicateFunc
+export type PredicateFunc<T> = ((t: Tuple<T>) => any)
+export type Predicate<T> = Tuple<T>|PredicateFunc<T>
 
-export type Renaming = RenamingObj|RenamingFunc
-export type RenamingFunc = (AttrName) => AttrName
-export type RenamingObj = Record<AttrName, AttrName>
+export type Renaming<T> = RenamingObj<T>|RenamingFunc<T>
+export type RenamingFunc<T> = (AttrName: AttrName<T>) => string
+export type RenamingObj<T> = Record<AttrName<T>, string>
+// TODO
+export type RenamedRelation<T, R extends Renaming<T>> = unknown
