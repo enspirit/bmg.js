@@ -48,7 +48,7 @@ smith = suppliers
 console.log(smith)
 ```
 
-[Lifescript](https://livescript.net) allows.
+[Livescript](https://livescript.net) allows.
 
 ## Available operators
 
