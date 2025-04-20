@@ -31,24 +31,30 @@ const smith = restrict(suppliers, {sid: 'S1'})[0]
 ## Horizon
 
 Let's admit it, the aim is to finally have a language where one can write beautiful
-functional expressions like this:
+functional expressions like this :
 
 ```livescript
-{ Bmg } = require('bmg.js')
+{ restrict, rename, one } = require('./bmg-ls.cjs')
 
-suppliers = Bmg([
-  {sid: 'S1', name: 'Smith'},
-  {sid: 'S2', name: 'Jones'},
-])
+suppliers = [
+  {sid: 'S1', name: 'Smith', status: 20, city: 'London' },
+  {sid: 'S2', name: 'Jones', status: 10, city: 'Paris' },
+  {sid: 'S3', name: 'Blake', status: 30, city: 'Paris' },
+  {sid: 'S4', name: 'Clark', status: 20, city: 'London' },
+  {sid: 'S5', name: 'Adams', status: 30, city: 'Athens' },
+]
 
-smith = suppliers
-  |> restrict(sid: 'S2')
+result = suppliers
+  |> restrict  (_) -> _.status > 20
+  |> rename    sid: 'id', name: 'lastname'
+  |> restrict  city: 'Paris'
   |> one
 
-console.log(smith)
+console.log(result)
+# => { id: 'S3', lastname: 'Blake', status: 30, city: 'Paris' }
 ```
 
-[Livescript](https://livescript.net) allows.
+[Livescript](https://livescript.net) allows (see [./livescript](livescript) & [Makefile](Makefile)).
 
 ## Available operators
 
