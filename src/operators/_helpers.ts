@@ -1,5 +1,6 @@
 import { OperationalOperand, Relation, RelationOperand } from "@/types";
-import { Bmg } from "..";
+import { MemoryRelation } from '@/Relation';
+import { isRelation } from "./isRelation";
 
 export const toOperationalOperand = (operand: RelationOperand): OperationalOperand => {
   if (Array.isArray(operand)) {
@@ -7,10 +8,10 @@ export const toOperationalOperand = (operand: RelationOperand): OperationalOpera
       tuples: () => operand,
       output: (tuples) => tuples,
     };
-  } else if (Bmg.isRelation(operand)) {
+  } else if (isRelation(operand)) {
     return {
       tuples: () => (operand as Relation).toArray(),
-      output: (tuples) => Bmg(tuples),
+      output: (tuples) => new MemoryRelation(tuples),
     };
   } else {
     throw `Unable to iterate ${operand}`

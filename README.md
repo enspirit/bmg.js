@@ -54,8 +54,10 @@ console.log(smith)
 
 ```typescript
 // Relational operators
-restrict(r: Relation, p: Predicate)         # Keep only tuples accepted by a predicate
+restrict(r: Relation, p: Predicate)                    # Keep only tuples accepted by a predicate
 
 // Non relational operators
-one(r: Relation): Tuple                     # Returns the single tuple of r, or raises an error (empty or more than one)
+isRelation(r: Relation): boolean                       # Returns whether `r` is a Bmg `Relation` instance
+one(r: Relation): Tuple                                # Returns the single tuple of `r`, or raises an error (empty or more than one)
+yByX(r: Relation: y: AttrName, x: AttrName): Record    # Returns a `{ tuple[y] => tuple[x] }` mapping for each tuple of the operand
 ```

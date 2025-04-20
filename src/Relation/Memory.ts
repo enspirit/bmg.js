@@ -1,5 +1,5 @@
-import { one, restrict } from "../operators";
-import { Predicate, Relation, Tuple } from "../types";
+import { one, restrict, yByX } from "../operators";
+import { AttrName, Predicate, Relation, Tuple } from "../types";
 
 export class MemoryRelation implements Relation {
 
@@ -8,7 +8,7 @@ export class MemoryRelation implements Relation {
   }
 
   restrict(p: Predicate): MemoryRelation {
-    return restrict(this, p);
+    return restrict(this, p) as MemoryRelation;
   }
 
   one(): Tuple {
@@ -17,6 +17,10 @@ export class MemoryRelation implements Relation {
 
   toArray(): Tuple[] {
     return this.tuples;
+  }
+
+  yByX(y: AttrName, x: AttrName): Tuple {
+    return yByX(this, y, x);
   }
 
 }

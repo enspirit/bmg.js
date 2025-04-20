@@ -1,4 +1,5 @@
-export type Tuple = Record<string, unknown>
+export type AttrName = string
+export type Tuple = Record<AttrName, unknown>
 
 export interface Relation {
   one(): Tuple
