@@ -55,6 +55,7 @@ console.log(smith)
 ```typescript
 // Relational operators
 restrict(r: Relation, p: Predicate)                    # Keep only tuples accepted by a predicate
+rename(r: Relation, r: Renaming)                       # Rename some or all attributes
 
 // Non relational operators
 isRelation(r: Relation): boolean                       # Returns whether `r` is a Bmg `Relation` instance

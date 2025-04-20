@@ -1,4 +1,4 @@
-import { OperationalOperand, Relation, RelationOperand } from "@/types";
+import { OperationalOperand, Relation, RelationOperand, Renaming, RenamingFunc } from "@/types";
 import { MemoryRelation } from '@/Relation';
 import { isRelation } from "./isRelation";
 
@@ -15,6 +15,14 @@ export const toOperationalOperand = (operand: RelationOperand): OperationalOpera
     };
   } else {
     throw `Unable to iterate ${operand}`
+  }
+}
+
+export const toRenamingFunc = (renaming: Renaming): RenamingFunc => {
+  if (typeof(renaming) === 'function') {
+    return renaming;
+  } else {
+    return (attr) => renaming[attr] || attr;
   }
 }
 
