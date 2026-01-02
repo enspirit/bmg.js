@@ -81,6 +81,7 @@ wrap(r: Relation, attrs: AttrName[], as: AttrName)     # Wrap attributes into tu
 unwrap(r: Relation, attr: AttrName)                    # Flatten tuple-valued attribute back to attributes
 rename(r: Relation, r: Renaming)                       # Rename some or all attributes
 prefix(r: Relation, pfx: string, options?)             # Add prefix to all attribute names
+suffix(r: Relation, sfx: string, options?)             # Add suffix to all attribute names
 constants(r: Relation, consts: Tuple)                  # Add constant attributes to all tuples
 transform(r: Relation, t: Transformation)              # Transform attribute values using functions
 

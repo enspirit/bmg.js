@@ -5,6 +5,10 @@ export interface PrefixOptions {
   except?: AttrName[]
 }
 
+export interface SuffixOptions {
+  except?: AttrName[]
+}
+
 export interface Relation {
   // Relational
   restrict(p: Predicate): Relation
@@ -28,6 +32,7 @@ export interface Relation {
   unwrap(attr: AttrName): Relation
   rename(r: Renaming): Relation
   prefix(pfx: string, options?: PrefixOptions): Relation
+  suffix(sfx: string, options?: SuffixOptions): Relation
   constants(consts: Tuple): Relation
   transform(t: Transformation): Relation
 

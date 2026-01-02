@@ -17,6 +17,7 @@ import {
   project,
   rename,
   restrict,
+  suffix,
   summarize,
   where,
   transform,
@@ -34,6 +35,7 @@ import {
   Predicate,
   PrefixOptions,
   Relation,
+  SuffixOptions,
   RelationOperand,
   Renaming,
   Transformation,
@@ -128,6 +130,10 @@ export class MemoryRelation implements Relation {
 
   prefix(pfx: string, options?: PrefixOptions): MemoryRelation {
     return prefix(this, pfx, options) as MemoryRelation;
+  }
+
+  suffix(sfx: string, options?: SuffixOptions): MemoryRelation {
+    return suffix(this, sfx, options) as MemoryRelation;
   }
 
   constants(consts: Tuple): MemoryRelation {
