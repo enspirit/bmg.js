@@ -2,6 +2,7 @@ import {
   allbut,
   extend,
   join,
+  minus,
   one,
   project,
   rename,
@@ -46,6 +47,10 @@ export class MemoryRelation implements Relation {
 
   union(right: RelationOperand): MemoryRelation {
     return union(this, right) as MemoryRelation;
+  }
+
+  minus(right: RelationOperand): MemoryRelation {
+    return minus(this, right) as MemoryRelation;
   }
 
   join(right: RelationOperand, keys?: JoinKeys): MemoryRelation {

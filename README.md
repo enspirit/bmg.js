@@ -65,6 +65,7 @@ project(r: Relation, attrs: AttrName[])                # Keep only specified att
 allbut(r: Relation, attrs: AttrName[])                 # Keep all attributes except specified ones
 extend(r: Relation, e: Extension)                      # Add computed attributes
 union(r: Relation, right: Relation)                    # Set union of two relations
+minus(r: Relation, right: Relation)                    # Set difference (tuples in r but not in right)
 join(r: Relation, right: Relation, keys?: JoinKeys)    # Natural join on common/specified attributes
 summarize(r: Relation, by: AttrName[], aggs: Aggregators)  # Group by attributes and aggregate
 rename(r: Relation, r: Renaming)                       # Rename some or all attributes

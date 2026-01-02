@@ -4,6 +4,7 @@ export * from './project'
 export * from './allbut'
 export * from './extend'
 export * from './union'
+export * from './minus'
 export * from './join'
 export * from './summarize'
 
