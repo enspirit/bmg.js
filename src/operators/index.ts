@@ -5,6 +5,7 @@ export * from './allbut'
 export * from './extend'
 export * from './union'
 export * from './minus'
+export * from './intersect'
 export * from './join'
 export * from './summarize'
 

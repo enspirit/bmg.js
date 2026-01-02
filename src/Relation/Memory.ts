@@ -1,6 +1,7 @@
 import {
   allbut,
   extend,
+  intersect,
   join,
   minus,
   one,
@@ -51,6 +52,10 @@ export class MemoryRelation implements Relation {
 
   minus(right: RelationOperand): MemoryRelation {
     return minus(this, right) as MemoryRelation;
+  }
+
+  intersect(right: RelationOperand): MemoryRelation {
+    return intersect(this, right) as MemoryRelation;
   }
 
   join(right: RelationOperand, keys?: JoinKeys): MemoryRelation {

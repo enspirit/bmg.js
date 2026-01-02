@@ -9,6 +9,7 @@ export interface Relation {
   extend(e: Extension): Relation
   union(right: RelationOperand): Relation
   minus(right: RelationOperand): Relation
+  intersect(right: RelationOperand): Relation
   join(right: RelationOperand, keys?: JoinKeys): Relation
   summarize(by: AttrName[], aggs: Aggregators): Relation
   rename(r: Renaming): Relation
