@@ -78,6 +78,7 @@ ungroup(r: Relation, attr: AttrName)                   # Flatten nested relation
 wrap(r: Relation, attrs: AttrName[], as: AttrName)     # Wrap attributes into tuple-valued attribute
 unwrap(r: Relation, attr: AttrName)                    # Flatten tuple-valued attribute back to attributes
 rename(r: Relation, r: Renaming)                       # Rename some or all attributes
+transform(r: Relation, t: Transformation)              # Transform attribute values using functions
 
 // Non relational operators
 isRelation(r: Relation): boolean                       # Returns whether `r` is a Bmg `Relation` instance

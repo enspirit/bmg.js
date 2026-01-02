@@ -15,6 +15,7 @@ import {
   rename,
   restrict,
   summarize,
+  transform,
   ungroup,
   union,
   unwrap,
@@ -30,6 +31,7 @@ import {
   Relation,
   RelationOperand,
   Renaming,
+  Transformation,
   Tuple,
 } from "../types";
 
@@ -109,6 +111,10 @@ export class MemoryRelation implements Relation {
 
   rename(r: Renaming): MemoryRelation {
     return rename(this, r) as MemoryRelation;
+  }
+
+  transform(t: Transformation): MemoryRelation {
+    return transform(this, t) as MemoryRelation;
   }
 
   one(): Tuple {

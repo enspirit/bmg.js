@@ -21,6 +21,7 @@ export interface Relation {
   wrap(attrs: AttrName[], as: AttrName): Relation
   unwrap(attr: AttrName): Relation
   rename(r: Renaming): Relation
+  transform(t: Transformation): Relation
 
   // Non relational
   one(): Tuple
@@ -54,3 +55,6 @@ export type AggregatorSpec = { op: AggregatorName, attr: AttrName }
 export type AggregatorFunc = (tuples: Tuple[]) => unknown
 export type Aggregator = AggregatorName | AggregatorSpec | AggregatorFunc
 export type Aggregators = Record<AttrName, Aggregator>
+
+export type TransformFunc = (value: unknown) => unknown
+export type Transformation = TransformFunc | TransformFunc[] | Record<AttrName, TransformFunc | TransformFunc[]>
