@@ -13,6 +13,7 @@ export * from './summarize'
 export * from './group'
 export * from './ungroup'
 export * from './wrap'
+export * from './unwrap'
 
 export * from './isRelation'
 export * from './one'

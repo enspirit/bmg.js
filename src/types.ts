@@ -17,6 +17,7 @@ export interface Relation {
   group(attrs: AttrName[], as: AttrName): Relation
   ungroup(attr: AttrName): Relation
   wrap(attrs: AttrName[], as: AttrName): Relation
+  unwrap(attr: AttrName): Relation
   rename(r: Renaming): Relation
 
   // Non relational

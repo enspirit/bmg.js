@@ -74,6 +74,7 @@ summarize(r: Relation, by: AttrName[], aggs: Aggregators)  # Group by attributes
 group(r: Relation, attrs: AttrName[], as: AttrName)    # Group attributes into nested relation
 ungroup(r: Relation, attr: AttrName)                   # Flatten nested relation back to tuples
 wrap(r: Relation, attrs: AttrName[], as: AttrName)     # Wrap attributes into tuple-valued attribute
+unwrap(r: Relation, attr: AttrName)                    # Flatten tuple-valued attribute back to attributes
 rename(r: Relation, r: Renaming)                       # Rename some or all attributes
 
 // Non relational operators
