@@ -73,6 +73,8 @@ matching(r: Relation, right: Relation, keys?: JoinKeys)     # Semi-join (tuples 
 not_matching(r: Relation, right: Relation, keys?: JoinKeys) # Anti-join (tuples without a match in right)
 join(r: Relation, right: Relation, keys?: JoinKeys)    # Natural join on common/specified attributes
 left_join(r: Relation, right: Relation, keys?: JoinKeys)   # Left outer join
+cross_product(r: Relation, right: Relation)            # Cartesian product of two relations
+cross_join(r: Relation, right: Relation)               # Alias for cross_product
 image(r: Relation, right: Relation, as: AttrName, keys?: JoinKeys)  # Relational image (nested matching tuples)
 summarize(r: Relation, by: AttrName[], aggs: Aggregators)  # Group by attributes and aggregate
 group(r: Relation, attrs: AttrName[], as: AttrName)    # Group attributes into nested relation

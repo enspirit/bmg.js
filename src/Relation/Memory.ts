@@ -1,6 +1,7 @@
 import {
   allbut,
   constants,
+  cross_product,
   exclude,
   extend,
   group,
@@ -98,6 +99,14 @@ export class MemoryRelation implements Relation {
 
   left_join(right: RelationOperand, keys?: JoinKeys): MemoryRelation {
     return left_join(this, right, keys) as MemoryRelation;
+  }
+
+  cross_product(right: RelationOperand): MemoryRelation {
+    return cross_product(this, right) as MemoryRelation;
+  }
+
+  cross_join(right: RelationOperand): MemoryRelation {
+    return cross_product(this, right) as MemoryRelation;
   }
 
   image(right: RelationOperand, as: AttrName, keys?: JoinKeys): MemoryRelation {

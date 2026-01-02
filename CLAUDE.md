@@ -37,7 +37,7 @@ IMPORTANT rules:
 
 ## Implemented operators
 
-**Relational:** restrict, where, exclude, project, allbut, extend, rename, prefix, suffix, constants, union, minus, intersect, matching, not_matching, join, left_join, image, summarize, group, ungroup, wrap, unwrap, transform
+**Relational:** restrict, where, exclude, project, allbut, extend, rename, prefix, suffix, constants, union, minus, intersect, matching, not_matching, join, left_join, cross_product, cross_join, image, summarize, group, ungroup, wrap, unwrap, transform
 
 **Non-relational:** one, yByX, toArray, isRelation, isEqual
 

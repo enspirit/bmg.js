@@ -24,6 +24,8 @@ export interface Relation {
   not_matching(right: RelationOperand, keys?: JoinKeys): Relation
   join(right: RelationOperand, keys?: JoinKeys): Relation
   left_join(right: RelationOperand, keys?: JoinKeys): Relation
+  cross_product(right: RelationOperand): Relation
+  cross_join(right: RelationOperand): Relation
   image(right: RelationOperand, as: AttrName, keys?: JoinKeys): Relation
   summarize(by: AttrName[], aggs: Aggregators): Relation
   group(attrs: AttrName[], as: AttrName): Relation
