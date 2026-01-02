@@ -1,6 +1,7 @@
 export * from './restrict'
 export * from './rename'
 export * from './project'
+export * from './allbut'
 export * from './extend'
 export * from './union'
 export * from './join'

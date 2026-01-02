@@ -1,4 +1,5 @@
 import {
+  allbut,
   extend,
   join,
   one,
@@ -33,6 +34,10 @@ export class MemoryRelation implements Relation {
 
   project(attrs: AttrName[]): MemoryRelation {
     return project(this, attrs) as MemoryRelation;
+  }
+
+  allbut(attrs: AttrName[]): MemoryRelation {
+    return allbut(this, attrs) as MemoryRelation;
   }
 
   extend(e: Extension): MemoryRelation {

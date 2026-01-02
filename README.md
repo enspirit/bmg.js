@@ -62,6 +62,7 @@ console.log(result)
 // Relational operators
 restrict(r: Relation, p: Predicate)                    # Keep only tuples accepted by a predicate
 project(r: Relation, attrs: AttrName[])                # Keep only specified attributes
+allbut(r: Relation, attrs: AttrName[])                 # Keep all attributes except specified ones
 extend(r: Relation, e: Extension)                      # Add computed attributes
 union(r: Relation, right: Relation)                    # Set union of two relations
 join(r: Relation, right: Relation, keys?: JoinKeys)    # Natural join on common/specified attributes
