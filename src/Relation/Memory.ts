@@ -1,5 +1,6 @@
 import {
   one,
+  project,
   rename,
   restrict,
   yByX,
@@ -20,6 +21,10 @@ export class MemoryRelation implements Relation {
 
   restrict(p: Predicate): MemoryRelation {
     return restrict(this, p) as MemoryRelation;
+  }
+
+  project(attrs: AttrName[]): MemoryRelation {
+    return project(this, attrs) as MemoryRelation;
   }
 
   rename(r: Renaming): MemoryRelation {

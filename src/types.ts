@@ -4,6 +4,7 @@ export type Tuple = Record<AttrName, unknown>
 export interface Relation {
   // Relational
   restrict(p: Predicate): Relation
+  project(attrs: AttrName[]): Relation
   rename(r: Renaming): Relation
 
   // Non relational
