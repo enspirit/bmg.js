@@ -65,6 +65,7 @@ project(r: Relation, attrs: AttrName[])                # Keep only specified att
 extend(r: Relation, e: Extension)                      # Add computed attributes
 union(r: Relation, right: Relation)                    # Set union of two relations
 join(r: Relation, right: Relation, keys?: JoinKeys)    # Natural join on common/specified attributes
+summarize(r: Relation, by: AttrName[], aggs: Aggregators)  # Group by attributes and aggregate
 rename(r: Relation, r: Renaming)                       # Rename some or all attributes
 
 // Non relational operators

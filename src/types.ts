@@ -8,6 +8,7 @@ export interface Relation {
   extend(e: Extension): Relation
   union(right: RelationOperand): Relation
   join(right: RelationOperand, keys?: JoinKeys): Relation
+  summarize(by: AttrName[], aggs: Aggregators): Relation
   rename(r: Renaming): Relation
 
   // Non relational
@@ -35,3 +36,9 @@ export type ExtensionFunc = (tuple: Tuple) => unknown
 export type Extension = Record<AttrName, ExtensionFunc | AttrName>
 
 export type JoinKeys = AttrName[] | Record<AttrName, AttrName>
+
+export type AggregatorName = 'count' | 'sum' | 'min' | 'max' | 'avg' | 'collect'
+export type AggregatorSpec = { op: AggregatorName, attr: AttrName }
+export type AggregatorFunc = (tuples: Tuple[]) => unknown
+export type Aggregator = AggregatorName | AggregatorSpec | AggregatorFunc
+export type Aggregators = Record<AttrName, Aggregator>

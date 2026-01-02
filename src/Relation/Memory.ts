@@ -5,10 +5,12 @@ import {
   project,
   rename,
   restrict,
+  summarize,
   union,
   yByX,
 } from "../operators";
 import {
+  Aggregators,
   AttrName,
   Extension,
   JoinKeys,
@@ -43,6 +45,10 @@ export class MemoryRelation implements Relation {
 
   join(right: RelationOperand, keys?: JoinKeys): MemoryRelation {
     return join(this, right, keys) as MemoryRelation;
+  }
+
+  summarize(by: AttrName[], aggs: Aggregators): MemoryRelation {
+    return summarize(this, by, aggs) as MemoryRelation;
   }
 
   rename(r: Renaming): MemoryRelation {
