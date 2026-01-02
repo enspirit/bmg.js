@@ -1,0 +1,36 @@
+FROM alpine:latest
+
+# Install packages: base tools, node, ruby, postgresql client
+RUN apk update && apk add --no-cache \
+    bash \
+    curl \
+    git \
+    build-base \
+    nodejs \
+    npm \
+    vim \
+    sudo
+
+# Create non-root user with sudo access
+RUN addgroup -S bmg && adduser -S bmg -G bmg \
+    && echo "bmg ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+
+# Install Claude Code CLI globally
+RUN npm install -g @anthropic-ai/claude-code
+
+# Set up working directory
+WORKDIR /workspace
+
+# Copy and set up entrypoint
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+# Create .claude directory for history persistence
+RUN mkdir -p /home/bmg/.claude && chown -R bmg:bmg /home/bmg/.claude
+
+# Switch to non-root user
+USER bmg
+
+# Use entrypoint to configure git and run command
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["bash"]
