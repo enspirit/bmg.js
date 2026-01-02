@@ -1,6 +1,7 @@
 import {
   allbut,
   extend,
+  group,
   intersect,
   join,
   matching,
@@ -74,6 +75,10 @@ export class MemoryRelation implements Relation {
 
   summarize(by: AttrName[], aggs: Aggregators): MemoryRelation {
     return summarize(this, by, aggs) as MemoryRelation;
+  }
+
+  group(attrs: AttrName[], as: AttrName): MemoryRelation {
+    return group(this, attrs, as) as MemoryRelation;
   }
 
   rename(r: Renaming): MemoryRelation {

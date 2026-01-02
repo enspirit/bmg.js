@@ -10,6 +10,7 @@ export * from './matching'
 export * from './not_matching'
 export * from './join'
 export * from './summarize'
+export * from './group'
 
 export * from './isRelation'
 export * from './one'
