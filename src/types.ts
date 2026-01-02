@@ -5,6 +5,7 @@ export interface Relation {
   // Relational
   restrict(p: Predicate): Relation
   project(attrs: AttrName[]): Relation
+  extend(e: Extension): Relation
   rename(r: Renaming): Relation
 
   // Non relational
@@ -27,3 +28,6 @@ export type Predicate = Tuple|PredicateFunc
 export type Renaming = RenamingObj|RenamingFunc
 export type RenamingFunc = (AttrName) => AttrName
 export type RenamingObj = Record<AttrName, AttrName>
+
+export type ExtensionFunc = (tuple: Tuple) => unknown
+export type Extension = Record<AttrName, ExtensionFunc | AttrName>

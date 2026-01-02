@@ -1,4 +1,5 @@
 import {
+  extend,
   one,
   project,
   rename,
@@ -7,6 +8,7 @@ import {
 } from "../operators";
 import {
   AttrName,
+  Extension,
   Predicate,
   Relation,
   Renaming,
@@ -25,6 +27,10 @@ export class MemoryRelation implements Relation {
 
   project(attrs: AttrName[]): MemoryRelation {
     return project(this, attrs) as MemoryRelation;
+  }
+
+  extend(e: Extension): MemoryRelation {
+    return extend(this, e) as MemoryRelation;
   }
 
   rename(r: Renaming): MemoryRelation {
