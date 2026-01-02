@@ -16,6 +16,7 @@ export interface Relation {
   summarize(by: AttrName[], aggs: Aggregators): Relation
   group(attrs: AttrName[], as: AttrName): Relation
   ungroup(attr: AttrName): Relation
+  wrap(attrs: AttrName[], as: AttrName): Relation
   rename(r: Renaming): Relation
 
   // Non relational

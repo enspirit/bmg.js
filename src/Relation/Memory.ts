@@ -14,6 +14,7 @@ import {
   summarize,
   ungroup,
   union,
+  wrap,
   yByX,
 } from "../operators";
 import {
@@ -84,6 +85,10 @@ export class MemoryRelation implements Relation {
 
   ungroup(attr: AttrName): MemoryRelation {
     return ungroup(this, attr) as MemoryRelation;
+  }
+
+  wrap(attrs: AttrName[], as: AttrName): MemoryRelation {
+    return wrap(this, attrs, as) as MemoryRelation;
   }
 
   rename(r: Renaming): MemoryRelation {
