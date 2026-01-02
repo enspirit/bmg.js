@@ -22,6 +22,7 @@ export * from './group'
 export * from './ungroup'
 export * from './wrap'
 export * from './unwrap'
+export * from './autowrap'
 export * from './transform'
 
 export * from './isRelation'

@@ -81,6 +81,7 @@ group(r: Relation, attrs: AttrName[], as: AttrName)    # Group attributes into n
 ungroup(r: Relation, attr: AttrName)                   # Flatten nested relation back to tuples
 wrap(r: Relation, attrs: AttrName[], as: AttrName)     # Wrap attributes into tuple-valued attribute
 unwrap(r: Relation, attr: AttrName)                    # Flatten tuple-valued attribute back to attributes
+autowrap(r: Relation, options?)                        # Auto-wrap attributes by separator pattern
 rename(r: Relation, r: Renaming)                       # Rename some or all attributes
 prefix(r: Relation, pfx: string, options?)             # Add prefix to all attribute names
 suffix(r: Relation, sfx: string, options?)             # Add suffix to all attribute names

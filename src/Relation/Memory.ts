@@ -1,5 +1,6 @@
 import {
   allbut,
+  autowrap,
   constants,
   cross_product,
   exclude,
@@ -31,6 +32,7 @@ import {
 import {
   Aggregators,
   AttrName,
+  AutowrapOptions,
   Extension,
   JoinKeys,
   Predicate,
@@ -131,6 +133,10 @@ export class MemoryRelation implements Relation {
 
   unwrap(attr: AttrName): MemoryRelation {
     return unwrap(this, attr) as MemoryRelation;
+  }
+
+  autowrap(options?: AutowrapOptions): MemoryRelation {
+    return autowrap(this, options) as MemoryRelation;
   }
 
   rename(r: Renaming): MemoryRelation {

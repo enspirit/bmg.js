@@ -9,6 +9,10 @@ export interface SuffixOptions {
   except?: AttrName[]
 }
 
+export interface AutowrapOptions {
+  separator?: string
+}
+
 export interface Relation {
   // Relational
   restrict(p: Predicate): Relation
@@ -32,6 +36,7 @@ export interface Relation {
   ungroup(attr: AttrName): Relation
   wrap(attrs: AttrName[], as: AttrName): Relation
   unwrap(attr: AttrName): Relation
+  autowrap(options?: AutowrapOptions): Relation
   rename(r: Renaming): Relation
   prefix(pfx: string, options?: PrefixOptions): Relation
   suffix(sfx: string, options?: SuffixOptions): Relation
