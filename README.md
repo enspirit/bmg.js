@@ -64,6 +64,7 @@ restrict(r: Relation, p: Predicate)                    # Keep only tuples accept
 project(r: Relation, attrs: AttrName[])                # Keep only specified attributes
 extend(r: Relation, e: Extension)                      # Add computed attributes
 union(r: Relation, right: Relation)                    # Set union of two relations
+join(r: Relation, right: Relation, keys?: JoinKeys)    # Natural join on common/specified attributes
 rename(r: Relation, r: Renaming)                       # Rename some or all attributes
 
 // Non relational operators

@@ -7,6 +7,7 @@ export interface Relation {
   project(attrs: AttrName[]): Relation
   extend(e: Extension): Relation
   union(right: RelationOperand): Relation
+  join(right: RelationOperand, keys?: JoinKeys): Relation
   rename(r: Renaming): Relation
 
   // Non relational
@@ -32,3 +33,5 @@ export type RenamingObj = Record<AttrName, AttrName>
 
 export type ExtensionFunc = (tuple: Tuple) => unknown
 export type Extension = Record<AttrName, ExtensionFunc | AttrName>
+
+export type JoinKeys = AttrName[] | Record<AttrName, AttrName>

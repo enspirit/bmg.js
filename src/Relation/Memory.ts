@@ -1,5 +1,6 @@
 import {
   extend,
+  join,
   one,
   project,
   rename,
@@ -10,6 +11,7 @@ import {
 import {
   AttrName,
   Extension,
+  JoinKeys,
   Predicate,
   Relation,
   RelationOperand,
@@ -37,6 +39,10 @@ export class MemoryRelation implements Relation {
 
   union(right: RelationOperand): MemoryRelation {
     return union(this, right) as MemoryRelation;
+  }
+
+  join(right: RelationOperand, keys?: JoinKeys): MemoryRelation {
+    return join(this, right, keys) as MemoryRelation;
   }
 
   rename(r: Renaming): MemoryRelation {

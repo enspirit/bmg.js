@@ -3,6 +3,7 @@ export * from './rename'
 export * from './project'
 export * from './extend'
 export * from './union'
+export * from './join'
 
 export * from './isRelation'
 export * from './one'
