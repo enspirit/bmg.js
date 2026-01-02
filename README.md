@@ -63,6 +63,7 @@ console.log(result)
 restrict(r: Relation, p: Predicate)                    # Keep only tuples accepted by a predicate
 project(r: Relation, attrs: AttrName[])                # Keep only specified attributes
 extend(r: Relation, e: Extension)                      # Add computed attributes
+union(r: Relation, right: Relation)                    # Set union of two relations
 rename(r: Relation, r: Renaming)                       # Rename some or all attributes
 
 // Non relational operators

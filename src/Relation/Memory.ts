@@ -4,6 +4,7 @@ import {
   project,
   rename,
   restrict,
+  union,
   yByX,
 } from "../operators";
 import {
@@ -11,6 +12,7 @@ import {
   Extension,
   Predicate,
   Relation,
+  RelationOperand,
   Renaming,
   Tuple,
 } from "../types";
@@ -31,6 +33,10 @@ export class MemoryRelation implements Relation {
 
   extend(e: Extension): MemoryRelation {
     return extend(this, e) as MemoryRelation;
+  }
+
+  union(right: RelationOperand): MemoryRelation {
+    return union(this, right) as MemoryRelation;
   }
 
   rename(r: Renaming): MemoryRelation {

@@ -6,6 +6,7 @@ export interface Relation {
   restrict(p: Predicate): Relation
   project(attrs: AttrName[]): Relation
   extend(e: Extension): Relation
+  union(right: RelationOperand): Relation
   rename(r: Renaming): Relation
 
   // Non relational
