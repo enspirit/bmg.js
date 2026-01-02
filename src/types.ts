@@ -5,6 +5,7 @@ export interface Relation {
   // Relational
   restrict(p: Predicate): Relation
   where(p: Predicate): Relation
+  exclude(p: Predicate): Relation
   project(attrs: AttrName[]): Relation
   allbut(attrs: AttrName[]): Relation
   extend(e: Extension): Relation

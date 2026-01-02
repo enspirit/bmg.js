@@ -1,5 +1,6 @@
 import {
   allbut,
+  exclude,
   extend,
   group,
   image,
@@ -48,6 +49,10 @@ export class MemoryRelation implements Relation {
 
   where(p: Predicate): MemoryRelation {
     return where(this, p) as MemoryRelation;
+  }
+
+  exclude(p: Predicate): MemoryRelation {
+    return exclude(this, p) as MemoryRelation;
   }
 
   project(attrs: AttrName[]): MemoryRelation {

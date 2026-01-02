@@ -62,6 +62,7 @@ console.log(result)
 // Relational operators
 restrict(r: Relation, p: Predicate)                    # Keep only tuples accepted by a predicate
 where(r: Relation, p: Predicate)                       # Alias for restrict
+exclude(r: Relation, p: Predicate)                     # Keep tuples NOT matching predicate
 project(r: Relation, attrs: AttrName[])                # Keep only specified attributes
 allbut(r: Relation, attrs: AttrName[])                 # Keep all attributes except specified ones
 extend(r: Relation, e: Extension)                      # Add computed attributes
