@@ -72,6 +72,7 @@ not_matching(r: Relation, right: Relation, keys?: JoinKeys) # Anti-join (tuples 
 join(r: Relation, right: Relation, keys?: JoinKeys)    # Natural join on common/specified attributes
 summarize(r: Relation, by: AttrName[], aggs: Aggregators)  # Group by attributes and aggregate
 group(r: Relation, attrs: AttrName[], as: AttrName)    # Group attributes into nested relation
+ungroup(r: Relation, attr: AttrName)                   # Flatten nested relation back to tuples
 rename(r: Relation, r: Renaming)                       # Rename some or all attributes
 
 // Non relational operators

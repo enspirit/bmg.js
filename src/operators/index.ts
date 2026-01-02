@@ -11,6 +11,7 @@ export * from './not_matching'
 export * from './join'
 export * from './summarize'
 export * from './group'
+export * from './ungroup'
 
 export * from './isRelation'
 export * from './one'
