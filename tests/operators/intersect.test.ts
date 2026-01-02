@@ -17,21 +17,29 @@ describe('.intersect', () => {
   ]);
 
   it('returns tuples present in both relations', () => {
-    const result = left.intersect(right).toArray();
-    expect(result).to.have.length(2);
-    expect(result[0]).to.eql({ id: 2, name: 'Bob' });
-    expect(result[1]).to.eql({ id: 3, name: 'Charlie' });
+    const result = left.intersect(right);
+    const expected = Bmg([
+      { id: 2, name: 'Bob' },
+      { id: 3, name: 'Charlie' },
+    ]);
+    expect(result.isEqual(expected)).to.be.true;
   })
 
   it('returns empty when no overlap', () => {
     const other = Bmg([{ id: 99, name: 'Nobody' }]);
-    const result = left.intersect(other).toArray();
-    expect(result).to.have.length(0);
+    const result = left.intersect(other);
+    expect(result.isEqual(Bmg([]))).to.be.true;
   })
 
   it('returns all when identical', () => {
-    const result = left.intersect(left).toArray();
-    expect(result).to.have.length(3);
+    const result = left.intersect(left);
+    expect(result.isEqual(left)).to.be.true;
+  })
+
+  it('is commutative (set semantics)', () => {
+    const lr = left.intersect(right);
+    const rl = right.intersect(left);
+    expect(lr.isEqual(rl)).to.be.true;
   })
 
   ///

@@ -1,25 +1,38 @@
 import { describe, it, expect } from 'vitest';
+import { Bmg } from 'src';
 import { SUPPLIERS } from 'tests/fixtures';
 import { project } from 'src/operators';
 
 describe('.project', () => {
 
   it('keeps only specified attributes', () => {
-    const result = SUPPLIERS.project(['name', 'city']).toArray();
-    expect(result).to.have.length(5);
-    expect(result[0]).to.eql({ name: 'Smith', city: 'London' });
-    expect(Object.keys(result[0])).to.eql(['name', 'city']);
+    const result = SUPPLIERS.project(['name', 'city']);
+    const expected = Bmg([
+      { name: 'Smith', city: 'London' },
+      { name: 'Jones', city: 'Paris' },
+      { name: 'Blake', city: 'Paris' },
+      { name: 'Clark', city: 'London' },
+      { name: 'Adams', city: 'Athens' },
+    ]);
+    expect(result.isEqual(expected)).to.be.true;
   })
 
-  it('works with a single attribute', () => {
-    const result = SUPPLIERS.project(['city']).toArray();
-    expect(result).to.have.length(5);
-    expect(result[0]).to.eql({ city: 'London' });
+  it('removes duplicates (set semantics)', () => {
+    // Projecting to 'city' only should yield 3 unique cities, not 5 tuples
+    const result = SUPPLIERS.project(['city']);
+    const expected = Bmg([
+      { city: 'London' },
+      { city: 'Paris' },
+      { city: 'Athens' },
+    ]);
+    expect(result.isEqual(expected)).to.be.true;
   })
 
   it('ignores missing attributes', () => {
-    const result = SUPPLIERS.project(['name', 'nonexistent']).toArray();
-    expect(result[0]).to.eql({ name: 'Smith' });
+    const result = SUPPLIERS.project(['name', 'nonexistent']);
+    const smith = result.restrict({ name: 'Smith' }).one();
+    expect(smith).to.have.property('name');
+    expect(smith).to.not.have.property('nonexistent');
   })
 
   ///
@@ -28,7 +41,6 @@ describe('.project', () => {
     const input = SUPPLIERS.toArray();
     const res = project(input, ['name', 'city']);
     expect(Array.isArray(res)).to.toBeTruthy();
-    expect(res[0]).to.eql({ name: 'Smith', city: 'London' });
   })
 
 });

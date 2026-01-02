@@ -81,6 +81,7 @@ rename(r: Relation, r: Renaming)                       # Rename some or all attr
 
 // Non relational operators
 isRelation(r: Relation): boolean                       # Returns whether `r` is a Bmg `Relation` instance
+isEqual(r: Relation, s: Relation): boolean             # Returns whether two relations are equal (set equality)
 one(r: Relation): Tuple                                # Returns the single tuple of `r`, or raises an error (empty or more than one)
 yByX(r: Relation: y: AttrName, x: AttrName): Record    # Returns a `{ tuple[y] => tuple[x] }` mapping for each tuple of the operand
 ```

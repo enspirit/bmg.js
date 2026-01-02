@@ -17,33 +17,35 @@ describe('.image', () => {
   ]);
 
   it('adds relation-valued attribute with matching tuples', () => {
-    const result = suppliers.image(shipments, 'shipments').toArray();
-    expect(result).to.have.length(3);
-
-    const smith = result.find(r => r.name === 'Smith');
-    expect(smith?.shipments).to.have.length(2);
+    const result = suppliers.image(shipments, 'shipments');
+    const smith = result.restrict({ sid: 'S1' }).one();
+    expect(smith.shipments).to.have.length(2);
   })
 
   it('projects out join keys from nested tuples', () => {
-    const result = suppliers.image(shipments, 'shipments').toArray();
-    const smith = result.find(r => r.name === 'Smith');
-    expect(smith?.shipments[0]).to.not.have.property('sid');
-    expect(smith?.shipments[0]).to.have.property('pid');
-    expect(smith?.shipments[0]).to.have.property('qty');
+    const result = suppliers.image(shipments, 'shipments');
+    const smith = result.restrict({ sid: 'S1' }).one();
+    // Check that all nested tuples have correct structure
+    smith.shipments.forEach(s => {
+      expect(s).to.not.have.property('sid');
+      expect(s).to.have.property('pid');
+      expect(s).to.have.property('qty');
+    });
   })
 
   it('returns empty array for non-matching tuples', () => {
-    const result = suppliers.image(shipments, 'shipments').toArray();
-    const blake = result.find(r => r.name === 'Blake');
-    expect(blake?.shipments).to.eql([]);
+    const result = suppliers.image(shipments, 'shipments');
+    const blake = result.restrict({ sid: 'S3' }).one();
+    expect(blake.shipments).to.eql([]);
   })
 
   it('preserves all left attributes', () => {
-    const result = suppliers.image(shipments, 'shipments').toArray();
-    expect(result[0]).to.have.property('sid');
-    expect(result[0]).to.have.property('name');
-    expect(result[0]).to.have.property('city');
-    expect(result[0]).to.have.property('shipments');
+    const result = suppliers.image(shipments, 'shipments');
+    const smith = result.restrict({ sid: 'S1' }).one();
+    expect(smith).to.have.property('sid');
+    expect(smith).to.have.property('name');
+    expect(smith).to.have.property('city');
+    expect(smith).to.have.property('shipments');
   })
 
   it('supports explicit keys', () => {
@@ -51,10 +53,10 @@ describe('.image', () => {
       { location: 'London', country: 'UK' },
       { location: 'Paris', country: 'France' },
     ]);
-    const result = suppliers.image(cities, 'city_info', { city: 'location' }).toArray();
-    const smith = result.find(r => r.name === 'Smith');
-    expect(smith?.city_info).to.have.length(1);
-    expect(smith?.city_info[0]).to.eql({ country: 'UK' });
+    const result = suppliers.image(cities, 'city_info', { city: 'location' });
+    const smith = result.restrict({ sid: 'S1' }).one();
+    expect(smith.city_info).to.have.length(1);
+    expect(smith.city_info).to.deep.include({ country: 'UK' });
   })
 
   ///

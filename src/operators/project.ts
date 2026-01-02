@@ -1,5 +1,5 @@
 import { RelationOperand, AttrName, Tuple } from "../types";
-import { toOperationalOperand } from "./_helpers";
+import { toOperationalOperand, deduplicate } from "./_helpers";
 
 export const project = (operand: RelationOperand, attrs: AttrName[]): RelationOperand => {
   const op = toOperationalOperand(operand);
@@ -14,5 +14,5 @@ export const project = (operand: RelationOperand, attrs: AttrName[]): RelationOp
     }, {} as Tuple);
     result.push(projected);
   }
-  return op.output(result);
+  return op.output(deduplicate(result));
 }

@@ -16,16 +16,17 @@ describe('.not_matching', () => {
   ]);
 
   it('returns tuples from left that do NOT match right', () => {
-    const result = orders.not_matching(customers).toArray();
-    expect(result).to.have.length(1);
-    expect(result[0].oid).to.eql(3);
-    expect(result[0].customer_id).to.eql('C3');
+    const result = orders.not_matching(customers);
+    const expected = Bmg([
+      { oid: 3, customer_id: 'C3', amount: 150 },
+    ]);
+    expect(result.isEqual(expected)).to.be.true;
   })
 
   it('returns all when no matches', () => {
     const empty = Bmg([{ customer_id: 'C99' }]);
-    const result = orders.not_matching(empty).toArray();
-    expect(result).to.have.length(3);
+    const result = orders.not_matching(empty);
+    expect(result.isEqual(orders)).to.be.true;
   })
 
   it('returns empty when all match', () => {
@@ -34,8 +35,8 @@ describe('.not_matching', () => {
       { customer_id: 'C2' },
       { customer_id: 'C3' },
     ]);
-    const result = orders.not_matching(all).toArray();
-    expect(result).to.have.length(0);
+    const result = orders.not_matching(all);
+    expect(result.isEqual(Bmg([]))).to.be.true;
   })
 
   it('supports explicit keys', () => {
@@ -45,9 +46,9 @@ describe('.not_matching', () => {
       { sid: 'S3', city: 'Athens' },
     ]);
     const cities = Bmg([{ location: 'London' }, { location: 'Paris' }]);
-    const result = suppliers.not_matching(cities, { city: 'location' }).toArray();
-    expect(result).to.have.length(1);
-    expect(result[0].sid).to.eql('S3');
+    const result = suppliers.not_matching(cities, { city: 'location' });
+    const expected = Bmg([{ sid: 'S3', city: 'Athens' }]);
+    expect(result.isEqual(expected)).to.be.true;
   })
 
   ///

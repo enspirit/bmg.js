@@ -1,32 +1,46 @@
 import { describe, it, expect } from 'vitest';
+import { Bmg } from 'src';
 import { SUPPLIERS } from 'tests/fixtures';
 import { wrap } from 'src/operators';
 
 describe('.wrap', () => {
 
   it('wraps specified attributes into a tuple', () => {
-    const result = SUPPLIERS.wrap(['status', 'city'], 'details').toArray();
-    expect(result).to.have.length(5);
-    expect(result[0].details).to.eql({ status: 20, city: 'London' });
+    const result = SUPPLIERS.wrap(['status', 'city'], 'details');
+    const expected = Bmg([
+      { sid: 'S1', name: 'Smith', details: { status: 20, city: 'London' } },
+      { sid: 'S2', name: 'Jones', details: { status: 10, city: 'Paris' } },
+      { sid: 'S3', name: 'Blake', details: { status: 30, city: 'Paris' } },
+      { sid: 'S4', name: 'Clark', details: { status: 20, city: 'London' } },
+      { sid: 'S5', name: 'Adams', details: { status: 30, city: 'Athens' } },
+    ]);
+    expect(result.isEqual(expected)).to.be.true;
   })
 
   it('preserves non-wrapped attributes', () => {
-    const result = SUPPLIERS.wrap(['status', 'city'], 'details').toArray();
-    expect(result[0].sid).to.eql('S1');
-    expect(result[0].name).to.eql('Smith');
-    expect(Object.keys(result[0]).sort()).to.eql(['details', 'name', 'sid']);
+    const result = SUPPLIERS.wrap(['status', 'city'], 'details');
+    const smith = result.restrict({ sid: 'S1' }).one();
+    expect(smith.sid).to.eql('S1');
+    expect(smith.name).to.eql('Smith');
+    expect(Object.keys(smith).sort()).to.eql(['details', 'name', 'sid']);
   })
 
   it('handles wrapping all attributes', () => {
-    const result = SUPPLIERS.wrap(['sid', 'name', 'status', 'city'], 'all').toArray();
-    expect(result[0]).to.eql({
-      all: { sid: 'S1', name: 'Smith', status: 20, city: 'London' }
-    });
+    const result = SUPPLIERS.wrap(['sid', 'name', 'status', 'city'], 'all');
+    const expected = Bmg([
+      { all: { sid: 'S1', name: 'Smith', status: 20, city: 'London' } },
+      { all: { sid: 'S2', name: 'Jones', status: 10, city: 'Paris' } },
+      { all: { sid: 'S3', name: 'Blake', status: 30, city: 'Paris' } },
+      { all: { sid: 'S4', name: 'Clark', status: 20, city: 'London' } },
+      { all: { sid: 'S5', name: 'Adams', status: 30, city: 'Athens' } },
+    ]);
+    expect(result.isEqual(expected)).to.be.true;
   })
 
   it('handles wrapping single attribute', () => {
-    const result = SUPPLIERS.wrap(['city'], 'location').toArray();
-    expect(result[0].location).to.eql({ city: 'London' });
+    const result = SUPPLIERS.wrap(['city'], 'location');
+    const smith = result.restrict({ sid: 'S1' }).one();
+    expect(smith.location).to.eql({ city: 'London' });
   })
 
   ///
@@ -34,7 +48,8 @@ describe('.wrap', () => {
   it('can be used standalone', () => {
     const res = wrap(SUPPLIERS.toArray(), ['status', 'city'], 'details');
     expect(Array.isArray(res)).to.toBeTruthy();
-    expect(res[0].details).to.eql({ status: 20, city: 'London' });
+    const smith = Bmg(res).restrict({ sid: 'S1' }).one();
+    expect(smith.details).to.eql({ status: 20, city: 'London' });
   })
 
 });

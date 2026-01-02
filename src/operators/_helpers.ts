@@ -1,6 +1,23 @@
-import { OperationalOperand, Relation, RelationOperand, Renaming, RenamingFunc } from "@/types";
+import { OperationalOperand, Relation, RelationOperand, Renaming, RenamingFunc, Tuple } from "@/types";
 import { MemoryRelation } from '@/Relation';
 import { isRelation } from "./isRelation";
+
+export const tupleKey = (tuple: Tuple): string => {
+  return JSON.stringify(Object.entries(tuple).sort(([a], [b]) => a.localeCompare(b)));
+}
+
+export const deduplicate = (tuples: Tuple[]): Tuple[] => {
+  const seen = new Set<string>();
+  const result: Tuple[] = [];
+  for (const tuple of tuples) {
+    const key = tupleKey(tuple);
+    if (!seen.has(key)) {
+      seen.add(key);
+      result.push(tuple);
+    }
+  }
+  return result;
+}
 
 export const toOperationalOperand = (operand: RelationOperand): OperationalOperand => {
   if (Array.isArray(operand)) {

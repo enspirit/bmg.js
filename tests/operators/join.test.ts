@@ -17,14 +17,18 @@ describe('.join', () => {
   ]);
 
   it('performs natural join on common attributes', () => {
-    const result = suppliers.join(parts).toArray();
-    expect(result).to.have.length(3);
-    expect(result[0]).to.eql({ sid: 'S1', name: 'Smith', city: 'London', pid: 'P1', pname: 'Nut' });
+    const result = suppliers.join(parts);
+    const expected = Bmg([
+      { sid: 'S1', name: 'Smith', city: 'London', pid: 'P1', pname: 'Nut' },
+      { sid: 'S2', name: 'Jones', city: 'Paris', pid: 'P2', pname: 'Bolt' },
+      { sid: 'S3', name: 'Blake', city: 'Paris', pid: 'P2', pname: 'Bolt' },
+    ]);
+    expect(result.isEqual(expected)).to.be.true;
   })
 
   it('joins on specified attributes (array)', () => {
-    const result = suppliers.join(parts, ['city']).toArray();
-    expect(result).to.have.length(3);
+    const result = suppliers.join(parts, ['city']);
+    expect(result.toArray()).to.have.length(3);
   })
 
   it('joins on different attribute names (object)', () => {
@@ -32,23 +36,33 @@ describe('.join', () => {
       { location: 'London', country: 'UK' },
       { location: 'Paris', country: 'France' },
     ]);
-    const result = suppliers.join(locations, { city: 'location' }).toArray();
-    expect(result).to.have.length(3);
-    expect(result[0].city).to.eql('London');
-    expect(result[0].country).to.eql('UK');
+    const result = suppliers.join(locations, { city: 'location' });
+    // Note: 'location' is excluded as it's the matching key on the right
+    const expected = Bmg([
+      { sid: 'S1', name: 'Smith', city: 'London', country: 'UK' },
+      { sid: 'S2', name: 'Jones', city: 'Paris', country: 'France' },
+      { sid: 'S3', name: 'Blake', city: 'Paris', country: 'France' },
+    ]);
+    expect(result.isEqual(expected)).to.be.true;
   })
 
   it('returns empty for no matches', () => {
     const other = Bmg([{ city: 'Tokyo' }]);
-    const result = suppliers.join(other).toArray();
-    expect(result).to.have.length(0);
+    const result = suppliers.join(other);
+    expect(result.isEqual(Bmg([]))).to.be.true;
   })
 
   it('handles cartesian product when no common attrs', () => {
     const colors = Bmg([{ color: 'red' }, { color: 'blue' }]);
     const sizes = Bmg([{ size: 'S' }, { size: 'M' }]);
-    const result = colors.join(sizes).toArray();
-    expect(result).to.have.length(4);
+    const result = colors.join(sizes);
+    const expected = Bmg([
+      { color: 'red', size: 'S' },
+      { color: 'red', size: 'M' },
+      { color: 'blue', size: 'S' },
+      { color: 'blue', size: 'M' },
+    ]);
+    expect(result.isEqual(expected)).to.be.true;
   })
 
   ///

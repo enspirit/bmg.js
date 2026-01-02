@@ -23,22 +23,27 @@ describe('.ungroup', () => {
   ]);
 
   it('flattens nested relation into parent tuples', () => {
-    const result = grouped.ungroup('items').toArray();
-    expect(result).to.have.length(3);
+    const result = grouped.ungroup('items');
+    const expected = Bmg([
+      { order_id: 1, customer: 'Alice', item: 'Apple', qty: 2 },
+      { order_id: 1, customer: 'Alice', item: 'Banana', qty: 3 },
+      { order_id: 2, customer: 'Bob', item: 'Cherry', qty: 1 },
+    ]);
+    expect(result.isEqual(expected)).to.be.true;
   })
 
   it('preserves parent attributes', () => {
-    const result = grouped.ungroup('items').toArray();
-    const appleRow = result.find(r => r.item === 'Apple');
-    expect(appleRow?.order_id).to.eql(1);
-    expect(appleRow?.customer).to.eql('Alice');
+    const result = grouped.ungroup('items');
+    const appleRow = result.restrict({ item: 'Apple' }).one();
+    expect(appleRow.order_id).to.eql(1);
+    expect(appleRow.customer).to.eql('Alice');
   })
 
   it('merges nested attributes', () => {
-    const result = grouped.ungroup('items').toArray();
-    const appleRow = result.find(r => r.item === 'Apple');
-    expect(appleRow?.item).to.eql('Apple');
-    expect(appleRow?.qty).to.eql(2);
+    const result = grouped.ungroup('items');
+    const appleRow = result.restrict({ item: 'Apple' }).one();
+    expect(appleRow.item).to.eql('Apple');
+    expect(appleRow.qty).to.eql(2);
   })
 
   it('is the inverse of group', () => {
@@ -47,9 +52,8 @@ describe('.ungroup', () => {
       { order_id: 1, customer: 'Alice', item: 'Banana', qty: 3 },
       { order_id: 2, customer: 'Bob', item: 'Cherry', qty: 1 },
     ]);
-    const roundtrip = orders.group(['item', 'qty'], 'items').ungroup('items').toArray();
-    expect(roundtrip).to.have.length(3);
-    expect(roundtrip).to.deep.include({ order_id: 1, customer: 'Alice', item: 'Apple', qty: 2 });
+    const roundtrip = orders.group(['item', 'qty'], 'items').ungroup('items');
+    expect(roundtrip.isEqual(orders)).to.be.true;
   })
 
   ///

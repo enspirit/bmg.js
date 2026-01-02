@@ -4,6 +4,7 @@ import {
   group,
   image,
   intersect,
+  isEqual,
   join,
   left_join,
   matching,
@@ -120,6 +121,10 @@ export class MemoryRelation implements Relation {
 
   yByX(y: AttrName, x: AttrName): Tuple {
     return yByX(this, y, x);
+  }
+
+  isEqual(right: RelationOperand): boolean {
+    return isEqual(this, right);
   }
 
 }

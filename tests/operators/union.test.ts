@@ -15,21 +15,29 @@ describe('.union', () => {
   ]);
 
   it('combines tuples from both relations', () => {
-    const result = left.union(right).toArray();
-    expect(result).to.have.length(3);
+    const result = left.union(right);
+    const expected = Bmg([
+      { id: 1, name: 'Alice' },
+      { id: 2, name: 'Bob' },
+      { id: 3, name: 'Charlie' },
+    ]);
+    expect(result.isEqual(expected)).to.be.true;
   })
 
   it('removes duplicates', () => {
-    const result = left.union(right).toArray();
-    const names = result.map(t => t.name);
-    expect(names).to.eql(['Alice', 'Bob', 'Charlie']);
+    const result = left.union(right);
+    const expected = Bmg([
+      { id: 1, name: 'Alice' },
+      { id: 2, name: 'Bob' },
+      { id: 3, name: 'Charlie' },
+    ]);
+    expect(result.isEqual(expected)).to.be.true;
   })
 
-  it('preserves order (left first)', () => {
-    const result = left.union(right).toArray();
-    expect(result[0]).to.eql({ id: 1, name: 'Alice' });
-    expect(result[1]).to.eql({ id: 2, name: 'Bob' });
-    expect(result[2]).to.eql({ id: 3, name: 'Charlie' });
+  it('is commutative (set semantics)', () => {
+    const lr = left.union(right);
+    const rl = right.union(left);
+    expect(lr.isEqual(rl)).to.be.true;
   })
 
   ///

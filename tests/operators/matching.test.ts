@@ -16,15 +16,21 @@ describe('.matching', () => {
   ]);
 
   it('returns tuples from left that match right on common attrs', () => {
-    const result = orders.matching(customers).toArray();
-    expect(result).to.have.length(2);
-    expect(result[0].oid).to.eql(1);
-    expect(result[1].oid).to.eql(2);
+    const result = orders.matching(customers);
+    const expected = Bmg([
+      { oid: 1, customer_id: 'C1', amount: 100 },
+      { oid: 2, customer_id: 'C2', amount: 200 },
+    ]);
+    expect(result.isEqual(expected)).to.be.true;
   })
 
   it('preserves all left attributes', () => {
-    const result = orders.matching(customers).toArray();
-    expect(result[0]).to.eql({ oid: 1, customer_id: 'C1', amount: 100 });
+    const result = orders.matching(customers);
+    const expected = Bmg([
+      { oid: 1, customer_id: 'C1', amount: 100 },
+      { oid: 2, customer_id: 'C2', amount: 200 },
+    ]);
+    expect(result.isEqual(expected)).to.be.true;
   })
 
   it('supports explicit keys', () => {
@@ -33,9 +39,9 @@ describe('.matching', () => {
       { sid: 'S2', city: 'Paris' },
     ]);
     const cities = Bmg([{ location: 'London' }]);
-    const result = suppliers.matching(cities, { city: 'location' }).toArray();
-    expect(result).to.have.length(1);
-    expect(result[0].sid).to.eql('S1');
+    const result = suppliers.matching(cities, { city: 'location' });
+    const expected = Bmg([{ sid: 'S1', city: 'London' }]);
+    expect(result.isEqual(expected)).to.be.true;
   })
 
   ///

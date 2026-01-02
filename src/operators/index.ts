@@ -18,5 +18,6 @@ export * from './wrap'
 export * from './unwrap'
 
 export * from './isRelation'
+export * from './isEqual'
 export * from './one'
 export * from './yByX'

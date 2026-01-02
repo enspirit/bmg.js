@@ -1,9 +1,5 @@
 import { RelationOperand, Tuple } from "../types";
-import { toOperationalOperand } from "./_helpers";
-
-const tupleKey = (tuple: Tuple): string => {
-  return JSON.stringify(Object.entries(tuple).sort(([a], [b]) => a.localeCompare(b)));
-}
+import { toOperationalOperand, tupleKey } from "./_helpers";
 
 export const minus = (left: RelationOperand, right: RelationOperand): RelationOperand => {
   const opLeft = toOperationalOperand(left);
@@ -14,9 +10,12 @@ export const minus = (left: RelationOperand, right: RelationOperand): RelationOp
     rightKeys.add(tupleKey(tuple));
   }
 
+  const seen = new Set<string>();
   const result: Tuple[] = [];
   for (const tuple of opLeft.tuples()) {
-    if (!rightKeys.has(tupleKey(tuple))) {
+    const key = tupleKey(tuple);
+    if (!rightKeys.has(key) && !seen.has(key)) {
+      seen.add(key);
       result.push(tuple);
     }
   }

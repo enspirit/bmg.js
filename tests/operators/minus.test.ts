@@ -16,22 +16,24 @@ describe('.minus', () => {
   ]);
 
   it('returns tuples in left but not in right', () => {
-    const result = left.minus(right).toArray();
-    expect(result).to.have.length(2);
-    expect(result[0]).to.eql({ id: 1, name: 'Alice' });
-    expect(result[1]).to.eql({ id: 3, name: 'Charlie' });
+    const result = left.minus(right);
+    const expected = Bmg([
+      { id: 1, name: 'Alice' },
+      { id: 3, name: 'Charlie' },
+    ]);
+    expect(result.isEqual(expected)).to.be.true;
   })
 
   it('returns empty when left is subset of right', () => {
     const small = Bmg([{ id: 2, name: 'Bob' }]);
-    const result = small.minus(right).toArray();
-    expect(result).to.have.length(0);
+    const result = small.minus(right);
+    expect(result.isEqual(Bmg([]))).to.be.true;
   })
 
   it('returns all when no overlap', () => {
     const other = Bmg([{ id: 99, name: 'Nobody' }]);
-    const result = left.minus(other).toArray();
-    expect(result).to.have.length(3);
+    const result = left.minus(other);
+    expect(result.isEqual(left)).to.be.true;
   })
 
   ///

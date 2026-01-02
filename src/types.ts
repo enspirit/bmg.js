@@ -26,6 +26,7 @@ export interface Relation {
   one(): Tuple
   yByX(y: AttrName, x: AttrName): Tuple
   toArray(): Tuple[]
+  isEqual(right: RelationOperand): boolean
 }
 
 

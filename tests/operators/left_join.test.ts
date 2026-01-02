@@ -16,24 +16,24 @@ describe('.left_join', () => {
   ]);
 
   it('joins matching tuples', () => {
-    const result = orders.left_join(customers).toArray();
-    const order1 = result.find(r => r.oid === 1);
-    expect(order1?.name).to.eql('Alice');
+    const result = orders.left_join(customers);
+    const order1 = result.restrict({ oid: 1 }).one();
+    expect(order1.name).to.eql('Alice');
   })
 
   it('keeps non-matching left tuples with null right attrs', () => {
-    const result = orders.left_join(customers).toArray();
-    expect(result).to.have.length(3);
-    const order3 = result.find(r => r.oid === 3);
-    expect(order3?.name).to.eql(null);
+    const result = orders.left_join(customers);
+    const order3 = result.restrict({ oid: 3 }).one();
+    expect(order3.name).to.eql(null);
   })
 
   it('preserves all left attributes', () => {
-    const result = orders.left_join(customers).toArray();
-    expect(result[0]).to.have.property('oid');
-    expect(result[0]).to.have.property('customer_id');
-    expect(result[0]).to.have.property('amount');
-    expect(result[0]).to.have.property('name');
+    const result = orders.left_join(customers);
+    const order1 = result.restrict({ oid: 1 }).one();
+    expect(order1).to.have.property('oid');
+    expect(order1).to.have.property('customer_id');
+    expect(order1).to.have.property('amount');
+    expect(order1).to.have.property('name');
   })
 
   it('supports explicit keys', () => {
@@ -46,10 +46,9 @@ describe('.left_join', () => {
       { location: 'London', country: 'UK' },
       { location: 'Paris', country: 'France' },
     ]);
-    const result = suppliers.left_join(cities, { city: 'location' }).toArray();
-    expect(result).to.have.length(3);
-    expect(result.find(r => r.sid === 'S1')?.country).to.eql('UK');
-    expect(result.find(r => r.sid === 'S3')?.country).to.eql(null);
+    const result = suppliers.left_join(cities, { city: 'location' });
+    expect(result.restrict({ sid: 'S1' }).one().country).to.eql('UK');
+    expect(result.restrict({ sid: 'S3' }).one().country).to.eql(null);
   })
 
   it('handles multiple matches', () => {
@@ -58,8 +57,12 @@ describe('.left_join', () => {
       { city: 'Paris', name: 'A' },
       { city: 'Paris', name: 'B' },
     ]);
-    const result = left.left_join(right).toArray();
-    expect(result).to.have.length(2);
+    const result = left.left_join(right);
+    const expected = Bmg([
+      { id: 1, city: 'Paris', name: 'A' },
+      { id: 1, city: 'Paris', name: 'B' },
+    ]);
+    expect(result.isEqual(expected)).to.be.true;
   })
 
   ///
