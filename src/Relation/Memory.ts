@@ -2,6 +2,7 @@ import {
   allbut,
   extend,
   group,
+  image,
   intersect,
   join,
   left_join,
@@ -79,6 +80,10 @@ export class MemoryRelation implements Relation {
 
   left_join(right: RelationOperand, keys?: JoinKeys): MemoryRelation {
     return left_join(this, right, keys) as MemoryRelation;
+  }
+
+  image(right: RelationOperand, as: AttrName, keys?: JoinKeys): MemoryRelation {
+    return image(this, right, as, keys) as MemoryRelation;
   }
 
   summarize(by: AttrName[], aggs: Aggregators): MemoryRelation {
