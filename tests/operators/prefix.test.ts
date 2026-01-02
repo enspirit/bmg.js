@@ -31,7 +31,8 @@ describe('.prefix', () => {
     const input = SUPPLIERS.toArray();
     const res = prefix(input, 'x_');
     expect(Array.isArray(res)).to.toBeTruthy()
-    expect(res[0]).to.have.property('x_sid')
+    const smith = Bmg(res).restrict({ x_sid: 'S1' }).one();
+    expect(smith).to.have.property('x_sid')
   })
 
 });

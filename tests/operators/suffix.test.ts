@@ -31,7 +31,8 @@ describe('.suffix', () => {
     const input = SUPPLIERS.toArray();
     const res = suffix(input, '_y');
     expect(Array.isArray(res)).to.toBeTruthy()
-    expect(res[0]).to.have.property('sid_y')
+    const smith = Bmg(res).restrict({ sid_y: 'S1' }).one();
+    expect(smith).to.have.property('sid_y')
   })
 
 });

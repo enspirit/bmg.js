@@ -61,7 +61,8 @@ describe('.autowrap', () => {
     const input = [{ id: 1, addr_city: 'NYC' }];
     const res = autowrap(input);
     expect(Array.isArray(res)).to.toBeTruthy()
-    expect(res[0]).to.have.property('addr')
+    const tuple = Bmg(res).restrict({ id: 1 }).one();
+    expect(tuple).to.have.property('addr')
   })
 
 });

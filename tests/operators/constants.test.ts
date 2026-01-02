@@ -31,7 +31,8 @@ describe('.constants', () => {
     const input = SUPPLIERS.toArray();
     const res = constants(input, { type: 'supplier' });
     expect(Array.isArray(res)).to.toBeTruthy()
-    expect(res[0]).to.have.property('type', 'supplier')
+    const smith = Bmg(res).restrict({ sid: 'S1' }).one();
+    expect(smith).to.have.property('type', 'supplier')
   })
 
 });
