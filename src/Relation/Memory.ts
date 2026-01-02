@@ -15,6 +15,7 @@ import {
   rename,
   restrict,
   summarize,
+  where,
   transform,
   ungroup,
   union,
@@ -43,6 +44,10 @@ export class MemoryRelation implements Relation {
 
   restrict(p: Predicate): MemoryRelation {
     return restrict(this, p) as MemoryRelation;
+  }
+
+  where(p: Predicate): MemoryRelation {
+    return where(this, p) as MemoryRelation;
   }
 
   project(attrs: AttrName[]): MemoryRelation {
