@@ -67,6 +67,8 @@ extend(r: Relation, e: Extension)                      # Add computed attributes
 union(r: Relation, right: Relation)                    # Set union of two relations
 minus(r: Relation, right: Relation)                    # Set difference (tuples in r but not in right)
 intersect(r: Relation, right: Relation)                # Set intersection (tuples in both)
+matching(r: Relation, right: Relation, keys?: JoinKeys)     # Semi-join (tuples with a match in right)
+not_matching(r: Relation, right: Relation, keys?: JoinKeys) # Anti-join (tuples without a match in right)
 join(r: Relation, right: Relation, keys?: JoinKeys)    # Natural join on common/specified attributes
 summarize(r: Relation, by: AttrName[], aggs: Aggregators)  # Group by attributes and aggregate
 rename(r: Relation, r: Renaming)                       # Rename some or all attributes

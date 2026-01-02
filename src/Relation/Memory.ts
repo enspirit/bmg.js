@@ -3,7 +3,9 @@ import {
   extend,
   intersect,
   join,
+  matching,
   minus,
+  not_matching,
   one,
   project,
   rename,
@@ -56,6 +58,14 @@ export class MemoryRelation implements Relation {
 
   intersect(right: RelationOperand): MemoryRelation {
     return intersect(this, right) as MemoryRelation;
+  }
+
+  matching(right: RelationOperand, keys?: JoinKeys): MemoryRelation {
+    return matching(this, right, keys) as MemoryRelation;
+  }
+
+  not_matching(right: RelationOperand, keys?: JoinKeys): MemoryRelation {
+    return not_matching(this, right, keys) as MemoryRelation;
   }
 
   join(right: RelationOperand, keys?: JoinKeys): MemoryRelation {
