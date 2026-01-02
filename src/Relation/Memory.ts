@@ -13,6 +13,7 @@ import {
   minus,
   not_matching,
   one,
+  prefix,
   project,
   rename,
   restrict,
@@ -31,6 +32,7 @@ import {
   Extension,
   JoinKeys,
   Predicate,
+  PrefixOptions,
   Relation,
   RelationOperand,
   Renaming,
@@ -122,6 +124,10 @@ export class MemoryRelation implements Relation {
 
   rename(r: Renaming): MemoryRelation {
     return rename(this, r) as MemoryRelation;
+  }
+
+  prefix(pfx: string, options?: PrefixOptions): MemoryRelation {
+    return prefix(this, pfx, options) as MemoryRelation;
   }
 
   constants(consts: Tuple): MemoryRelation {

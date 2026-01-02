@@ -1,6 +1,10 @@
 export type AttrName = string
 export type Tuple = Record<AttrName, unknown>
 
+export interface PrefixOptions {
+  except?: AttrName[]
+}
+
 export interface Relation {
   // Relational
   restrict(p: Predicate): Relation
@@ -23,6 +27,7 @@ export interface Relation {
   wrap(attrs: AttrName[], as: AttrName): Relation
   unwrap(attr: AttrName): Relation
   rename(r: Renaming): Relation
+  prefix(pfx: string, options?: PrefixOptions): Relation
   constants(consts: Tuple): Relation
   transform(t: Transformation): Relation
 
