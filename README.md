@@ -70,6 +70,7 @@ intersect(r: Relation, right: Relation)                # Set intersection (tuple
 matching(r: Relation, right: Relation, keys?: JoinKeys)     # Semi-join (tuples with a match in right)
 not_matching(r: Relation, right: Relation, keys?: JoinKeys) # Anti-join (tuples without a match in right)
 join(r: Relation, right: Relation, keys?: JoinKeys)    # Natural join on common/specified attributes
+left_join(r: Relation, right: Relation, keys?: JoinKeys)   # Left outer join
 summarize(r: Relation, by: AttrName[], aggs: Aggregators)  # Group by attributes and aggregate
 group(r: Relation, attrs: AttrName[], as: AttrName)    # Group attributes into nested relation
 ungroup(r: Relation, attr: AttrName)                   # Flatten nested relation back to tuples

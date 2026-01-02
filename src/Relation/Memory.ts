@@ -4,6 +4,7 @@ import {
   group,
   intersect,
   join,
+  left_join,
   matching,
   minus,
   not_matching,
@@ -74,6 +75,10 @@ export class MemoryRelation implements Relation {
 
   join(right: RelationOperand, keys?: JoinKeys): MemoryRelation {
     return join(this, right, keys) as MemoryRelation;
+  }
+
+  left_join(right: RelationOperand, keys?: JoinKeys): MemoryRelation {
+    return left_join(this, right, keys) as MemoryRelation;
   }
 
   summarize(by: AttrName[], aggs: Aggregators): MemoryRelation {
