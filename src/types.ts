@@ -23,6 +23,7 @@ export interface Relation {
   wrap(attrs: AttrName[], as: AttrName): Relation
   unwrap(attr: AttrName): Relation
   rename(r: Renaming): Relation
+  constants(consts: Tuple): Relation
   transform(t: Transformation): Relation
 
   // Non relational

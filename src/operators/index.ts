@@ -1,6 +1,7 @@
 export * from './restrict'
 export * from './where'
 export * from './exclude'
+export * from './constants'
 export * from './rename'
 export * from './project'
 export * from './allbut'

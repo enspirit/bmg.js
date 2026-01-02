@@ -1,5 +1,6 @@
 import {
   allbut,
+  constants,
   exclude,
   extend,
   group,
@@ -121,6 +122,10 @@ export class MemoryRelation implements Relation {
 
   rename(r: Renaming): MemoryRelation {
     return rename(this, r) as MemoryRelation;
+  }
+
+  constants(consts: Tuple): MemoryRelation {
+    return constants(this, consts) as MemoryRelation;
   }
 
   transform(t: Transformation): MemoryRelation {
