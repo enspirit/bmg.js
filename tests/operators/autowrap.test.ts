@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { Bmg } from 'src';
-import { autowrap } from 'src/operators';
+import { autowrap , isEqual } from 'src/operators';
 
 describe('.autowrap', () => {
 
@@ -76,7 +76,7 @@ describe('.autowrap', () => {
     const input = Bmg([{ id: 1, addr_city: 'NYC' }]);
     const res = autowrap(input.toArray());
     const expected = input.autowrap();
-    expect(Bmg(res).isEqual(expected)).to.be.true;
+    expect(isEqual(res, expected)).to.be.true;
   })
 
 });

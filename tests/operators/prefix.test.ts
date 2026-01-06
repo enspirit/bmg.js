@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { Bmg } from 'src';
 import { SUPPLIERS } from 'tests/fixtures';
-import { prefix } from 'src/operators';
+import { prefix , isEqual } from 'src/operators';
 
 describe('.prefix', () => {
 
@@ -31,7 +31,7 @@ describe('.prefix', () => {
     const input = SUPPLIERS.toArray();
     const res = prefix(input, 'x_');
     const expected = SUPPLIERS.prefix('x_');
-    expect(Bmg(res).isEqual(expected)).to.be.true;
+    expect(isEqual(res, expected)).to.be.true;
   })
 
 });

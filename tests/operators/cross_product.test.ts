@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { Bmg } from 'src';
-import { cross_product, cross_join } from 'src/operators';
+import { cross_product, cross_join , isEqual } from 'src/operators';
 
 describe('.cross_product', () => {
 
@@ -78,13 +78,13 @@ describe('.cross_product', () => {
   it('can be used standalone', () => {
     const res = cross_product(colors.toArray(), sizes.toArray());
     const expected = colors.cross_product(sizes);
-    expect(Bmg(res).isEqual(expected)).to.be.true;
+    expect(isEqual(res, expected)).to.be.true;
   })
 
   it('cross_join standalone is also available', () => {
     const res = cross_join(colors.toArray(), sizes.toArray());
     const expected = colors.cross_join(sizes);
-    expect(Bmg(res).isEqual(expected)).to.be.true;
+    expect(isEqual(res, expected)).to.be.true;
   })
 
 });

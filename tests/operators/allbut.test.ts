@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { Bmg } from 'src';
 import { SUPPLIERS } from 'tests/fixtures';
-import { allbut } from 'src/operators';
+import { allbut, isEqual } from 'src/operators';
 
 describe('.allbut', () => {
 
@@ -34,6 +34,7 @@ describe('.allbut', () => {
   })
 
   it('ignores non-existent attributes', () => {
+    // @ts-expect-error - testing runtime behavior with invalid attribute
     const result = SUPPLIERS.allbut(['nonexistent']);
     expect(result.isEqual(SUPPLIERS)).to.be.true;
   })
@@ -44,7 +45,7 @@ describe('.allbut', () => {
     const input = SUPPLIERS.toArray();
     const res = allbut(input, ['status', 'city']);
     const expected = SUPPLIERS.allbut(['status', 'city']);
-    expect(Bmg(res).isEqual(expected)).to.be.true;
+    expect(isEqual(res, expected)).to.be.true;
   })
 
 });

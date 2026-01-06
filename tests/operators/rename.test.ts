@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { Bmg } from 'src';
 import { SUPPLIERS } from 'tests/fixtures';
-import { rename } from 'src/operators';
+import { rename , isEqual } from 'src/operators';
 
 describe('.rename', () => {
 
@@ -25,12 +25,12 @@ describe('.rename', () => {
     const input = SUPPLIERS.toArray();
     const res = rename(input, renaming);
     const expected = SUPPLIERS.rename(renaming);
-    expect(Bmg(res).isEqual(expected)).to.be.true;
+    expect(isEqual(res, expected)).to.be.true;
   })
 
   it('supports a pure function', () => {
     const input = SUPPLIERS.toArray();
-    const renamed = rename(input, (attr) => attr.toUpperCase());
+    const renamed = rename(input, (attr) => attr.toUpperCase()) as any[];
     const smith = Bmg(renamed).restrict({ SID: 'S1' }).one();
     const keys = Object.keys(smith).sort();
     expect(keys).to.eql(['CITY', 'NAME', 'SID', 'STATUS']);

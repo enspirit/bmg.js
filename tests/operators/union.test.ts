@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { Bmg } from 'src';
-import { union } from 'src/operators';
+import { union , isEqual } from 'src/operators';
 
 describe('.union', () => {
 
@@ -45,7 +45,7 @@ describe('.union', () => {
   it('can be used standalone', () => {
     const res = union(left.toArray(), right.toArray());
     const expected = left.union(right);
-    expect(Bmg(res).isEqual(expected)).to.be.true;
+    expect(isEqual(res, expected)).to.be.true;
   })
 
 });

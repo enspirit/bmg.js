@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { Bmg } from 'src';
-import { matching } from 'src/operators';
+import { matching , isEqual } from 'src/operators';
 
 describe('.matching', () => {
 
@@ -85,7 +85,7 @@ describe('.matching', () => {
   it('can be used standalone', () => {
     const res = matching(orders.toArray(), customers.toArray());
     const expected = orders.matching(customers);
-    expect(Bmg(res).isEqual(expected)).to.be.true;
+    expect(isEqual(res, expected)).to.be.true;
   })
 
 });

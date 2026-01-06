@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { Bmg } from 'src';
-import { left_join } from 'src/operators';
+import { left_join , isEqual } from 'src/operators';
 
 describe('.left_join', () => {
 
@@ -110,7 +110,7 @@ describe('.left_join', () => {
   it('can be used standalone', () => {
     const res = left_join(orders.toArray(), customers.toArray());
     const expected = orders.left_join(customers);
-    expect(Bmg(res).isEqual(expected)).to.be.true;
+    expect(isEqual(res, expected)).to.be.true;
   })
 
 });

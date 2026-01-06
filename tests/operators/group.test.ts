@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { Bmg } from 'src';
-import { group } from 'src/operators';
+import { group , isEqual } from 'src/operators';
 
 describe('.group', () => {
 
@@ -63,7 +63,7 @@ describe('.group', () => {
   it('can be used standalone', () => {
     const res = group(orders.toArray(), ['item', 'qty'], 'items');
     const expected = orders.group(['item', 'qty'], 'items');
-    expect(Bmg(res).isEqual(expected)).to.be.true;
+    expect(isEqual(res, expected)).to.be.true;
   })
 
 });

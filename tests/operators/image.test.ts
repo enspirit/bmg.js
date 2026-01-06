@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { Bmg } from 'src';
-import { image } from 'src/operators';
+import { image , isEqual } from 'src/operators';
 
 describe('.image', () => {
 
@@ -146,7 +146,7 @@ describe('.image', () => {
   it('can be used standalone', () => {
     const res = image(suppliers.toArray(), shipments.toArray(), 'shipments');
     const expected = suppliers.image(shipments, 'shipments');
-    expect(Bmg(res).isEqual(expected)).to.be.true;
+    expect(isEqual(res, expected)).to.be.true;
   })
 
 });

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { Bmg } from 'src';
+
 import { SUPPLIERS } from 'tests/fixtures';
-import { constants } from 'src/operators';
+import { constants , isEqual } from 'src/operators';
 
 describe('.constants', () => {
 
@@ -31,7 +31,7 @@ describe('.constants', () => {
     const input = SUPPLIERS.toArray();
     const res = constants(input, { type: 'supplier' });
     const expected = SUPPLIERS.constants({ type: 'supplier' });
-    expect(Bmg(res).isEqual(expected)).to.be.true;
+    expect(isEqual(res, expected)).to.be.true;
   })
 
 });

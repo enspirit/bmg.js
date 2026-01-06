@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { Bmg } from 'src';
+
 import { SUPPLIERS } from 'tests/fixtures';
-import { restrict } from 'src/operators';
+import { restrict , isEqual } from 'src/operators';
 
 describe('.restrict', () => {
 
@@ -21,7 +21,7 @@ describe('.restrict', () => {
     const input = SUPPLIERS.toArray();
     const res = restrict(input, { sid: 'S1' });
     const expected = SUPPLIERS.restrict({ sid: 'S1' });
-    expect(Bmg(res).isEqual(expected)).to.be.true;
+    expect(isEqual(res, expected)).to.be.true;
   })
 
 });

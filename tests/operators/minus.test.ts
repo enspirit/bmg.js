@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { Bmg } from 'src';
-import { minus } from 'src/operators';
+import { minus , isEqual } from 'src/operators';
 
 describe('.minus', () => {
 
@@ -41,7 +41,7 @@ describe('.minus', () => {
   it('can be used standalone', () => {
     const res = minus(left.toArray(), right.toArray());
     const expected = left.minus(right);
-    expect(Bmg(res).isEqual(expected)).to.be.true;
+    expect(isEqual(res, expected)).to.be.true;
   })
 
 });

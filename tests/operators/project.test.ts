@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { Bmg } from 'src';
 import { SUPPLIERS } from 'tests/fixtures';
-import { project } from 'src/operators';
+import { project , isEqual } from 'src/operators';
 
 describe('.project', () => {
 
@@ -29,6 +29,7 @@ describe('.project', () => {
   })
 
   it('ignores missing attributes', () => {
+    // @ts-expect-error - testing runtime behavior with invalid attribute
     const result = SUPPLIERS.project(['name', 'nonexistent']);
     const smith = result.restrict({ name: 'Smith' }).one();
     expect(smith).to.have.property('name');
@@ -41,7 +42,7 @@ describe('.project', () => {
     const input = SUPPLIERS.toArray();
     const res = project(input, ['name', 'city']);
     const expected = SUPPLIERS.project(['name', 'city']);
-    expect(Bmg(res).isEqual(expected)).to.be.true;
+    expect(isEqual(res, expected)).to.be.true;
   })
 
 });
