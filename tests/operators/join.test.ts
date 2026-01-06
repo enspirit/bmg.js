@@ -69,8 +69,8 @@ describe('.join', () => {
 
   it('can be used standalone', () => {
     const res = join(suppliers.toArray(), parts.toArray(), ['city']);
-    expect(Array.isArray(res)).to.toBeTruthy();
-    expect(res).to.have.length(3);
+    const expected = suppliers.join(parts, ['city']);
+    expect(Bmg(res).isEqual(expected)).to.be.true;
   })
 
 });

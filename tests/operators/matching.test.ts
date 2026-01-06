@@ -48,8 +48,8 @@ describe('.matching', () => {
 
   it('can be used standalone', () => {
     const res = matching(orders.toArray(), customers.toArray());
-    expect(Array.isArray(res)).to.toBeTruthy();
-    expect(res).to.have.length(2);
+    const expected = orders.matching(customers);
+    expect(Bmg(res).isEqual(expected)).to.be.true;
   })
 
 });

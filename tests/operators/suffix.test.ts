@@ -30,9 +30,8 @@ describe('.suffix', () => {
   it('can be used standalone', () => {
     const input = SUPPLIERS.toArray();
     const res = suffix(input, '_y');
-    expect(Array.isArray(res)).to.toBeTruthy()
-    const smith = Bmg(res).restrict({ sid_y: 'S1' }).one();
-    expect(smith).to.have.property('sid_y')
+    const expected = SUPPLIERS.suffix('_y');
+    expect(Bmg(res).isEqual(expected)).to.be.true;
   })
 
 });

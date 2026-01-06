@@ -38,9 +38,8 @@ describe('.extend', () => {
   it('can be used standalone', () => {
     const input = SUPPLIERS.toArray();
     const res = extend(input, { location: 'city' });
-    expect(Array.isArray(res)).to.toBeTruthy();
-    const smith = Bmg(res).restrict({ sid: 'S1' }).one();
-    expect(smith.location).to.eql('London');
+    const expected = SUPPLIERS.extend({ location: 'city' });
+    expect(Bmg(res).isEqual(expected)).to.be.true;
   })
 
 });

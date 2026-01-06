@@ -73,11 +73,10 @@ describe('.autowrap', () => {
   ///
 
   it('can be used standalone', () => {
-    const input = [{ id: 1, addr_city: 'NYC' }];
-    const res = autowrap(input);
-    expect(Array.isArray(res)).to.toBeTruthy()
-    const tuple = Bmg(res).restrict({ id: 1 }).one();
-    expect(tuple).to.have.property('addr')
+    const input = Bmg([{ id: 1, addr_city: 'NYC' }]);
+    const res = autowrap(input.toArray());
+    const expected = input.autowrap();
+    expect(Bmg(res).isEqual(expected)).to.be.true;
   })
 
 });

@@ -40,8 +40,8 @@ describe('.minus', () => {
 
   it('can be used standalone', () => {
     const res = minus(left.toArray(), right.toArray());
-    expect(Array.isArray(res)).to.toBeTruthy();
-    expect(res).to.have.length(2);
+    const expected = left.minus(right);
+    expect(Bmg(res).isEqual(expected)).to.be.true;
   })
 
 });

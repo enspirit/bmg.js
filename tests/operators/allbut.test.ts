@@ -43,7 +43,8 @@ describe('.allbut', () => {
   it('can be used standalone', () => {
     const input = SUPPLIERS.toArray();
     const res = allbut(input, ['status', 'city']);
-    expect(Array.isArray(res)).to.toBeTruthy();
+    const expected = SUPPLIERS.allbut(['status', 'city']);
+    expect(Bmg(res).isEqual(expected)).to.be.true;
   })
 
 });

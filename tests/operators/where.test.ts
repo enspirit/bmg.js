@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { Bmg } from 'src';
 import { SUPPLIERS } from 'tests/fixtures';
 import { where } from 'src/operators';
 
@@ -25,7 +26,8 @@ describe('.where', () => {
   it('can be used standalone', () => {
     const input = SUPPLIERS.toArray();
     const res = where(input, { sid: 'S1' });
-    expect(Array.isArray(res)).to.toBeTruthy()
+    const expected = SUPPLIERS.where({ sid: 'S1' });
+    expect(Bmg(res).isEqual(expected)).to.be.true;
   })
 
 });

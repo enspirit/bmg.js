@@ -44,8 +44,8 @@ describe('.group', () => {
 
   it('can be used standalone', () => {
     const res = group(orders.toArray(), ['item', 'qty'], 'items');
-    expect(Array.isArray(res)).to.toBeTruthy();
-    expect(res).to.have.length(2);
+    const expected = orders.group(['item', 'qty'], 'items');
+    expect(Bmg(res).isEqual(expected)).to.be.true;
   })
 
 });

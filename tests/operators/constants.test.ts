@@ -30,9 +30,8 @@ describe('.constants', () => {
   it('can be used standalone', () => {
     const input = SUPPLIERS.toArray();
     const res = constants(input, { type: 'supplier' });
-    expect(Array.isArray(res)).to.toBeTruthy()
-    const smith = Bmg(res).restrict({ sid: 'S1' }).one();
-    expect(smith).to.have.property('type', 'supplier')
+    const expected = SUPPLIERS.constants({ type: 'supplier' });
+    expect(Bmg(res).isEqual(expected)).to.be.true;
   })
 
 });

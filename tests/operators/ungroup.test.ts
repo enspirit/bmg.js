@@ -60,8 +60,8 @@ describe('.ungroup', () => {
 
   it('can be used standalone', () => {
     const res = ungroup(grouped.toArray(), 'items');
-    expect(Array.isArray(res)).to.toBeTruthy();
-    expect(res).to.have.length(3);
+    const expected = grouped.ungroup('items');
+    expect(Bmg(res).isEqual(expected)).to.be.true;
   })
 
 });

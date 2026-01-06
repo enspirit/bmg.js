@@ -30,9 +30,8 @@ describe('.prefix', () => {
   it('can be used standalone', () => {
     const input = SUPPLIERS.toArray();
     const res = prefix(input, 'x_');
-    expect(Array.isArray(res)).to.toBeTruthy()
-    const smith = Bmg(res).restrict({ x_sid: 'S1' }).one();
-    expect(smith).to.have.property('x_sid')
+    const expected = SUPPLIERS.prefix('x_');
+    expect(Bmg(res).isEqual(expected)).to.be.true;
   })
 
 });

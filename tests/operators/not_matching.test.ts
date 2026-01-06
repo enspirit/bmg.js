@@ -55,8 +55,8 @@ describe('.not_matching', () => {
 
   it('can be used standalone', () => {
     const res = not_matching(orders.toArray(), customers.toArray());
-    expect(Array.isArray(res)).to.toBeTruthy();
-    expect(res).to.have.length(1);
+    const expected = orders.not_matching(customers);
+    expect(Bmg(res).isEqual(expected)).to.be.true;
   })
 
 });

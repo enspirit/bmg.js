@@ -47,9 +47,8 @@ describe('.wrap', () => {
 
   it('can be used standalone', () => {
     const res = wrap(SUPPLIERS.toArray(), ['status', 'city'], 'details');
-    expect(Array.isArray(res)).to.toBeTruthy();
-    const smith = Bmg(res).restrict({ sid: 'S1' }).one();
-    expect(smith.details).to.eql({ status: 20, city: 'London' });
+    const expected = SUPPLIERS.wrap(['status', 'city'], 'details');
+    expect(Bmg(res).isEqual(expected)).to.be.true;
   })
 
 });

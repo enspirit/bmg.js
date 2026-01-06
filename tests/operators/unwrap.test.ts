@@ -43,9 +43,8 @@ describe('.unwrap', () => {
 
   it('can be used standalone', () => {
     const res = unwrap(wrapped.toArray(), 'details');
-    expect(Array.isArray(res)).to.toBeTruthy();
-    const smith = Bmg(res).restrict({ sid: 'S1' }).one();
-    expect(smith).to.eql({ sid: 'S1', name: 'Smith', status: 20, city: 'London' });
+    const expected = wrapped.unwrap('details');
+    expect(Bmg(res).isEqual(expected)).to.be.true;
   })
 
 });

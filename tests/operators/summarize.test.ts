@@ -83,8 +83,8 @@ describe('.summarize', () => {
   it('can be used standalone', () => {
     const input = SUPPLIERS.toArray();
     const res = summarize(input, ['city'], { count: 'count' });
-    expect(Array.isArray(res)).to.toBeTruthy();
-    expect(res).to.have.length(3);
+    const expected = SUPPLIERS.summarize(['city'], { count: 'count' });
+    expect(Bmg(res).isEqual(expected)).to.be.true;
   })
 
 });

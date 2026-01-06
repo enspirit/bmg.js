@@ -23,8 +23,9 @@ describe('.rename', () => {
 
   it('can be used standalone', () => {
     const input = SUPPLIERS.toArray();
-    const renamed = rename(input, renaming);
-    expect(Array.isArray(renamed)).to.toBeTruthy();
+    const res = rename(input, renaming);
+    const expected = SUPPLIERS.rename(renaming);
+    expect(Bmg(res).isEqual(expected)).to.be.true;
   })
 
   it('supports a pure function', () => {

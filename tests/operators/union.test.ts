@@ -44,8 +44,8 @@ describe('.union', () => {
 
   it('can be used standalone', () => {
     const res = union(left.toArray(), right.toArray());
-    expect(Array.isArray(res)).to.toBeTruthy();
-    expect(res).to.have.length(3);
+    const expected = left.union(right);
+    expect(Bmg(res).isEqual(expected)).to.be.true;
   })
 
 });

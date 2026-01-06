@@ -63,8 +63,8 @@ describe('.image', () => {
 
   it('can be used standalone', () => {
     const res = image(suppliers.toArray(), shipments.toArray(), 'shipments');
-    expect(Array.isArray(res)).to.toBeTruthy();
-    expect(res).to.have.length(3);
+    const expected = suppliers.image(shipments, 'shipments');
+    expect(Bmg(res).isEqual(expected)).to.be.true;
   })
 
 });

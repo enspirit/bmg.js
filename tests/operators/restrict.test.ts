@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { Bmg } from 'src';
 import { SUPPLIERS } from 'tests/fixtures';
 import { restrict } from 'src/operators';
 
@@ -19,7 +20,8 @@ describe('.restrict', () => {
   it('can be used standalone', () => {
     const input = SUPPLIERS.toArray();
     const res = restrict(input, { sid: 'S1' });
-    expect(Array.isArray(res)).to.toBeTruthy()
+    const expected = SUPPLIERS.restrict({ sid: 'S1' });
+    expect(Bmg(res).isEqual(expected)).to.be.true;
   })
 
 });

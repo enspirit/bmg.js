@@ -36,8 +36,8 @@ describe('.exclude', () => {
   it('can be used standalone', () => {
     const input = SUPPLIERS.toArray();
     const res = exclude(input, { city: 'Paris' });
-    expect(Array.isArray(res)).to.toBeTruthy()
-    expect(res.length).to.eql(3)
+    const expected = SUPPLIERS.exclude({ city: 'Paris' });
+    expect(Bmg(res).isEqual(expected)).to.be.true;
   })
 
 });

@@ -69,8 +69,8 @@ describe('.left_join', () => {
 
   it('can be used standalone', () => {
     const res = left_join(orders.toArray(), customers.toArray());
-    expect(Array.isArray(res)).to.toBeTruthy();
-    expect(res).to.have.length(3);
+    const expected = orders.left_join(customers);
+    expect(Bmg(res).isEqual(expected)).to.be.true;
   })
 
 });

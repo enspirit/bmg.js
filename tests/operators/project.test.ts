@@ -40,7 +40,8 @@ describe('.project', () => {
   it('can be used standalone', () => {
     const input = SUPPLIERS.toArray();
     const res = project(input, ['name', 'city']);
-    expect(Array.isArray(res)).to.toBeTruthy();
+    const expected = SUPPLIERS.project(['name', 'city']);
+    expect(Bmg(res).isEqual(expected)).to.be.true;
   })
 
 });
