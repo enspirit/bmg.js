@@ -26,22 +26,62 @@ describe('.join', () => {
     expect(result.isEqual(expected)).to.be.true;
   })
 
-  it('joins on specified attributes (array)', () => {
+  it('joins on specified attributes as [common_attr]', () => {
     const result = suppliers.join(parts, ['city']);
-    expect(result.toArray()).to.have.length(3);
+    const expected = Bmg([
+      { sid: 'S1', name: 'Smith', city: 'London', pid: 'P1', pname: 'Nut' },
+      { sid: 'S2', name: 'Jones', city: 'Paris', pid: 'P2', pname: 'Bolt' },
+      { sid: 'S3', name: 'Blake', city: 'Paris', pid: 'P2', pname: 'Bolt' },
+    ]);
+    expect(result.isEqual(expected)).to.be.true;
   })
 
-  it('joins on different attribute names (object)', () => {
+  it('joins on multiple attributes as [attr1, attr2]', () => {
+    const inventory = Bmg([
+      { warehouse: 'W1', city: 'London', stock: 100 },
+      { warehouse: 'W2', city: 'London', stock: 200 },
+      { warehouse: 'W1', city: 'Paris', stock: 150 },
+    ]);
+    const shipments = Bmg([
+      { warehouse: 'W1', city: 'London', qty: 10 },
+      { warehouse: 'W1', city: 'Paris', qty: 20 },
+    ]);
+    const result = inventory.join(shipments, ['warehouse', 'city']);
+    const expected = Bmg([
+      { warehouse: 'W1', city: 'London', stock: 100, qty: 10 },
+      { warehouse: 'W1', city: 'Paris', stock: 150, qty: 20 },
+    ]);
+    expect(result.isEqual(expected)).to.be.true;
+  })
+
+  it('joins on different attribute names as { left: right }', () => {
     const locations = Bmg([
       { location: 'London', country: 'UK' },
       { location: 'Paris', country: 'France' },
     ]);
     const result = suppliers.join(locations, { city: 'location' });
-    // Note: 'location' is excluded as it's the matching key on the right
     const expected = Bmg([
       { sid: 'S1', name: 'Smith', city: 'London', country: 'UK' },
       { sid: 'S2', name: 'Jones', city: 'Paris', country: 'France' },
       { sid: 'S3', name: 'Blake', city: 'Paris', country: 'France' },
+    ]);
+    expect(result.isEqual(expected)).to.be.true;
+  })
+
+  it('joins on multiple different attribute names as { left1: right1, left2: right2 }', () => {
+    const people = Bmg([
+      { id: 1, first: 'John', last: 'Doe' },
+      { id: 2, first: 'Jane', last: 'Smith' },
+      { id: 3, first: 'John', last: 'Smith' },
+    ]);
+    const records = Bmg([
+      { fname: 'John', lname: 'Doe', score: 85 },
+      { fname: 'Jane', lname: 'Smith', score: 90 },
+    ]);
+    const result = people.join(records, { first: 'fname', last: 'lname' });
+    const expected = Bmg([
+      { id: 1, first: 'John', last: 'Doe', score: 85 },
+      { id: 2, first: 'Jane', last: 'Smith', score: 90 },
     ]);
     expect(result.isEqual(expected)).to.be.true;
   })
