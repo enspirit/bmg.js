@@ -29,150 +29,185 @@ import {
   wrap,
   yByX,
 } from "../operators";
-import {
-  Aggregators,
+import type {
   AttrName,
   AutowrapOptions,
-  Extension,
   JoinKeys,
-  Predicate,
-  PrefixOptions,
   Relation,
-  SuffixOptions,
   RelationOperand,
-  Renaming,
   Transformation,
   Tuple,
+  TypedPredicate,
+  TypedExtension,
+  RenameMap,
+  Renamed,
+  Prefixed,
+  Suffixed,
+  Joined,
+  LeftJoined,
+  Wrapped,
+  Unwrapped,
+  Ungrouped,
 } from "../types";
+import type { AggregatorResults } from "../utility-types";
 
-export class MemoryRelation implements Relation {
+/**
+ * In-memory implementation of the Relation interface.
+ *
+ * @typeParam T - The tuple type for this relation. Defaults to `Tuple` (Record<string, unknown>).
+ */
+export class MemoryRelation<T = Tuple> implements Relation<T> {
 
-  constructor(private tuples: Tuple[]) {
+  constructor(private tuples: T[]) {
     this.tuples = tuples;
   }
 
-  restrict(p: Predicate): MemoryRelation {
-    return restrict(this, p) as MemoryRelation;
+  // === Type-preserving operators ===
+
+  restrict(p: TypedPredicate<T>): Relation<T> {
+    return restrict(this as any, p as any) as unknown as Relation<T>;
   }
 
-  where(p: Predicate): MemoryRelation {
-    return where(this, p) as MemoryRelation;
+  where(p: TypedPredicate<T>): Relation<T> {
+    return where(this as any, p as any) as unknown as Relation<T>;
   }
 
-  exclude(p: Predicate): MemoryRelation {
-    return exclude(this, p) as MemoryRelation;
+  exclude(p: TypedPredicate<T>): Relation<T> {
+    return exclude(this as any, p as any) as unknown as Relation<T>;
   }
 
-  project(attrs: AttrName[]): MemoryRelation {
-    return project(this, attrs) as MemoryRelation;
+  // === Projection operators ===
+
+  project<K extends keyof T>(attrs: K[]): Relation<Pick<T, K>> {
+    return project(this as any, attrs as AttrName[]) as unknown as Relation<Pick<T, K>>;
   }
 
-  allbut(attrs: AttrName[]): MemoryRelation {
-    return allbut(this, attrs) as MemoryRelation;
+  allbut<K extends keyof T>(attrs: K[]): Relation<Omit<T, K>> {
+    return allbut(this as any, attrs as AttrName[]) as unknown as Relation<Omit<T, K>>;
   }
 
-  extend(e: Extension): MemoryRelation {
-    return extend(this, e) as MemoryRelation;
+  // === Extension operators ===
+
+  extend<E extends Record<string, unknown>>(e: TypedExtension<T, E>): Relation<T & E> {
+    return extend(this as any, e as any) as unknown as Relation<T & E>;
   }
 
-  union(right: RelationOperand): MemoryRelation {
-    return union(this, right) as MemoryRelation;
+  constants<C extends Tuple>(consts: C): Relation<T & C> {
+    return constants(this as any, consts) as unknown as Relation<T & C>;
   }
 
-  minus(right: RelationOperand): MemoryRelation {
-    return minus(this, right) as MemoryRelation;
+  // === Rename operators ===
+
+  rename<R extends RenameMap<T>>(r: R): Relation<Renamed<T, R>> {
+    return rename(this as any, r as any) as unknown as Relation<Renamed<T, R>>;
   }
 
-  intersect(right: RelationOperand): MemoryRelation {
-    return intersect(this, right) as MemoryRelation;
+  prefix<P extends string, Ex extends keyof T = never>(pfx: P, options?: { except?: Ex[] }): Relation<Prefixed<T, P, Ex>> {
+    return prefix(this as any, pfx, options as any) as unknown as Relation<Prefixed<T, P, Ex>>;
   }
 
-  matching(right: RelationOperand, keys?: JoinKeys): MemoryRelation {
-    return matching(this, right, keys) as MemoryRelation;
+  suffix<S extends string, Ex extends keyof T = never>(sfx: S, options?: { except?: Ex[] }): Relation<Suffixed<T, S, Ex>> {
+    return suffix(this as any, sfx, options as any) as unknown as Relation<Suffixed<T, S, Ex>>;
   }
 
-  not_matching(right: RelationOperand, keys?: JoinKeys): MemoryRelation {
-    return not_matching(this, right, keys) as MemoryRelation;
+  // === Set operators ===
+
+  union(right: RelationOperand<T>): Relation<T> {
+    return union(this as any, right as any) as unknown as Relation<T>;
   }
 
-  join(right: RelationOperand, keys?: JoinKeys): MemoryRelation {
-    return join(this, right, keys) as MemoryRelation;
+  minus(right: RelationOperand<T>): Relation<T> {
+    return minus(this as any, right as any) as unknown as Relation<T>;
   }
 
-  left_join(right: RelationOperand, keys?: JoinKeys): MemoryRelation {
-    return left_join(this, right, keys) as MemoryRelation;
+  intersect(right: RelationOperand<T>): Relation<T> {
+    return intersect(this as any, right as any) as unknown as Relation<T>;
   }
 
-  cross_product(right: RelationOperand): MemoryRelation {
-    return cross_product(this, right) as MemoryRelation;
+  // === Semi-join operators ===
+
+  matching<R>(right: RelationOperand<R>, keys?: JoinKeys): Relation<T> {
+    return matching(this as any, right as any, keys) as unknown as Relation<T>;
   }
 
-  cross_join(right: RelationOperand): MemoryRelation {
-    return cross_product(this, right) as MemoryRelation;
+  not_matching<R>(right: RelationOperand<R>, keys?: JoinKeys): Relation<T> {
+    return not_matching(this as any, right as any, keys) as unknown as Relation<T>;
   }
 
-  image(right: RelationOperand, as: AttrName, keys?: JoinKeys): MemoryRelation {
-    return image(this, right, as, keys) as MemoryRelation;
+  // === Join operators ===
+
+  join<R>(right: RelationOperand<R>, keys?: JoinKeys): Relation<Joined<T, R>> {
+    return join(this as any, right as any, keys) as unknown as Relation<Joined<T, R>>;
   }
 
-  summarize(by: AttrName[], aggs: Aggregators): MemoryRelation {
-    return summarize(this, by, aggs) as MemoryRelation;
+  left_join<R>(right: RelationOperand<R>, keys?: JoinKeys): Relation<LeftJoined<T, R>> {
+    return left_join(this as any, right as any, keys) as unknown as Relation<LeftJoined<T, R>>;
   }
 
-  group(attrs: AttrName[], as: AttrName): MemoryRelation {
-    return group(this, attrs, as) as MemoryRelation;
+  cross_product<R>(right: RelationOperand<R>): Relation<T & R> {
+    return cross_product(this as any, right as any) as unknown as Relation<T & R>;
   }
 
-  ungroup(attr: AttrName): MemoryRelation {
-    return ungroup(this, attr) as MemoryRelation;
+  cross_join<R>(right: RelationOperand<R>): Relation<T & R> {
+    return cross_product(this as any, right as any) as unknown as Relation<T & R>;
   }
 
-  wrap(attrs: AttrName[], as: AttrName): MemoryRelation {
-    return wrap(this, attrs, as) as MemoryRelation;
+  // === Nesting operators ===
+
+  image<R, As extends string>(right: RelationOperand<R>, as: As, keys?: JoinKeys): Relation<T & Record<As, Relation<Omit<R, keyof T & keyof R>>>> {
+    return image(this as any, right as any, as, keys) as unknown as Relation<T & Record<As, Relation<Omit<R, keyof T & keyof R>>>>;
   }
 
-  unwrap(attr: AttrName): MemoryRelation {
-    return unwrap(this, attr) as MemoryRelation;
+  group<K extends keyof T, As extends string>(attrs: K[], as: As): Relation<Omit<T, K> & Record<As, Relation<Pick<T, K>>>> {
+    return group(this as any, attrs as AttrName[], as) as unknown as Relation<Omit<T, K> & Record<As, Relation<Pick<T, K>>>>;
   }
 
-  autowrap(options?: AutowrapOptions): MemoryRelation {
-    return autowrap(this, options) as MemoryRelation;
+  ungroup<K extends keyof T>(attr: K): Relation<Ungrouped<T, K>> {
+    return ungroup(this as any, attr as AttrName) as unknown as Relation<Ungrouped<T, K>>;
   }
 
-  rename(r: Renaming): MemoryRelation {
-    return rename(this, r) as MemoryRelation;
+  wrap<K extends keyof T, As extends string>(attrs: K[], as: As): Relation<Wrapped<T, K, As>> {
+    return wrap(this as any, attrs as AttrName[], as) as unknown as Relation<Wrapped<T, K, As>>;
   }
 
-  prefix(pfx: string, options?: PrefixOptions): MemoryRelation {
-    return prefix(this, pfx, options) as MemoryRelation;
+  unwrap<K extends keyof T>(attr: K): Relation<Unwrapped<T, K>> {
+    return unwrap(this as any, attr as AttrName) as unknown as Relation<Unwrapped<T, K>>;
   }
 
-  suffix(sfx: string, options?: SuffixOptions): MemoryRelation {
-    return suffix(this, sfx, options) as MemoryRelation;
+  // === Aggregation ===
+
+  summarize<By extends keyof T, Aggs extends Record<string, unknown>>(by: By[], aggs: Aggs): Relation<Pick<T, By> & AggregatorResults<Aggs>> {
+    return summarize(this as any, by as AttrName[], aggs as any) as unknown as Relation<Pick<T, By> & AggregatorResults<Aggs>>;
   }
 
-  constants(consts: Tuple): MemoryRelation {
-    return constants(this, consts) as MemoryRelation;
+  // === Transform ===
+
+  transform(t: Transformation): Relation<T> {
+    return transform(this as any, t) as unknown as Relation<T>;
   }
 
-  transform(t: Transformation): MemoryRelation {
-    return transform(this, t) as MemoryRelation;
+  // === Dynamic ===
+
+  autowrap(options?: AutowrapOptions): Relation<Tuple> {
+    return autowrap(this as any, options) as Relation<Tuple>;
   }
 
-  one(): Tuple {
-    return one(this)
+  // === Non-relational ===
+
+  one(): T {
+    return one(this as any) as T;
   }
 
-  toArray(): Tuple[] {
+  toArray(): T[] {
     return this.tuples;
   }
 
-  yByX(y: AttrName, x: AttrName): Tuple {
-    return yByX(this, y, x);
+  yByX<Y extends keyof T, X extends keyof T>(y: Y, x: X): Record<T[X] & PropertyKey, T[Y]> {
+    return yByX(this as any, y as AttrName, x as AttrName) as Record<T[X] & PropertyKey, T[Y]>;
   }
 
-  isEqual(right: RelationOperand): boolean {
-    return isEqual(this, right);
+  isEqual(right: any): boolean {
+    return isEqual(this as any, right as any);
   }
 
 }

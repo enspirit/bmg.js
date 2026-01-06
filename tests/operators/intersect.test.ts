@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { Bmg } from 'src';
-import { intersect } from 'src/operators';
+import { intersect , isEqual } from 'src/operators';
 
 describe('.intersect', () => {
 
@@ -47,7 +47,7 @@ describe('.intersect', () => {
   it('can be used standalone', () => {
     const res = intersect(left.toArray(), right.toArray());
     const expected = left.intersect(right);
-    expect(Bmg(res).isEqual(expected)).to.be.true;
+    expect(isEqual(res, expected)).to.be.true;
   })
 
 });

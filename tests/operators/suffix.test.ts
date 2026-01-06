@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { Bmg } from 'src';
 import { SUPPLIERS } from 'tests/fixtures';
-import { suffix } from 'src/operators';
+import { suffix , isEqual } from 'src/operators';
 
 describe('.suffix', () => {
 
@@ -31,7 +31,7 @@ describe('.suffix', () => {
     const input = SUPPLIERS.toArray();
     const res = suffix(input, '_y');
     const expected = SUPPLIERS.suffix('_y');
-    expect(Bmg(res).isEqual(expected)).to.be.true;
+    expect(isEqual(res, expected)).to.be.true;
   })
 
 });

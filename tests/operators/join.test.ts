@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { Bmg } from 'src';
-import { join } from 'src/operators';
+import { join , isEqual } from 'src/operators';
 
 describe('.join', () => {
 
@@ -110,7 +110,7 @@ describe('.join', () => {
   it('can be used standalone', () => {
     const res = join(suppliers.toArray(), parts.toArray(), ['city']);
     const expected = suppliers.join(parts, ['city']);
-    expect(Bmg(res).isEqual(expected)).to.be.true;
+    expect(isEqual(res, expected)).to.be.true;
   })
 
 });

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { Bmg } from 'src';
 import { SUPPLIERS } from 'tests/fixtures';
-import { exclude } from 'src/operators';
+import { exclude , isEqual } from 'src/operators';
 
 describe('.exclude', () => {
 
@@ -37,7 +37,7 @@ describe('.exclude', () => {
     const input = SUPPLIERS.toArray();
     const res = exclude(input, { city: 'Paris' });
     const expected = SUPPLIERS.exclude({ city: 'Paris' });
-    expect(Bmg(res).isEqual(expected)).to.be.true;
+    expect(isEqual(res, expected)).to.be.true;
   })
 
 });

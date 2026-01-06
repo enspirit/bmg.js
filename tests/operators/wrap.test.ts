@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { Bmg } from 'src';
 import { SUPPLIERS } from 'tests/fixtures';
-import { wrap } from 'src/operators';
+import { wrap , isEqual } from 'src/operators';
 
 describe('.wrap', () => {
 
@@ -48,7 +48,7 @@ describe('.wrap', () => {
   it('can be used standalone', () => {
     const res = wrap(SUPPLIERS.toArray(), ['status', 'city'], 'details');
     const expected = SUPPLIERS.wrap(['status', 'city'], 'details');
-    expect(Bmg(res).isEqual(expected)).to.be.true;
+    expect(isEqual(res, expected)).to.be.true;
   })
 
 });

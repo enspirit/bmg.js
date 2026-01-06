@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { Bmg } from 'src';
-import { ungroup } from 'src/operators';
+import { ungroup , isEqual } from 'src/operators';
 
 describe('.ungroup', () => {
 
@@ -33,14 +33,14 @@ describe('.ungroup', () => {
   })
 
   it('preserves parent attributes', () => {
-    const result = grouped.ungroup('items');
+    const result = grouped.ungroup('items') as any;
     const appleRow = result.restrict({ item: 'Apple' }).one();
     expect(appleRow.order_id).to.eql(1);
     expect(appleRow.customer).to.eql('Alice');
   })
 
   it('merges nested attributes', () => {
-    const result = grouped.ungroup('items');
+    const result = grouped.ungroup('items') as any;
     const appleRow = result.restrict({ item: 'Apple' }).one();
     expect(appleRow.item).to.eql('Apple');
     expect(appleRow.qty).to.eql(2);
@@ -61,7 +61,7 @@ describe('.ungroup', () => {
   it('can be used standalone', () => {
     const res = ungroup(grouped.toArray(), 'items');
     const expected = grouped.ungroup('items');
-    expect(Bmg(res).isEqual(expected)).to.be.true;
+    expect(isEqual(res, expected)).to.be.true;
   })
 
 });

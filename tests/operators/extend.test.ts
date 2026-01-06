@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { Bmg } from 'src';
+
 import { SUPPLIERS } from 'tests/fixtures';
-import { extend } from 'src/operators';
+import { extend , isEqual } from 'src/operators';
 
 describe('.extend', () => {
 
@@ -39,7 +39,7 @@ describe('.extend', () => {
     const input = SUPPLIERS.toArray();
     const res = extend(input, { location: 'city' });
     const expected = SUPPLIERS.extend({ location: 'city' });
-    expect(Bmg(res).isEqual(expected)).to.be.true;
+    expect(isEqual(res, expected)).to.be.true;
   })
 
 });
