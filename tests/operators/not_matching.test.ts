@@ -39,7 +39,32 @@ describe('.not_matching', () => {
     expect(result.isEqual(Bmg([]))).to.be.true;
   })
 
-  it('supports explicit keys', () => {
+  it('supports explicit keys as [common_attr]', () => {
+    const result = orders.not_matching(customers, ['customer_id']);
+    const expected = Bmg([
+      { oid: 3, customer_id: 'C3', amount: 150 },
+    ]);
+    expect(result.isEqual(expected)).to.be.true;
+  })
+
+  it('supports multiple keys as [attr1, attr2]', () => {
+    const inventory = Bmg([
+      { warehouse: 'W1', city: 'London', stock: 100 },
+      { warehouse: 'W2', city: 'London', stock: 200 },
+      { warehouse: 'W1', city: 'Paris', stock: 150 },
+    ]);
+    const shipments = Bmg([
+      { warehouse: 'W1', city: 'London' },
+    ]);
+    const result = inventory.not_matching(shipments, ['warehouse', 'city']);
+    const expected = Bmg([
+      { warehouse: 'W2', city: 'London', stock: 200 },
+      { warehouse: 'W1', city: 'Paris', stock: 150 },
+    ]);
+    expect(result.isEqual(expected)).to.be.true;
+  })
+
+  it('supports explicit keys as { left: right }', () => {
     const suppliers = Bmg([
       { sid: 'S1', city: 'London' },
       { sid: 'S2', city: 'Paris' },
@@ -48,6 +73,23 @@ describe('.not_matching', () => {
     const cities = Bmg([{ location: 'London' }, { location: 'Paris' }]);
     const result = suppliers.not_matching(cities, { city: 'location' });
     const expected = Bmg([{ sid: 'S3', city: 'Athens' }]);
+    expect(result.isEqual(expected)).to.be.true;
+  })
+
+  it('supports multiple keys as { left1: right1, left2: right2 }', () => {
+    const people = Bmg([
+      { id: 1, first: 'John', last: 'Doe' },
+      { id: 2, first: 'Jane', last: 'Smith' },
+      { id: 3, first: 'John', last: 'Smith' },
+    ]);
+    const records = Bmg([
+      { fname: 'John', lname: 'Doe' },
+      { fname: 'Jane', lname: 'Smith' },
+    ]);
+    const result = people.not_matching(records, { first: 'fname', last: 'lname' });
+    const expected = Bmg([
+      { id: 3, first: 'John', last: 'Smith' },
+    ]);
     expect(result.isEqual(expected)).to.be.true;
   })
 
