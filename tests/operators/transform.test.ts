@@ -1,67 +1,80 @@
 import { describe, it, expect } from 'vitest';
 import { Bmg } from 'src';
-import { SUPPLIERS } from 'tests/fixtures';
-import { transform } from 'src/operators';
+import { transform, isEqual } from 'src/operators';
 
 describe('.transform', () => {
 
   it('applies a function to all attribute values', () => {
-    const result = SUPPLIERS.transform(String);
-    const smith = result.restrict({ sid: 'S1' }).one();
-    expect(smith.status).to.eql('20');
-    expect(smith.name).to.eql('Smith');
+    const data = Bmg([
+      { id: 1, value: 10 },
+      { id: 2, value: 20 },
+    ]);
+    const result = data.transform(String);
+    const expected = Bmg([
+      { id: '1', value: '10' },
+      { id: '2', value: '20' },
+    ]);
+    expect(result.isEqual(expected)).to.be.true;
   })
 
   it('applies specific functions to named attributes', () => {
-    const result = SUPPLIERS.transform({
+    const data = Bmg([
+      { name: 'alice', status: 10, city: 'NYC' },
+      { name: 'bob', status: 20, city: 'LA' },
+    ]);
+    const result = data.transform({
       name: (v) => (v as string).toUpperCase(),
       status: (v) => (v as number) * 2
     });
-    const smith = result.restrict({ sid: 'S1' }).one();
-    expect(smith.name).to.eql('SMITH');
-    expect(smith.status).to.eql(40);
-    expect(smith.city).to.eql('London'); // unchanged
+    const expected = Bmg([
+      { name: 'ALICE', status: 20, city: 'NYC' },
+      { name: 'BOB', status: 40, city: 'LA' },
+    ]);
+    expect(result.isEqual(expected)).to.be.true;
   })
 
   it('chains multiple transformations with array', () => {
-    const result = SUPPLIERS.transform([
+    const data = Bmg([
+      { id: 1, value: 10 },
+      { id: 2, value: 20 },
+    ]);
+    const result = data.transform([
       String,
       (v) => `[${v}]`
     ]);
-    const smith = result.restrict({ sid: '[S1]' }).one();
-    expect(smith.status).to.eql('[20]');
-    expect(smith.name).to.eql('[Smith]');
+    const expected = Bmg([
+      { id: '[1]', value: '[10]' },
+      { id: '[2]', value: '[20]' },
+    ]);
+    expect(result.isEqual(expected)).to.be.true;
   })
 
   it('chains per-attribute transformations', () => {
-    const result = SUPPLIERS.transform({
+    const data = Bmg([
+      { name: 'Alice' },
+      { name: 'Bob' },
+    ]);
+    const result = data.transform({
       name: [(v) => (v as string).toLowerCase(), (v) => (v as string).toUpperCase()]
     });
-    const smith = result.restrict({ sid: 'S1' }).one();
-    expect(smith.name).to.eql('SMITH');
+    const expected = Bmg([
+      { name: 'ALICE' },
+      { name: 'BOB' },
+    ]);
+    expect(result.isEqual(expected)).to.be.true;
   })
 
   it('leaves attributes without transformers unchanged', () => {
-    const result = SUPPLIERS.transform({
+    const data = Bmg([
+      { id: 1, name: 'alice', status: 10 },
+      { id: 2, name: 'bob', status: 20 },
+    ]);
+    const result = data.transform({
       name: (v) => (v as string).toUpperCase()
     });
-    const smith = result.restrict({ sid: 'S1' }).one();
-    expect(smith.name).to.eql('SMITH');
-    expect(smith.sid).to.eql('S1');
-    expect(smith.status).to.eql(20);
-    expect(smith.city).to.eql('London');
-  })
-
-  it('works with isEqual for relational comparison', () => {
-    const result = SUPPLIERS.transform({
-      status: (v) => (v as number) + 10
-    });
     const expected = Bmg([
-      { sid: 'S1', name: 'Smith', status: 30, city: 'London' },
-      { sid: 'S2', name: 'Jones', status: 20, city: 'Paris' },
-      { sid: 'S3', name: 'Blake', status: 40, city: 'Paris' },
-      { sid: 'S4', name: 'Clark', status: 30, city: 'London' },
-      { sid: 'S5', name: 'Adams', status: 40, city: 'Athens' },
+      { id: 1, name: 'ALICE', status: 10 },
+      { id: 2, name: 'BOB', status: 20 },
     ]);
     expect(result.isEqual(expected)).to.be.true;
   })
@@ -69,10 +82,13 @@ describe('.transform', () => {
   ///
 
   it('can be used standalone', () => {
-    const input = SUPPLIERS.toArray();
-    const res = transform(input, { name: (v) => (v as string).toUpperCase() });
-    const expected = SUPPLIERS.transform({ name: (v) => (v as string).toUpperCase() });
-    expect(Bmg(res).isEqual(expected)).to.be.true;
+    const data = Bmg([
+      { name: 'alice', value: 10 },
+      { name: 'bob', value: 20 },
+    ]);
+    const standalone = transform(data.toArray(), { name: (v) => (v as string).toUpperCase() });
+    const expected = data.transform({ name: (v) => (v as string).toUpperCase() });
+    expect(isEqual(standalone, expected)).to.be.true;
   })
 
 });
