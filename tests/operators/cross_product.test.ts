@@ -34,32 +34,57 @@ describe('.cross_product', () => {
     expect(withCrossProduct.isEqual(withCrossJoin)).to.be.true;
   })
 
-  it('handles empty relations', () => {
+  it('handles DUM', () => {
     const empty = Bmg([]);
     const result = colors.cross_product(empty);
     expect(result.toArray()).to.eql([]);
   })
 
-  it('right attributes overwrite left if same name', () => {
+  it('handles DEE', () => {
+    const empty = Bmg([{}]);
+    const result = colors.cross_product(empty);
+    expect(result.isEqual(colors)).to.be.true;
+  })
+
+  it('clashing right attributes are ignored', () => {
     const left = Bmg([{ x: 1, y: 2 }]);
     const right = Bmg([{ y: 100, z: 3 }]);
     const result = left.cross_product(right);
-    const tuple = result.one();
-    expect(tuple).to.eql({ x: 1, y: 100, z: 3 });
+    const expected = Bmg([{ x: 1, y: 2, z: 3 }]);
+    expect(result.isEqual(expected)).to.be.true;
+  })
+
+  it('clashing right attributes are ignored with multiple tuples', () => {
+    const left = Bmg([
+      { x: 1, y: 'a' },
+      { x: 2, y: 'b' },
+    ]);
+    const right = Bmg([
+      { y: 'ignored', z: 10 },
+      { y: 'also_ignored', z: 20 },
+    ]);
+    const result = left.cross_product(right);
+    const expected = Bmg([
+      { x: 1, y: 'a', z: 10 },
+      { x: 1, y: 'a', z: 20 },
+      { x: 2, y: 'b', z: 10 },
+      { x: 2, y: 'b', z: 20 },
+    ]);
+    expect(result.isEqual(expected)).to.be.true;
   })
 
   ///
 
   it('can be used standalone', () => {
     const res = cross_product(colors.toArray(), sizes.toArray());
-    expect(Array.isArray(res)).to.toBeTruthy()
-    expect(res.length).to.eql(6)
+    const expected = colors.cross_product(sizes);
+    expect(Bmg(res).isEqual(expected)).to.be.true;
   })
 
   it('cross_join standalone is also available', () => {
     const res = cross_join(colors.toArray(), sizes.toArray());
-    expect(Array.isArray(res)).to.toBeTruthy()
-    expect(res.length).to.eql(6)
+    const expected = colors.cross_join(sizes);
+    expect(Bmg(res).isEqual(expected)).to.be.true;
   })
 
 });

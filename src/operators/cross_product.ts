@@ -10,7 +10,7 @@ export const cross_product = (left: RelationOperand, right: RelationOperand): Re
 
   for (const l of leftTuples) {
     for (const r of rightTuples) {
-      result.push({ ...l, ...r });
+      result.push({ ...r, ...l });
     }
   }
 
