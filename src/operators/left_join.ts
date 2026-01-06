@@ -1,36 +1,5 @@
 import { RelationOperand, JoinKeys, Tuple, AttrName } from "../types";
-import { toOperationalOperand } from "./_helpers";
-
-const getCommonAttrs = (left: Tuple[], right: Tuple[]): AttrName[] => {
-  if (left.length === 0 || right.length === 0) return [];
-  const leftAttrs = new Set(Object.keys(left[0]));
-  const rightAttrs = Object.keys(right[0]);
-  return rightAttrs.filter(attr => leftAttrs.has(attr));
-}
-
-const normalizeKeys = (keys: JoinKeys | undefined, leftTuples: Tuple[], rightTuples: Tuple[]): Record<AttrName, AttrName> => {
-  if (!keys) {
-    const common = getCommonAttrs(leftTuples, rightTuples);
-    return common.reduce((acc, attr) => {
-      acc[attr] = attr;
-      return acc;
-    }, {} as Record<AttrName, AttrName>);
-  }
-  if (Array.isArray(keys)) {
-    return keys.reduce((acc, attr) => {
-      acc[attr] = attr;
-      return acc;
-    }, {} as Record<AttrName, AttrName>);
-  }
-  return keys;
-}
-
-const tuplesMatch = (left: Tuple, right: Tuple, keyMap: Record<AttrName, AttrName>): boolean => {
-  for (const [leftAttr, rightAttr] of Object.entries(keyMap)) {
-    if (left[leftAttr] !== right[rightAttr]) return false;
-  }
-  return true;
-}
+import { toOperationalOperand, normalizeKeys, tuplesMatch } from "./_helpers";
 
 const getRightAttrs = (rightTuples: Tuple[], keyMap: Record<AttrName, AttrName>): AttrName[] => {
   if (rightTuples.length === 0) return [];
@@ -38,7 +7,7 @@ const getRightAttrs = (rightTuples: Tuple[], keyMap: Record<AttrName, AttrName>)
   return Object.keys(rightTuples[0]).filter(attr => !rightKeys.has(attr));
 }
 
-const mergeTuples = (left: Tuple, right: Tuple | null, rightAttrs: AttrName[], keyMap: Record<AttrName, AttrName>): Tuple => {
+const mergeTuples = (left: Tuple, right: Tuple | null, rightAttrs: AttrName[]): Tuple => {
   const result = { ...left };
   for (const attr of rightAttrs) {
     result[attr] = right ? right[attr] : null;
@@ -59,12 +28,12 @@ export const left_join = (left: RelationOperand, right: RelationOperand, keys?: 
     let matched = false;
     for (const rightTuple of rightTuples) {
       if (tuplesMatch(leftTuple, rightTuple, keyMap)) {
-        result.push(mergeTuples(leftTuple, rightTuple, rightAttrs, keyMap));
+        result.push(mergeTuples(leftTuple, rightTuple, rightAttrs));
         matched = true;
       }
     }
     if (!matched) {
-      result.push(mergeTuples(leftTuple, null, rightAttrs, keyMap));
+      result.push(mergeTuples(leftTuple, null, rightAttrs));
     }
   }
 
