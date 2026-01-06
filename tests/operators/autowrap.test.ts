@@ -55,6 +55,21 @@ describe('.autowrap', () => {
     expect(tuple.address).to.eql({ home_city: 'NYC' });
   })
 
+  it('autowraps multiple tuples correctly', () => {
+    const flat = Bmg([
+      { id: 1, address_street: '123 Main', address_city: 'NYC' },
+      { id: 2, address_street: '456 Oak', address_city: 'Boston' },
+      { id: 3, address_street: '789 Pine', address_city: 'Chicago' },
+    ]);
+    const result = flat.autowrap();
+    const expected = Bmg([
+      { id: 1, address: { street: '123 Main', city: 'NYC' } },
+      { id: 2, address: { street: '456 Oak', city: 'Boston' } },
+      { id: 3, address: { street: '789 Pine', city: 'Chicago' } },
+    ]);
+    expect(result.isEqual(expected)).to.be.true;
+  })
+
   ///
 
   it('can be used standalone', () => {

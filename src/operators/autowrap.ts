@@ -1,5 +1,5 @@
 import { AutowrapOptions, RelationOperand, Tuple } from "../types";
-import { toOperationalOperand, deduplicate } from "./_helpers";
+import { toOperationalOperand } from "./_helpers";
 
 export const autowrap = (operand: RelationOperand, options?: AutowrapOptions): RelationOperand => {
   const sep = options?.separator ?? '_';
@@ -22,5 +22,5 @@ export const autowrap = (operand: RelationOperand, options?: AutowrapOptions): R
     result.push(wrapped);
   }
 
-  return op.output(deduplicate(result));
+  return op.output(result);
 }
