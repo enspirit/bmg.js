@@ -1,5 +1,16 @@
-import { RelationOperand, AttrName, Tuple } from "../types";
+import { RelationOperand, AttrName, Tuple, Relation } from "../types";
 import { toOperationalOperand } from "./_helpers";
+import { isRelation } from "./isRelation";
+
+const toTupleArray = (value: unknown): Tuple[] => {
+  if (isRelation(value)) {
+    return (value as Relation).toArray();
+  }
+  if (Array.isArray(value)) {
+    return value;
+  }
+  throw new Error(`Value is not a relation or array`);
+}
 
 export const ungroup = (operand: RelationOperand, attr: AttrName): RelationOperand => {
   const op = toOperationalOperand(operand);
@@ -7,10 +18,7 @@ export const ungroup = (operand: RelationOperand, attr: AttrName): RelationOpera
   const result: Tuple[] = [];
 
   for (const tuple of tuples) {
-    const nested = tuple[attr] as Tuple[];
-    if (!Array.isArray(nested)) {
-      throw new Error(`Attribute '${attr}' is not a relation (array)`);
-    }
+    const nested = toTupleArray(tuple[attr]);
 
     // Get base attributes (all except the grouped one)
     const base: Tuple = {};

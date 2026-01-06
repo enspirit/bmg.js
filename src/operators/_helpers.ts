@@ -2,8 +2,19 @@ import { OperationalOperand, Relation, RelationOperand, Renaming, RenamingFunc, 
 import { MemoryRelation } from '@/Relation';
 import { isRelation } from "./isRelation";
 
+const valueKey = (value: unknown): unknown => {
+  if (isRelation(value)) {
+    // For nested relations, convert to sorted array of tuple keys for comparison
+    const tuples = (value as Relation).toArray();
+    const keys = tuples.map(t => tupleKey(t)).sort();
+    return keys;
+  }
+  return value;
+}
+
 export const tupleKey = (tuple: Tuple): string => {
-  return JSON.stringify(Object.entries(tuple).sort(([a], [b]) => a.localeCompare(b)));
+  const entries = Object.entries(tuple).map(([k, v]) => [k, valueKey(v)]);
+  return JSON.stringify(entries.sort(([a], [b]) => (a as string).localeCompare(b as string)));
 }
 
 export const deduplicate = (tuples: Tuple[]): Tuple[] => {

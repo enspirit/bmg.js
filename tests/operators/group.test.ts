@@ -12,11 +12,24 @@ describe('.group', () => {
 
   it('groups specified attributes into nested relation', () => {
     const result = orders.group(['item', 'qty'], 'items');
-    const alice = result.restrict({ customer: 'Alice' }).one();
-    expect(alice.order_id).to.eql(1);
-    expect(alice.items).to.have.length(2);
-    expect(alice.items).to.deep.include({ item: 'Apple', qty: 2 });
-    expect(alice.items).to.deep.include({ item: 'Banana', qty: 3 });
+    const expected = Bmg([
+      {
+        order_id: 1,
+        customer: 'Alice',
+        items: Bmg([
+          { item: 'Apple', qty: 2 },
+          { item: 'Banana', qty: 3 },
+        ])
+      },
+      {
+        order_id: 2,
+        customer: 'Bob',
+        items: Bmg([
+          { item: 'Cherry', qty: 1 },
+        ])
+      },
+    ]);
+    expect(result.isEqual(expected)).to.be.true;
   })
 
   it('preserves non-grouped attributes', () => {
@@ -30,8 +43,13 @@ describe('.group', () => {
 
   it('handles single-item groups', () => {
     const result = orders.group(['item', 'qty'], 'items');
-    const bob = result.restrict({ customer: 'Bob' }).one();
-    expect(bob.items).to.have.length(1);
+    const bobOnly = result.restrict({ customer: 'Bob' });
+    const expected = Bmg([{
+      order_id: 2,
+      customer: 'Bob',
+      items: Bmg([{ item: 'Cherry', qty: 1 }])
+    }]);
+    expect(bobOnly.isEqual(expected)).to.be.true;
   })
 
   it('handles empty relation', () => {

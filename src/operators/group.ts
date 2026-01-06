@@ -1,5 +1,6 @@
 import { RelationOperand, AttrName, Tuple } from "../types";
 import { toOperationalOperand } from "./_helpers";
+import { MemoryRelation } from "@/Relation";
 
 const groupKey = (tuple: Tuple, byAttrs: AttrName[]): string => {
   const keyParts = byAttrs.map(attr => JSON.stringify(tuple[attr]));
@@ -44,7 +45,7 @@ export const group = (operand: RelationOperand, attrs: AttrName[], as: AttrName)
   for (const { base, nested } of groups.values()) {
     result.push({
       ...base,
-      [as]: nested
+      [as]: new MemoryRelation(nested)
     });
   }
 
