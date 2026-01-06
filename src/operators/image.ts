@@ -1,5 +1,6 @@
 import { RelationOperand, JoinKeys, Tuple, AttrName } from "../types";
 import { toOperationalOperand } from "./_helpers";
+import { MemoryRelation } from "@/Relation";
 
 const getCommonAttrs = (left: Tuple[], right: Tuple[]): AttrName[] => {
   if (left.length === 0 || right.length === 0) return [];
@@ -60,7 +61,7 @@ export const image = (left: RelationOperand, right: RelationOperand, as: AttrNam
     }
     result.push({
       ...leftTuple,
-      [as]: matches
+      [as]: new MemoryRelation(matches)
     });
   }
 
