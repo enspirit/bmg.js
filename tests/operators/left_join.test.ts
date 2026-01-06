@@ -15,28 +15,17 @@ describe('.left_join', () => {
     { customer_id: 'C2', name: 'Bob' },
   ]);
 
-  it('joins matching tuples', () => {
+  it('joins matching tuples and keeps non-matching with null', () => {
     const result = orders.left_join(customers);
-    const order1 = result.restrict({ oid: 1 }).one();
-    expect(order1.name).to.eql('Alice');
+    const expected = Bmg([
+      { oid: 1, customer_id: 'C1', amount: 100, name: 'Alice' },
+      { oid: 2, customer_id: 'C2', amount: 200, name: 'Bob' },
+      { oid: 3, customer_id: 'C3', amount: 150, name: null },
+    ]);
+    expect(result.isEqual(expected)).to.be.true;
   })
 
-  it('keeps non-matching left tuples with null right attrs', () => {
-    const result = orders.left_join(customers);
-    const order3 = result.restrict({ oid: 3 }).one();
-    expect(order3.name).to.eql(null);
-  })
-
-  it('preserves all left attributes', () => {
-    const result = orders.left_join(customers);
-    const order1 = result.restrict({ oid: 1 }).one();
-    expect(order1).to.have.property('oid');
-    expect(order1).to.have.property('customer_id');
-    expect(order1).to.have.property('amount');
-    expect(order1).to.have.property('name');
-  })
-
-  it('supports explicit keys', () => {
+  it('supports explicit keys as { left: right }', () => {
     const suppliers = Bmg([
       { sid: 'S1', city: 'London' },
       { sid: 'S2', city: 'Paris' },
@@ -47,8 +36,59 @@ describe('.left_join', () => {
       { location: 'Paris', country: 'France' },
     ]);
     const result = suppliers.left_join(cities, { city: 'location' });
-    expect(result.restrict({ sid: 'S1' }).one().country).to.eql('UK');
-    expect(result.restrict({ sid: 'S3' }).one().country).to.eql(null);
+    const expected = Bmg([
+      { sid: 'S1', city: 'London', country: 'UK' },
+      { sid: 'S2', city: 'Paris', country: 'France' },
+      { sid: 'S3', city: 'Athens', country: null },
+    ]);
+    expect(result.isEqual(expected)).to.be.true;
+  })
+
+  it('supports explicit keys as [common_attr]', () => {
+    const result = orders.left_join(customers, ['customer_id']);
+    const expected = Bmg([
+      { oid: 1, customer_id: 'C1', amount: 100, name: 'Alice' },
+      { oid: 2, customer_id: 'C2', amount: 200, name: 'Bob' },
+      { oid: 3, customer_id: 'C3', amount: 150, name: null },
+    ]);
+    expect(result.isEqual(expected)).to.be.true;
+  })
+
+  it('supports multiple keys as [attr1, attr2]', () => {
+    const inventory = Bmg([
+      { warehouse: 'W1', city: 'London', stock: 100 },
+      { warehouse: 'W2', city: 'London', stock: 200 },
+      { warehouse: 'W1', city: 'Paris', stock: 150 },
+    ]);
+    const shipments = Bmg([
+      { warehouse: 'W1', city: 'London', shipped: 50 },
+    ]);
+    const result = inventory.left_join(shipments, ['warehouse', 'city']);
+    const expected = Bmg([
+      { warehouse: 'W1', city: 'London', stock: 100, shipped: 50 },
+      { warehouse: 'W2', city: 'London', stock: 200, shipped: null },
+      { warehouse: 'W1', city: 'Paris', stock: 150, shipped: null },
+    ]);
+    expect(result.isEqual(expected)).to.be.true;
+  })
+
+  it('supports multiple keys as { left1: right1, left2: right2 }', () => {
+    const people = Bmg([
+      { id: 1, first: 'John', last: 'Doe' },
+      { id: 2, first: 'Jane', last: 'Smith' },
+      { id: 3, first: 'John', last: 'Smith' },
+    ]);
+    const records = Bmg([
+      { fname: 'John', lname: 'Doe', score: 85 },
+      { fname: 'Jane', lname: 'Smith', score: 90 },
+    ]);
+    const result = people.left_join(records, { first: 'fname', last: 'lname' });
+    const expected = Bmg([
+      { id: 1, first: 'John', last: 'Doe', score: 85 },
+      { id: 2, first: 'Jane', last: 'Smith', score: 90 },
+      { id: 3, first: 'John', last: 'Smith', score: null },
+    ]);
+    expect(result.isEqual(expected)).to.be.true;
   })
 
   it('handles multiple matches', () => {
