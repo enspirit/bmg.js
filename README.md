@@ -33,9 +33,7 @@ const smith = restrict(suppliers, {sid: 'S1'})[0]
 Let's admit it, the aim is to finally have a language where one can write beautiful
 functional expressions like this :
 
-```livescript
-{ restrict, rename, one } = require('./bmg-ls.cjs')
-
+```lifescript
 suppliers = [
   {sid: 'S1', name: 'Smith', status: 20, city: 'London' },
   {sid: 'S2', name: 'Jones', status: 10, city: 'Paris' },
@@ -45,16 +43,16 @@ suppliers = [
 ]
 
 result = suppliers
-  |> restrict  (_) -> _.status > 20
-  |> rename    sid: 'id', name: 'lastname'
-  |> restrict  city: 'Paris'
+  |> restrict( _ ~> _.status > 20 )
+  |> rename(sid: 'id', name: 'lastname')
+  |> restrict(city: 'Paris')
   |> one
 
 console.log(result)
 # => { id: 'S3', lastname: 'Blake', status: 30, city: 'Paris' }
 ```
 
-[Livescript](https://livescript.net) allows (see [./livescript](livescript) & [Makefile](Makefile)).
+This will most probably be provided by [Elo](https://elo-lang.org)
 
 ## Available operators
 
