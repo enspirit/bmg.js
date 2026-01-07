@@ -28,6 +28,8 @@ const suppliers = [ {sid: 'S1', name: 'Smith'} ]
 const smith = restrict(suppliers, {sid: 'S1'})[0]
 ```
 
+Check [a full type-safe example here](./example/index.ts)
+
 ## Horizon
 
 Let's admit it, the aim is to finally have a language where one can write beautiful
