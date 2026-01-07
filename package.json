@@ -1,5 +1,17 @@
 {
-  "name": "bmg.js",
+  "name": "@enspirit/bmg-js",
+  "version": "1.0.0",
+  "description": "Relational algebra for JavaScript/TypeScript - work with arrays of objects using powerful set operations",
+  "keywords": ["relational", "algebra", "relation", "set", "query", "data", "functional"],
+  "license": "MIT",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/enspirit/bmg.js"
+  },
   "type": "module",
   "source": "src/index.ts",
   "exports": {

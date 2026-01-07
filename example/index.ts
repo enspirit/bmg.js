@@ -5,7 +5,7 @@
  * using the classic suppliers/parts/shipments dataset with full type safety.
  */
 
-import { Bmg, Relation } from 'bmg.js';
+import { Bmg, Relation } from '@enspirit/bmg-js';
 
 // =============================================================================
 // Type Definitions
