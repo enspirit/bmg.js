@@ -3,11 +3,13 @@
   "type": "module",
   "source": "src/index.ts",
   "exports": {
+    "types": "./dist/src/index.d.ts",
     "require": "./dist/bmg.cjs",
     "default": "./dist/bmg.modern.js"
   },
   "main": "./dist/bmg.cjs",
   "module": "./dist/bmg.module.js",
+  "types": "./dist/src/index.d.ts",
   "unpkg": "./dist/bmg.umd.js",
   "scripts": {
     "build": "microbundle",
