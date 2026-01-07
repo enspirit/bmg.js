@@ -2,7 +2,15 @@
   "name": "@enspirit/bmg-js",
   "version": "1.0.0",
   "description": "Relational algebra for JavaScript/TypeScript - work with arrays of objects using powerful set operations",
-  "keywords": ["relational", "algebra", "relation", "set", "query", "data", "functional"],
+  "keywords": [
+    "relational",
+    "algebra",
+    "relation",
+    "set",
+    "query",
+    "data",
+    "functional"
+  ],
   "license": "MIT",
   "files": [
     "dist",
@@ -32,7 +40,7 @@
   "devDependencies": {
     "microbundle": "^0.15.1",
     "vite-tsconfig-paths": "^5.1.4",
-    "vitest": "^1.4.0"
+    "vitest": "^4.0.16"
   },
   "packageManager": "pnpm@8.11.0+sha1.01bf39424f1008f29012bbae851d2acb8a20a0d0"
 }
