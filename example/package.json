@@ -1,0 +1,16 @@
+{
+  "name": "bmg-example",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "Examples demonstrating Bmg.js relational algebra operations",
+  "scripts": {
+    "start": "tsx index.ts"
+  },
+  "dependencies": {
+    "bmg.js": "file:.."
+  },
+  "devDependencies": {
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.0"
+  }
+}
