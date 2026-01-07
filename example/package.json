@@ -1,13 +1,13 @@
 {
   "name": "bmg-example",
   "type": "module",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Examples demonstrating Bmg.js relational algebra operations",
   "scripts": {
     "start": "tsx index.ts"
   },
   "dependencies": {
-    "@enspirit/bmg-js": "1.0.0"
+    "@enspirit/bmg-js": "1.0.1"
   },
   "devDependencies": {
     "tsx": "^4.7.0",
