@@ -1,6 +1,6 @@
 export * from './operators';
 export * from './types';
-export * from './utility-types';
+export { LIB_DEFINITIONS } from './lib-definitions';
 
 import { MemoryRelation } from './Relation';
 import { isRelation } from './operators';

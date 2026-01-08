@@ -1,6 +1,6 @@
 {
   "name": "@enspirit/bmg-js",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Relational algebra for JavaScript/TypeScript - work with arrays of objects using powerful set operations",
   "keywords": [
     "relational",
@@ -32,13 +32,15 @@
   "types": "./dist/src/index.d.ts",
   "unpkg": "./dist/bmg.umd.js",
   "scripts": {
-    "build": "microbundle",
+    "generate:lib-definitions": "npx tsx scripts/generate-lib-definitions.ts",
+    "build": "npm run generate:lib-definitions && microbundle",
     "dev": "microbundle watch",
     "test": "vitest run",
     "test:watch": "vitest"
   },
   "devDependencies": {
     "microbundle": "^0.15.1",
+    "tsx": "^4.19.0",
     "vite-tsconfig-paths": "^5.1.4",
     "vitest": "^4.0.16"
   },

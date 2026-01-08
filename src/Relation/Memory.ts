@@ -48,8 +48,8 @@ import type {
   Wrapped,
   Unwrapped,
   Ungrouped,
+  AggregatorResults,
 } from "../types";
-import type { AggregatorResults } from "../utility-types";
 
 /**
  * In-memory implementation of the Relation interface.
