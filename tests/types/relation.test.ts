@@ -158,6 +158,40 @@ describe('Type Safety', () => {
       expectTypeOf(tuple.orderId).toBeNumber();
       expectTypeOf(tuple.total).toBeNumber();
     });
+
+    it('rejects invalid keys in array form', () => {
+      interface Supplier { sid: string; name: string; city: string }
+      interface Part { pid: string; pname: string; city: string }
+
+      const suppliers = Bmg<Supplier>([{ sid: 'S1', name: 'Smith', city: 'London' }]);
+      const parts: Part[] = [{ pid: 'P1', pname: 'Nut', city: 'London' }];
+
+      // Valid: 'city' exists on both
+      suppliers.join(parts, ['city']);
+
+      // @ts-expect-error - 'shared' does not exist on either relation
+      suppliers.join(parts, ['shared']);
+
+      // @ts-expect-error - 'sid' only exists on suppliers, not parts
+      suppliers.join(parts, ['sid']);
+    });
+
+    it('rejects invalid keys in object form', () => {
+      interface Supplier { sid: string; name: string; city: string }
+      interface Part { pid: string; pname: string; city: string }
+
+      const suppliers = Bmg<Supplier>([{ sid: 'S1', name: 'Smith', city: 'London' }]);
+      const parts: Part[] = [{ pid: 'P1', pname: 'Nut', city: 'London' }];
+
+      // Valid: sid exists on suppliers, pid exists on parts
+      suppliers.join(parts, { sid: 'pid' });
+
+      // @ts-expect-error - 'invalid' does not exist on suppliers
+      suppliers.join(parts, { invalid: 'pid' });
+
+      // @ts-expect-error - 'invalid' does not exist on parts
+      suppliers.join(parts, { sid: 'invalid' });
+    });
   });
 
   describe('cross_product()', () => {
@@ -195,6 +229,105 @@ describe('Type Safety', () => {
 
       const notMatched = people.not_matching(orders, { id: 'customerId' });
       expectTypeOf(notMatched).toMatchTypeOf<Relation<Person>>();
+    });
+
+    it('rejects invalid keys in array form', () => {
+      interface Supplier { sid: string; name: string; city: string }
+      interface Part { pid: string; pname: string; city: string }
+
+      const suppliers = Bmg<Supplier>([{ sid: 'S1', name: 'Smith', city: 'London' }]);
+      const parts: Part[] = [{ pid: 'P1', pname: 'Nut', city: 'London' }];
+
+      // Valid: 'city' exists on both
+      suppliers.matching(parts, ['city']);
+      suppliers.not_matching(parts, ['city']);
+
+      // @ts-expect-error - 'shared' does not exist on either relation
+      suppliers.matching(parts, ['shared']);
+
+      // @ts-expect-error - 'shared' does not exist on either relation
+      suppliers.not_matching(parts, ['shared']);
+
+      // @ts-expect-error - 'sid' only exists on suppliers, not parts
+      suppliers.matching(parts, ['sid']);
+
+      // @ts-expect-error - 'sid' only exists on suppliers, not parts
+      suppliers.not_matching(parts, ['sid']);
+    });
+
+    it('rejects invalid keys in object form', () => {
+      interface Supplier { sid: string; name: string; city: string }
+      interface Part { pid: string; pname: string; city: string }
+
+      const suppliers = Bmg<Supplier>([{ sid: 'S1', name: 'Smith', city: 'London' }]);
+      const parts: Part[] = [{ pid: 'P1', pname: 'Nut', city: 'London' }];
+
+      // Valid: sid exists on suppliers, pid exists on parts
+      suppliers.matching(parts, { sid: 'pid' });
+      suppliers.not_matching(parts, { sid: 'pid' });
+
+      // @ts-expect-error - 'invalid' does not exist on suppliers
+      suppliers.matching(parts, { invalid: 'pid' });
+
+      // @ts-expect-error - 'invalid' does not exist on suppliers
+      suppliers.not_matching(parts, { invalid: 'pid' });
+
+      // @ts-expect-error - 'invalid' does not exist on parts
+      suppliers.matching(parts, { sid: 'invalid' });
+
+      // @ts-expect-error - 'invalid' does not exist on parts
+      suppliers.not_matching(parts, { sid: 'invalid' });
+    });
+  });
+
+  describe('image()', () => {
+    it('creates relation-valued attribute with correct type', () => {
+      interface Supplier { sid: string; name: string; city: string }
+      interface Supply { sid: string; pid: string; qty: number }
+
+      const suppliers = Bmg<Supplier>([{ sid: 'S1', name: 'Smith', city: 'London' }]);
+      const supplies: Supply[] = [{ sid: 'S1', pid: 'P1', qty: 100 }];
+
+      const result = suppliers.image(supplies, 'supplies');
+      const tuple = result.one();
+
+      expectTypeOf(tuple.sid).toBeString();
+      expectTypeOf(tuple.name).toBeString();
+      expectTypeOf(tuple.supplies).toMatchTypeOf<Relation<{ pid: string; qty: number }>>();
+    });
+
+    it('rejects invalid keys in array form', () => {
+      interface Supplier { sid: string; name: string; city: string }
+      interface Supply { sid: string; pid: string; qty: number }
+
+      const suppliers = Bmg<Supplier>([{ sid: 'S1', name: 'Smith', city: 'London' }]);
+      const supplies: Supply[] = [{ sid: 'S1', pid: 'P1', qty: 100 }];
+
+      // Valid: 'sid' exists on both
+      suppliers.image(supplies, 'supplies', ['sid']);
+
+      // @ts-expect-error - 'shared' does not exist on either relation
+      suppliers.image(supplies, 'supplies', ['shared']);
+
+      // @ts-expect-error - 'city' only exists on suppliers, not supplies
+      suppliers.image(supplies, 'supplies', ['city']);
+    });
+
+    it('rejects invalid keys in object form', () => {
+      interface Supplier { sid: string; name: string; city: string }
+      interface Part { pid: string; pname: string; city: string }
+
+      const suppliers = Bmg<Supplier>([{ sid: 'S1', name: 'Smith', city: 'London' }]);
+      const parts: Part[] = [{ pid: 'P1', pname: 'Nut', city: 'London' }];
+
+      // Valid: sid exists on suppliers, pid exists on parts
+      suppliers.image(parts, 'parts', { sid: 'pid' });
+
+      // @ts-expect-error - 'invalid' does not exist on suppliers
+      suppliers.image(parts, 'parts', { invalid: 'pid' });
+
+      // @ts-expect-error - 'invalid' does not exist on parts
+      suppliers.image(parts, 'parts', { sid: 'invalid' });
     });
   });
 

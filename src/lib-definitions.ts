@@ -61,6 +61,20 @@ type Joined<L, R> = L & Omit<R, CommonKeys<L, R>>;
 /** Result of left join: L & optional R attributes (common keys removed) */
 type LeftJoined<L, R> = L & Partial<Omit<R, CommonKeys<L, R>>>;
 
+/**
+ * Typed join keys for array form: keys must exist on BOTH operands.
+ * Example: suppliers.join(parts, ['city']) - 'city' must be a key of both.
+ */
+type TypedJoinKeysArray<L, R> = (keyof L & keyof R & string)[];
+
+/**
+ * Typed join keys for object form: maps left keys to right keys.
+ * Example: suppliers.join(parts, { sid: 'supplier_id' })
+ * - Left key (sid) must exist on L
+ * - Right key (supplier_id) must exist on R
+ */
+type TypedJoinKeysObject<L, R> = { [K in keyof L & string]?: keyof R & string };
+
 // ============================================================================
 // Wrap/Unwrap Types
 // ============================================================================
@@ -206,19 +220,19 @@ interface Relation<T = Tuple> {
 
   // === Semi-join operators (preserve left type) ===
 
-  matching<R>(right: RelationOperand<R>, keys?: JoinKeys): Relation<T>
-  not_matching<R>(right: RelationOperand<R>, keys?: JoinKeys): Relation<T>
+  matching<R>(right: RelationOperand<R>, keys?: TypedJoinKeysArray<T, R> | TypedJoinKeysObject<T, R>): Relation<T>
+  not_matching<R>(right: RelationOperand<R>, keys?: TypedJoinKeysArray<T, R> | TypedJoinKeysObject<T, R>): Relation<T>
 
   // === Join operators ===
 
-  join<R>(right: RelationOperand<R>, keys?: JoinKeys): Relation<Joined<T, R>>
-  left_join<R>(right: RelationOperand<R>, keys?: JoinKeys): Relation<LeftJoined<T, R>>
+  join<R>(right: RelationOperand<R>, keys?: TypedJoinKeysArray<T, R> | TypedJoinKeysObject<T, R>): Relation<Joined<T, R>>
+  left_join<R>(right: RelationOperand<R>, keys?: TypedJoinKeysArray<T, R> | TypedJoinKeysObject<T, R>): Relation<LeftJoined<T, R>>
   cross_product<R>(right: RelationOperand<R>): Relation<T & R>
   cross_join<R>(right: RelationOperand<R>): Relation<T & R>
 
   // === Nesting operators ===
 
-  image<R, As extends string>(right: RelationOperand<R>, as: As, keys?: JoinKeys): Relation<T & Record<As, Relation<Omit<R, keyof T & keyof R>>>>
+  image<R, As extends string>(right: RelationOperand<R>, as: As, keys?: TypedJoinKeysArray<T, R> | TypedJoinKeysObject<T, R>): Relation<T & Record<As, Relation<Omit<R, keyof T & keyof R>>>>
   group<K extends keyof T, As extends string>(attrs: K[], as: As): Relation<Omit<T, K> & Record<As, Relation<Pick<T, K>>>>
   ungroup<K extends keyof T>(attr: K): Relation<Ungrouped<T, K>>
   wrap<K extends keyof T, As extends string>(attrs: K[], as: As): Relation<Wrapped<T, K, As>>

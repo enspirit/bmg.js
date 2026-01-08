@@ -32,7 +32,6 @@ import {
 import type {
   AttrName,
   AutowrapOptions,
-  JoinKeys,
   Relation,
   RelationOperand,
   Transformation,
@@ -49,6 +48,8 @@ import type {
   Unwrapped,
   Ungrouped,
   AggregatorResults,
+  TypedJoinKeysArray,
+  TypedJoinKeysObject,
 } from "../types";
 
 /**
@@ -126,22 +127,22 @@ export class MemoryRelation<T = Tuple> implements Relation<T> {
 
   // === Semi-join operators ===
 
-  matching<R>(right: RelationOperand<R>, keys?: JoinKeys): Relation<T> {
-    return matching(this as any, right as any, keys) as unknown as Relation<T>;
+  matching<R>(right: RelationOperand<R>, keys?: TypedJoinKeysArray<T, R> | TypedJoinKeysObject<T, R>): Relation<T> {
+    return matching(this as any, right as any, keys as any) as unknown as Relation<T>;
   }
 
-  not_matching<R>(right: RelationOperand<R>, keys?: JoinKeys): Relation<T> {
-    return not_matching(this as any, right as any, keys) as unknown as Relation<T>;
+  not_matching<R>(right: RelationOperand<R>, keys?: TypedJoinKeysArray<T, R> | TypedJoinKeysObject<T, R>): Relation<T> {
+    return not_matching(this as any, right as any, keys as any) as unknown as Relation<T>;
   }
 
   // === Join operators ===
 
-  join<R>(right: RelationOperand<R>, keys?: JoinKeys): Relation<Joined<T, R>> {
-    return join(this as any, right as any, keys) as unknown as Relation<Joined<T, R>>;
+  join<R>(right: RelationOperand<R>, keys?: TypedJoinKeysArray<T, R> | TypedJoinKeysObject<T, R>): Relation<Joined<T, R>> {
+    return join(this as any, right as any, keys as any) as unknown as Relation<Joined<T, R>>;
   }
 
-  left_join<R>(right: RelationOperand<R>, keys?: JoinKeys): Relation<LeftJoined<T, R>> {
-    return left_join(this as any, right as any, keys) as unknown as Relation<LeftJoined<T, R>>;
+  left_join<R>(right: RelationOperand<R>, keys?: TypedJoinKeysArray<T, R> | TypedJoinKeysObject<T, R>): Relation<LeftJoined<T, R>> {
+    return left_join(this as any, right as any, keys as any) as unknown as Relation<LeftJoined<T, R>>;
   }
 
   cross_product<R>(right: RelationOperand<R>): Relation<T & R> {
@@ -154,8 +155,8 @@ export class MemoryRelation<T = Tuple> implements Relation<T> {
 
   // === Nesting operators ===
 
-  image<R, As extends string>(right: RelationOperand<R>, as: As, keys?: JoinKeys): Relation<T & Record<As, Relation<Omit<R, keyof T & keyof R>>>> {
-    return image(this as any, right as any, as, keys) as unknown as Relation<T & Record<As, Relation<Omit<R, keyof T & keyof R>>>>;
+  image<R, As extends string>(right: RelationOperand<R>, as: As, keys?: TypedJoinKeysArray<T, R> | TypedJoinKeysObject<T, R>): Relation<T & Record<As, Relation<Omit<R, keyof T & keyof R>>>> {
+    return image(this as any, right as any, as, keys as any) as unknown as Relation<T & Record<As, Relation<Omit<R, keyof T & keyof R>>>>;
   }
 
   group<K extends keyof T, As extends string>(attrs: K[], as: As): Relation<Omit<T, K> & Record<As, Relation<Pick<T, K>>>> {

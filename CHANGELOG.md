@@ -11,10 +11,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `LIB_DEFINITIONS` export: a string constant containing all TypeScript type definitions, useful for playground editors and type-checking in web workers
 - Generator script (`scripts/generate-lib-definitions.ts`) to regenerate `lib-definitions.ts` from `types.ts`
+- Typed join keys (`TypedJoinKeysArray`, `TypedJoinKeysObject`) for compile-time validation of join keys in `join`, `left_join`, `matching`, `not_matching`, and `image` operators
 
 ### Changed
 
 - Merged `utility-types.ts` into `types.ts` for simpler maintenance (no API changes)
+
+### Fixed
+
+- Declaration files now output to correct path (`dist/index.d.ts` instead of `dist/src/src/index.d.ts`)
 
 ## [1.0.1] - 2026-01-07
 
