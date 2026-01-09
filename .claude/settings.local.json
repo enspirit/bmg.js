@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run test:*)",
+      "Bash(npx tsc:*)",
+      "Bash(wc:*)",
+      "Bash(pnpm install:*)",
+      "Bash(npm install:*)"
+    ]
+  }
+}
