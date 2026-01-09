@@ -1,7 +1,6 @@
-import { RelationOperand } from "../types";
 import { toOperationalOperand, tupleKey } from "./_helpers";
 
-export const isEqual = (left: RelationOperand, right: RelationOperand): boolean => {
+export const isEqual = (left: any, right: any): boolean => {
   const opLeft = toOperationalOperand(left);
   const opRight = toOperationalOperand(right);
 
