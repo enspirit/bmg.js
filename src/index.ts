@@ -1,6 +1,9 @@
 export * from './operators';
 export * from './types';
+export * from './async-types';
 export { LIB_DEFINITIONS } from './lib-definitions';
+export * as asyncOps from './async-operators';
+export { AsyncBmg, BaseAsyncRelation } from './AsyncRelation';
 
 import { MemoryRelation } from './Relation';
 import { isRelation } from './operators';
