@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - Unreleased
+
+### Added
+
+- **Async Relations**: New `AsyncRelation<T>` interface and `BaseAsyncRelation<T>` implementation for streaming data sources using `AsyncIterable`
+  - Factory function `AsyncBmg()` to create async relations from async iterables or promises
+  - Async versions of all core operators: `restrict`, `where`, `exclude`, `project`, `allbut`, `extend`, `rename`, `prefix`, `suffix`, `constants`
+  - Async set operations: `union`, `minus`, `intersect`
+  - Async join operations: `join`, `left_join`, `cross_product`, `cross_join`, `matching`, `not_matching`
+  - Async nesting operators: `image`, `group`, `ungroup`, `wrap`, `unwrap`
+  - Async aggregation: `summarize`
+  - Async utility operators: `one`, `toArray`, `yByX`
+  - Exported via `asyncOps` namespace and `AsyncBmg` factory
+
+- **Text Rendering**: New `toText()` operator for ASCII table output
+  - Renders relations as formatted ASCII tables
+  - Supports nested relations (from `group`, `image`) as nested tables within cells
+  - Handles special values: `null`, `undefined`, `Date`, objects, arrays
+  - Options: `floatPrecision` for decimal places, `trimAt` for line width limiting
+  - Available as standalone function and method on `Relation`
+  - Properly renders DEE (one tuple, no attributes) and DUM (no tuples, no attributes)
+
+- Added type guard signature to `isRelation()` for proper TypeScript type narrowing
+
 ## [1.0.2] - 2026-01-08
 
 ### Added
