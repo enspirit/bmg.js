@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { BaseAsyncRelation } from 'src/AsyncRelation';
-import type { AsyncRelation } from 'src/async-types';
+import { BaseAsyncRelation } from 'src/async';
+import type { AsyncRelation } from 'src/async';
 import type { TypedPredicate } from 'src/types';
 
 /**

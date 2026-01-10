@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { AsyncBmg } from 'src/AsyncRelation';
+import { AsyncBmg } from 'src/async';
 import { createAsyncIterable, SUPPLIERS_DATA, Supplier } from '../fixtures';
 
 describe('AsyncBmg.isEqual', () => {

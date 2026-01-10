@@ -9,22 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **Async Relations**: New `AsyncRelation<T>` interface and `BaseAsyncRelation<T>` implementation for streaming data sources using `AsyncIterable`
-  - Factory function `AsyncBmg()` to create async relations from async iterables or promises
-  - Async versions of all core operators: `restrict`, `where`, `exclude`, `project`, `allbut`, `extend`, `rename`, `prefix`, `suffix`, `constants`
-  - Async set operations: `union`, `minus`, `intersect`
-  - Async join operations: `join`, `left_join`, `cross_product`, `cross_join`, `matching`, `not_matching`
-  - Async nesting operators: `image`, `group`, `ungroup`, `wrap`, `unwrap`
-  - Async aggregation: `summarize`
-  - Async utility operators: `one`, `toArray`, `yByX`, `toText`
-  - Exported via `asyncOps` namespace and `AsyncBmg` factory
-
-- **Text Rendering**: New `toText()` operator for ASCII table output
+- **Text Rendering**: New `toText()` method on `Relation` for ASCII table output
   - Renders relations as formatted ASCII tables
   - Supports nested relations (from `group`, `image`) as nested tables within cells
   - Handles special values: `null`, `undefined`, `Date`, objects, arrays
   - Options: `floatPrecision` for decimal places, `trimAt` for line width limiting
-  - Available as standalone function and method on both `Relation` and `AsyncRelation`
   - Properly renders DEE (one tuple, no attributes) and DUM (no tuples, no attributes)
 
 - Added type guard signature to `isRelation()` for proper TypeScript type narrowing
@@ -33,6 +22,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `DEE`: Relation with no attributes and one tuple (identity element for join)
   - `DUM`: Relation with no attributes and no tuples (identity element for union)
   - Added DEE/DUM edge case tests for `project`, `join`, `left_join`, `matching`, `not_matching`, and `image` operators
+
+### Internal (not part of public API)
+
+- Async relations implementation available via `src/async` for internal use
+  - `AsyncRelation<T>` interface and `BaseAsyncRelation<T>` implementation
+  - Not yet stable for public consumption
 
 ## [1.0.2] - 2026-01-08
 

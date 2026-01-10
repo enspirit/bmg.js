@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { Bmg, isEqual } from 'src';
-import { AsyncBmg } from 'src/AsyncRelation';
+import { AsyncBmg } from 'src/async';
 import { createAsyncIterable } from '../fixtures';
 
 describe('AsyncRelation.cross_product', () => {

@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { Bmg, toText } from 'src';
+import { Bmg } from 'src';
+import { toText } from 'src/async';
 
 describe('toText', () => {
 
