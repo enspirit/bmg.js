@@ -1,6 +1,6 @@
 import type { AsyncRelationOperand } from '../types';
 import type { Tuple } from '../../types';
-import { tupleKey } from '../../operators/_helpers';
+import { tupleKey } from '../../sync/operators/_helpers';
 
 /**
  * Set intersection: returns tuples present in both relations.

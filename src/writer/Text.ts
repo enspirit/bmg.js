@@ -1,5 +1,5 @@
 import { Relation, Tuple } from '../types';
-import { isRelation } from '../operators/isRelation';
+import { isRelation } from '../sync/operators/isRelation';
 
 /**
  * Options for text rendering

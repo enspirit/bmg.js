@@ -25,6 +25,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Internal (not part of public API)
 
+- Reorganized sync implementation into `src/sync/` directory to cleanly separate sync/async code
+  - Backward-compatible re-exports maintained at `src/operators/` and `src/Relation/`
 - Async relations implementation available via `src/async` for internal use
   - `AsyncRelation<T>` interface and `BaseAsyncRelation<T>` implementation
   - Not yet stable for public consumption

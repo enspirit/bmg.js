@@ -1,7 +1,7 @@
 import type { AsyncRelationOperand } from '../types';
 import type { JoinKeys, Tuple, AttrName } from '../../types';
-import { normalizeKeys, tuplesMatch, projectOutKeys } from '../../operators/_helpers';
-import { MemoryRelation } from '../../Relation';
+import { normalizeKeys, tuplesMatch, projectOutKeys } from '../../sync/operators/_helpers';
+import { MemoryRelation } from '../../sync/Relation';
 
 /**
  * Adds a relation-valued attribute with matching tuples from right.

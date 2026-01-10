@@ -1,6 +1,6 @@
 import type { AsyncRelationOperand } from '../types';
 import type { AttrName, Tuple, Relation } from '../../types';
-import { isRelation } from '../../operators/isRelation';
+import { isRelation } from '../../sync/operators/isRelation';
 
 const toTupleArray = (value: unknown): Tuple[] => {
   if (isRelation(value)) {

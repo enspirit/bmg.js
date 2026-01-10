@@ -1,6 +1,6 @@
 import type { AsyncRelationOperand } from '../types';
 import type { JoinKeys, Tuple } from '../../types';
-import { normalizeKeys, matchKey } from '../../operators/_helpers';
+import { normalizeKeys, matchKey } from '../../sync/operators/_helpers';
 
 /**
  * Anti semi-join: returns tuples from left that have no matching tuple in right.

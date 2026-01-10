@@ -1,6 +1,6 @@
 import type { AsyncRelationOperand } from '../types';
 import type { JoinKeys, Tuple, AttrName } from '../../types';
-import { normalizeKeys, tuplesMatch, projectOutKeys } from '../../operators/_helpers';
+import { normalizeKeys, tuplesMatch, projectOutKeys } from '../../sync/operators/_helpers';
 
 const mergeTuples = (left: Tuple, right: Tuple, keyMap: Record<AttrName, AttrName>): Tuple => {
   return { ...left, ...projectOutKeys(right, keyMap) };

@@ -1,6 +1,6 @@
 import type { AsyncRelation, AsyncRelationOperand } from '../types';
 import type { Tuple, TypedPredicate, TypedExtension, AttrName, Relation, RenameMap, Renamed, Prefixed, Suffixed, Transformation, JoinKeys, Aggregators, AutowrapOptions, TextOptions } from '../../types';
-import { MemoryRelation } from '../../Relation';
+import { MemoryRelation } from '../../sync/Relation';
 import {
   restrict as restrictOp,
   where as whereOp,

@@ -1,6 +1,6 @@
 import type { AsyncRelationOperand } from '../types';
 import type { JoinKeys, Tuple, AttrName } from '../../types';
-import { normalizeKeys, tuplesMatch } from '../../operators/_helpers';
+import { normalizeKeys, tuplesMatch } from '../../sync/operators/_helpers';
 
 const getRightAttrs = (rightTuples: Tuple[], keyMap: Record<AttrName, AttrName>): AttrName[] => {
   if (rightTuples.length === 0) return [];

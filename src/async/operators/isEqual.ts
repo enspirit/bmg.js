@@ -1,7 +1,7 @@
 import type { AsyncRelationOperand } from '../types';
 import type { Tuple } from '../../types';
 import { toAsyncOperationalOperand } from './_helpers';
-import { tupleKey } from '../../operators/_helpers';
+import { tupleKey } from '../../sync/operators/_helpers';
 
 /**
  * Compares two async relations for equality.

@@ -1,7 +1,7 @@
 import type { AsyncRelationOperand } from '../types';
 import type { Renaming, Tuple } from '../../types';
 import { toAsyncOperationalOperand } from './_helpers';
-import { toRenamingFunc } from '../../operators/_helpers';
+import { toRenamingFunc } from '../../sync/operators/_helpers';
 
 /**
  * Async generator that renames attributes in each tuple.

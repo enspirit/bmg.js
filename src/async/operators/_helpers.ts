@@ -1,6 +1,6 @@
 import type { AsyncRelationOperand, AsyncOperationalOperand, AsyncRelation } from '../types';
 import type { Tuple } from '../../types';
-import { tupleKey } from '../../operators/_helpers';
+import { tupleKey } from '../../sync/operators/_helpers';
 
 /**
  * Type guard to check if a value implements AsyncRelation.
