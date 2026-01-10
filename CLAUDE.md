@@ -57,9 +57,17 @@ npx vitest run tests/operators/restrict.test.ts
 
 - Add each operator with unit tests
 - One commit per operator
+- An operator MUST ALWAYS be provided on `Relation` and `AsyncRelation`
 - Update README when adding operators
 - Tests MUST succeed at all times
 - Build MUST succeed at all times (check for typescript errors)
+
+## Commit and release flow
+
+- When you commit, you MUST update the CHANGELOG
+- The CHANGELOG is end-user oriented
+- Track new features and briefly tells which APIs are improved
+- You MUST clearly identify BROKEN apis too
 
 ## Implemented Operators
 

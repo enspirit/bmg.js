@@ -1,5 +1,5 @@
 import type { AsyncRelation, AsyncRelationOperand } from '../async-types';
-import type { Tuple, TypedPredicate, TypedExtension, AttrName, Relation, RenameMap, Renamed, Prefixed, Suffixed, Transformation, JoinKeys, Aggregators, AutowrapOptions } from '../types';
+import type { Tuple, TypedPredicate, TypedExtension, AttrName, Relation, RenameMap, Renamed, Prefixed, Suffixed, Transformation, JoinKeys, Aggregators, AutowrapOptions, TextOptions } from '../types';
 import { MemoryRelation } from '../Relation';
 import {
   restrict as restrictOp,
@@ -34,6 +34,7 @@ import { autowrap as autowrapOp } from '../async-operators/autowrap';
 import { yByX as yByXOp } from '../async-operators/yByX';
 import { one as oneOp } from '../async-operators/one';
 import { toArray as toArrayOp } from '../async-operators/toArray';
+import { toText as toTextSync } from '../writer';
 
 /**
  * Base implementation of AsyncRelation using lazy evaluation.
@@ -229,6 +230,11 @@ export class BaseAsyncRelation<T = Tuple> implements AsyncRelation<T> {
 
   yByX(y: string, x: string): Promise<Tuple> {
     return yByXOp(this.source, y, x);
+  }
+
+  async toText(options?: TextOptions): Promise<string> {
+    const tuples = await toArrayOp(this.source);
+    return toTextSync(tuples as Tuple[], options);
   }
 
   // === Async iteration ===

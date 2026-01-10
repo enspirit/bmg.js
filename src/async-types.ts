@@ -1,4 +1,4 @@
-import type { Tuple, TypedPredicate, Relation, TypedExtension, RenameMap, Renamed, Prefixed, Suffixed, Transformation, JoinKeys, AttrName, Aggregators, AutowrapOptions } from './types';
+import type { Tuple, TypedPredicate, Relation, TypedExtension, RenameMap, Renamed, Prefixed, Suffixed, Transformation, JoinKeys, AttrName, Aggregators, AutowrapOptions, TextOptions } from './types';
 
 /**
  * Async version of the Relation interface.
@@ -65,6 +65,7 @@ export interface AsyncRelation<T = Tuple> {
   toArray(): Promise<T[]>
   toRelation(): Promise<Relation<T>>
   yByX(y: AttrName, x: AttrName): Promise<Tuple>
+  toText(options?: TextOptions): Promise<string>
 
   // === Async iteration ===
 

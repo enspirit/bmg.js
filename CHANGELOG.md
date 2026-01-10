@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Async join operations: `join`, `left_join`, `cross_product`, `cross_join`, `matching`, `not_matching`
   - Async nesting operators: `image`, `group`, `ungroup`, `wrap`, `unwrap`
   - Async aggregation: `summarize`
-  - Async utility operators: `one`, `toArray`, `yByX`
+  - Async utility operators: `one`, `toArray`, `yByX`, `toText`
   - Exported via `asyncOps` namespace and `AsyncBmg` factory
 
 - **Text Rendering**: New `toText()` operator for ASCII table output
@@ -24,7 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Supports nested relations (from `group`, `image`) as nested tables within cells
   - Handles special values: `null`, `undefined`, `Date`, objects, arrays
   - Options: `floatPrecision` for decimal places, `trimAt` for line width limiting
-  - Available as standalone function and method on `Relation`
+  - Available as standalone function and method on both `Relation` and `AsyncRelation`
   - Properly renders DEE (one tuple, no attributes) and DUM (no tuples, no attributes)
 
 - Added type guard signature to `isRelation()` for proper TypeScript type narrowing
