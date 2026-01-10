@@ -1,45 +1,71 @@
-# What is Bmg.js ?
+# CLAUDE.md
 
-A Typescript implementation of BMG, a relational algebra originally implemented
-in/for Ruby :
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## What is Bmg.js?
+
+A TypeScript implementation of BMG, a relational algebra originally implemented in Ruby:
 - https://github.com/enspirit/bmg
 - https://www.relational-algebra.dev/
 
-The aim of bmg.js is NOT to implement the SQL compiler, but only to provide an
-implementation of main algebra operators to work on arrays of javascript objects.
+The aim is to provide relational algebra operators for arrays of JavaScript objects, NOT to implement an SQL compiler.
 
-## Development flow
+## Commands
 
-* List operators to support, by order of importance
-* Add each operator, in order, with unit tests.
-* One commit per operator, don't forget to adapt the README.
-* Tests MUST succeed at all times, run them with `npm run test`
+```bash
+npm run test          # Run all tests (vitest)
+npm run test:watch    # Run tests in watch mode
+npm run build         # Build the library (generates lib-definitions, bundles, and types)
+```
 
-## Theory
+Run a single test file:
+```bash
+npx vitest run tests/operators/restrict.test.ts
+```
 
-IMPORTANT rules:
+## Architecture
+
+**Entry point:** `src/index.ts` - Exports `Bmg` factory function, all operators, and types
+
+**Core abstractions:**
+- `Relation<T>` interface (`src/types.ts`) - Defines all relational operators with full TypeScript generics
+- `MemoryRelation<T>` (`src/Relation/Memory.ts`) - In-memory implementation wrapping an array of tuples
+- `AsyncRelation<T>` (`src/async-types.ts`) - Async version for streaming data sources
+- `BaseAsyncRelation<T>` (`src/AsyncRelation/Base.ts`) - Async implementation using AsyncIterable
+
+**Operators pattern:** Each operator exists as:
+1. Standalone function in `src/operators/<name>.ts` - Works on arrays directly
+2. Method on `MemoryRelation` - Delegates to standalone function
+3. Async version in `src/async-operators/<name>.ts` for AsyncRelation
+
+**Test fixtures:** `tests/fixtures.ts` provides standard SUPPLIERS relation for tests.
+
+## Relational Algebra Rules
 
 1. Relations NEVER have duplicates
-2. Order of tuples and order or attributes in a tuple are not important semantically
-3. Mathematically, relations are sets of tuples ; tuples are sets of (attr, value) pairs.
-4. Two relations are equal of they have the exact same set of exact same tuples.
+2. Order of tuples and order of attributes in a tuple are not important semantically
+3. Relations are sets of tuples; tuples are sets of (attr, value) pairs
+4. Two relations are equal if they have the exact same set of tuples
 
-## About unit tests
+## Unit Test Guidelines
 
-IMPORTANT rules:
+- Use purely relational tests: compare obtained relation with expected using `isEqual`
+- NEVER access the "first" tuple (there is no ordering)
+- Use `r.restrict(...predicate...).one()` to select a specific tuple for testing
 
-* Favor purely relational tests: compare an obtained relation with the expected relation
-  using `isEqual`.
-* Do NEVER access the "first" tuple, since there is no such tuple.
-* Instead, use `r.restrict(...predicate...).one` with a predicate that selects the
-  tuple you are interested in. `one` will correctly fail if your assumption is wrong.
+## Development Flow
 
-## Implemented operators
+- Add each operator with unit tests
+- One commit per operator
+- Update README when adding operators
+- Tests MUST succeed at all times
+- Build MUST succeed at all times (check for typescript errors)
+
+## Implemented Operators
 
 **Relational:** restrict, where, exclude, project, allbut, extend, rename, prefix, suffix, constants, union, minus, intersect, matching, not_matching, join, left_join, cross_product, cross_join, image, summarize, group, ungroup, wrap, unwrap, autowrap, transform
 
-**Non-relational:** one, yByX, toArray, isRelation, isEqual
+**Non-relational:** one, yByX, toArray, isRelation, isEqual, toText
 
 ## TODO
 

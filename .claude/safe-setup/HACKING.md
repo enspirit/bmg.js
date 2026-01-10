@@ -59,5 +59,6 @@ PostgreSQL is pre-configured via environment variables. Just run `psql` to conne
 | `make shell` | Enter dev container |
 | `make restart` | Restart everything |
 | `make logs` | Follow container logs |
-| `make status` | Show container status |
+| `make ps` | Show container status |
 | `make clean` | Remove containers and images |
+| `make claude` | Directly launch claude |

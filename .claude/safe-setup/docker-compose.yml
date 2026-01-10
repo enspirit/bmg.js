@@ -4,15 +4,14 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.claude
-    container_name: claude
+    image: enspirit/bmgjs-claude
+    container_name: bmgjs-claude
     volumes:
       - ../..:/workspace
-      - claude-history:/home/bmg/.claude
+      - ./claude-data:/home/bmg/.claude
+      - ./claude-data/.claude.json:/home/bmg/.claude.json
     environment:
       - GIT_USER_NAME=${GIT_USER_NAME:-}
       - GIT_USER_EMAIL=${GIT_USER_EMAIL:-}
     stdin_open: true
     tty: true
-
-volumes:
-  claude-history:

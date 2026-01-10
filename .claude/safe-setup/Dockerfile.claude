@@ -18,6 +18,11 @@ RUN addgroup -S bmg && adduser -S bmg -G bmg \
 # Install Claude Code CLI globally
 RUN npm install -g @anthropic-ai/claude-code
 
+# Create wrapper script 'c' that adds dangerous permissions flag
+RUN echo '#!/bin/bash' > /usr/local/bin/c && \
+    echo 'exec claude --dangerously-skip-permissions "$@"' >> /usr/local/bin/c && \
+    chmod +x /usr/local/bin/c
+
 # Set up working directory
 WORKDIR /workspace
 
@@ -25,12 +30,8 @@ WORKDIR /workspace
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-# Create .claude directory for history persistence
-RUN mkdir -p /home/bmg/.claude && chown -R bmg:bmg /home/bmg/.claude
-
 # Switch to non-root user
 USER bmg
 
-# Use entrypoint to configure git and run command
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["bash"]
