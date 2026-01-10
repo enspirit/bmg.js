@@ -140,9 +140,9 @@ This will be provided by [Elo](https://elo-lang.org).
 
 ## Versioning
 
-Bmg.js follows [Semantic Versioning](https://semver.org/) (SemVer):
+Bmg.js follows [Semantic Versioning](https://semver.org/) (SemVer). See [API.md](API.md) for the public API reference.
 
-- **MAJOR** (x.0.0) - Breaking changes to the API (renamed operators, changed signatures, removed features)
+- **MAJOR** (x.0.0) - Breaking changes to the public API
 - **MINOR** (0.x.0) - New operators or features, fully backward-compatible
 - **PATCH** (0.0.x) - Bug fixes and performance improvements, no API changes
 

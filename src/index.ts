@@ -1,6 +1,7 @@
 export * from './operators';
 export * from './types';
 export { LIB_DEFINITIONS } from './lib-definitions';
+export { toText } from './writer';
 
 import { MemoryRelation } from './Relation';
 import { isRelation } from './operators';
