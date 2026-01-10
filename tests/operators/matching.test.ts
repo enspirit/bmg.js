@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { Bmg } from 'src';
+import { Bmg, DEE, DUM } from 'src';
 import { matching , isEqual } from 'src/operators';
 
 describe('.matching', () => {
@@ -78,6 +78,48 @@ describe('.matching', () => {
       { id: 2, first: 'Jane', last: 'Smith' },
     ]);
     expect(result.isEqual(expected)).to.be.true;
+  })
+
+  describe('DEE and DUM', () => {
+    it('R matching DEE = R (DEE matches everything)', () => {
+      const result = orders.matching(DEE);
+      expect(result.isEqual(orders)).to.be.true;
+    })
+
+    it('R matching DUM = DUM (nothing to match against)', () => {
+      const result = orders.matching(DUM);
+      expect(result.isEqual(DUM)).to.be.true;
+    })
+
+    it('DEE matching R = DEE (DEE tuple matches any relation with tuples)', () => {
+      const result = DEE.matching(customers);
+      expect(result.isEqual(DEE)).to.be.true;
+    })
+
+    it('DEE matching DUM = DUM (no tuples to match)', () => {
+      const result = DEE.matching(DUM);
+      expect(result.isEqual(DUM)).to.be.true;
+    })
+
+    it('DUM matching R = DUM (no tuples to keep)', () => {
+      const result = DUM.matching(customers);
+      expect(result.isEqual(DUM)).to.be.true;
+    })
+
+    it('DUM matching DEE = DUM', () => {
+      const result = DUM.matching(DEE);
+      expect(result.isEqual(DUM)).to.be.true;
+    })
+
+    it('DEE matching DEE = DEE', () => {
+      const result = DEE.matching(DEE);
+      expect(result.isEqual(DEE)).to.be.true;
+    })
+
+    it('DUM matching DUM = DUM', () => {
+      const result = DUM.matching(DUM);
+      expect(result.isEqual(DUM)).to.be.true;
+    })
   })
 
   ///

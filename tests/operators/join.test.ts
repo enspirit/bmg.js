@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { Bmg } from 'src';
+import { Bmg, DEE, DUM } from 'src';
 import { join , isEqual } from 'src/operators';
 
 describe('.join', () => {
@@ -103,6 +103,43 @@ describe('.join', () => {
       { color: 'blue', size: 'M' },
     ]);
     expect(result.isEqual(expected)).to.be.true;
+  })
+
+  describe('DEE and DUM', () => {
+    it('DEE is identity: R join DEE = R', () => {
+      const result = suppliers.join(DEE);
+      expect(result.isEqual(suppliers)).to.be.true;
+    })
+
+    it('DEE is identity (commutative): DEE join R = R', () => {
+      const result = DEE.join(suppliers);
+      expect(result.isEqual(suppliers)).to.be.true;
+    })
+
+    it('DUM annihilates: R join DUM = DUM', () => {
+      const result = suppliers.join(DUM);
+      expect(result.isEqual(DUM)).to.be.true;
+    })
+
+    it('DUM annihilates (commutative): DUM join R = DUM', () => {
+      const result = DUM.join(suppliers);
+      expect(result.isEqual(DUM)).to.be.true;
+    })
+
+    it('DEE join DEE = DEE', () => {
+      const result = DEE.join(DEE);
+      expect(result.isEqual(DEE)).to.be.true;
+    })
+
+    it('DEE join DUM = DUM', () => {
+      const result = DEE.join(DUM);
+      expect(result.isEqual(DUM)).to.be.true;
+    })
+
+    it('DUM join DUM = DUM', () => {
+      const result = DUM.join(DUM);
+      expect(result.isEqual(DUM)).to.be.true;
+    })
   })
 
   ///

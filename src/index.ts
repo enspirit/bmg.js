@@ -33,3 +33,15 @@ export function Bmg<T>(tuples: T[]): MemoryRelation<T> {
 }
 
 Bmg.isRelation = isRelation;
+
+/**
+ * DEE - The relation with no attributes and exactly one tuple.
+ * This is the identity element for natural join.
+ */
+export const DEE = new MemoryRelation<Record<string, never>>([{}]);
+
+/**
+ * DUM - The relation with no attributes and no tuples.
+ * This is the identity element for union.
+ */
+export const DUM = new MemoryRelation<Record<string, never>>([]);

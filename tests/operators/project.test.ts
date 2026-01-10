@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { Bmg } from 'src';
+import { Bmg, DEE, DUM } from 'src';
 import { SUPPLIERS } from 'tests/fixtures';
 import { project , isEqual } from 'src/operators';
 
@@ -34,6 +34,24 @@ describe('.project', () => {
     const smith = result.restrict({ name: 'Smith' }).one();
     expect(smith).to.have.property('name');
     expect(smith).to.not.have.property('nonexistent');
+  })
+
+  describe('DEE and DUM', () => {
+    it('projecting on nothing yields DEE', () => {
+      // Projecting away all attributes from a non-empty relation yields DEE
+      const result = SUPPLIERS.project([]);
+      expect(result.isEqual(DEE)).to.be.true;
+    })
+
+    it('projecting DEE yields DEE', () => {
+      const result = DEE.project([]);
+      expect(result.isEqual(DEE)).to.be.true;
+    })
+
+    it('projecting DUM yields DUM', () => {
+      const result = DUM.project([]);
+      expect(result.isEqual(DUM)).to.be.true;
+    })
   })
 
   ///

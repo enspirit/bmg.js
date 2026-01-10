@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { Bmg } from 'src';
+import { Bmg, DEE, DUM } from 'src';
 import { left_join , isEqual } from 'src/operators';
 
 describe('.left_join', () => {
@@ -103,6 +103,48 @@ describe('.left_join', () => {
       { id: 1, city: 'Paris', name: 'B' },
     ]);
     expect(result.isEqual(expected)).to.be.true;
+  })
+
+  describe('DEE and DUM', () => {
+    it('R left_join DEE = R (DEE is identity)', () => {
+      const result = orders.left_join(DEE);
+      expect(result.isEqual(orders)).to.be.true;
+    })
+
+    it('R left_join DUM = R (DUM has no attributes to add)', () => {
+      const result = orders.left_join(DUM);
+      expect(result.isEqual(orders)).to.be.true;
+    })
+
+    it('DEE left_join R = R (cross product with single empty tuple)', () => {
+      const result = DEE.left_join(customers);
+      expect(result.isEqual(customers)).to.be.true;
+    })
+
+    it('DUM left_join R = DUM (no left tuples to preserve)', () => {
+      const result = DUM.left_join(customers);
+      expect(result.isEqual(DUM)).to.be.true;
+    })
+
+    it('DEE left_join DEE = DEE', () => {
+      const result = DEE.left_join(DEE);
+      expect(result.isEqual(DEE)).to.be.true;
+    })
+
+    it('DEE left_join DUM = DEE', () => {
+      const result = DEE.left_join(DUM);
+      expect(result.isEqual(DEE)).to.be.true;
+    })
+
+    it('DUM left_join DEE = DUM', () => {
+      const result = DUM.left_join(DEE);
+      expect(result.isEqual(DUM)).to.be.true;
+    })
+
+    it('DUM left_join DUM = DUM', () => {
+      const result = DUM.left_join(DUM);
+      expect(result.isEqual(DUM)).to.be.true;
+    })
   })
 
   ///

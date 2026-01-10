@@ -29,6 +29,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added type guard signature to `isRelation()` for proper TypeScript type narrowing
 
+- **DEE and DUM constants**: Fundamental relational algebra constants
+  - `DEE`: Relation with no attributes and one tuple (identity element for join)
+  - `DUM`: Relation with no attributes and no tuples (identity element for union)
+  - Added DEE/DUM edge case tests for `project`, `join`, `left_join`, `matching`, `not_matching`, and `image` operators
+
 ## [1.0.2] - 2026-01-08
 
 ### Added

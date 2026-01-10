@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { Bmg } from 'src';
+import { Bmg, DEE, DUM } from 'src';
 import { image , isEqual } from 'src/operators';
 
 describe('.image', () => {
@@ -139,6 +139,62 @@ describe('.image', () => {
       },
     ]);
     expect(result.isEqual(expected)).to.be.true;
+  })
+
+  describe('DEE and DUM', () => {
+    it('R image DEE adds DEE as image (no common attrs, DEE matches all)', () => {
+      const result = suppliers.image(DEE, 'img');
+      const expected = Bmg([
+        { sid: 'S1', name: 'Smith', city: 'London', img: DEE },
+        { sid: 'S2', name: 'Jones', city: 'Paris', img: DEE },
+        { sid: 'S3', name: 'Blake', city: 'Paris', img: DEE },
+      ]);
+      expect(result.isEqual(expected)).to.be.true;
+    })
+
+    it('R image DUM adds DUM as image (no tuples to match)', () => {
+      const result = suppliers.image(DUM, 'img');
+      const expected = Bmg([
+        { sid: 'S1', name: 'Smith', city: 'London', img: DUM },
+        { sid: 'S2', name: 'Jones', city: 'Paris', img: DUM },
+        { sid: 'S3', name: 'Blake', city: 'Paris', img: DUM },
+      ]);
+      expect(result.isEqual(expected)).to.be.true;
+    })
+
+    it('DEE image R adds R as image (no common attrs)', () => {
+      const colors = Bmg([{ color: 'red' }, { color: 'blue' }]);
+      const result = DEE.image(colors, 'colors');
+      const expected = Bmg([{ colors }]);
+      expect(result.isEqual(expected)).to.be.true;
+    })
+
+    it('DEE image DUM adds DUM as image', () => {
+      const result = DEE.image(DUM, 'img');
+      const expected = Bmg([{ img: DUM }]);
+      expect(result.isEqual(expected)).to.be.true;
+    })
+
+    it('DEE image DEE adds DEE as image', () => {
+      const result = DEE.image(DEE, 'img');
+      const expected = Bmg([{ img: DEE }]);
+      expect(result.isEqual(expected)).to.be.true;
+    })
+
+    it('DUM image R = DUM (no tuples to add images to)', () => {
+      const result = DUM.image(shipments, 'shipments');
+      expect(result.isEqual(DUM)).to.be.true;
+    })
+
+    it('DUM image DEE = DUM', () => {
+      const result = DUM.image(DEE, 'img');
+      expect(result.isEqual(DUM)).to.be.true;
+    })
+
+    it('DUM image DUM = DUM', () => {
+      const result = DUM.image(DUM, 'img');
+      expect(result.isEqual(DUM)).to.be.true;
+    })
   })
 
   ///
