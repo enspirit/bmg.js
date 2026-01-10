@@ -34,6 +34,7 @@ import type {
   AutowrapOptions,
   Relation,
   RelationOperand,
+  TextOptions,
   Transformation,
   Tuple,
   TypedPredicate,
@@ -51,6 +52,7 @@ import type {
   TypedJoinKeysArray,
   TypedJoinKeysObject,
 } from "../types";
+import { toText } from "../writer";
 
 /**
  * In-memory implementation of the Relation interface.
@@ -209,6 +211,12 @@ export class MemoryRelation<T = Tuple> implements Relation<T> {
 
   isEqual(right: any): boolean {
     return isEqual(this as any, right as any);
+  }
+
+  // === Display ===
+
+  toText(options?: TextOptions): string {
+    return toText(this as any, options);
   }
 
 }

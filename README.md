@@ -111,6 +111,7 @@ See the [full type-safe example](./example/index.ts) for more.
 | | `toArray()` | Convert relation to array |
 | | `isEqual(other)` | Check set equality |
 | | `yByX(y, x)` | Create `{ x-value: y-value }` mapping |
+| | `toText(options?)` | Render as ASCII table |
 | | `Bmg.isRelation(value)` | Check if value is a Relation (static) |
 
 Built-in aggregators for `summarize`: `count`, `sum`, `min`, `max`, `avg`, `collect`

@@ -152,6 +152,13 @@ interface PrefixOptions {
   except?: AttrName[]
 }
 
+interface TextOptions {
+  /** Precision for floating point numbers (default: 3) */
+  floatPrecision?: number;
+  /** Maximum width to trim output at */
+  trimAt?: number;
+}
+
 interface SuffixOptions {
   except?: AttrName[]
 }
@@ -256,6 +263,10 @@ interface Relation<T = Tuple> {
   yByX<Y extends keyof T, X extends keyof T>(y: Y, x: X): Record<T[X] & PropertyKey, T[Y]>
   toArray(): T[]
   isEqual(right: any): boolean
+
+  // === Display ===
+
+  toText(options?: TextOptions): string
 }
 
 // ============================================================================
