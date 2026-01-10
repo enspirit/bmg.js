@@ -1,5 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import { Bmg, toText } from 'src';
+import {
+  ASCII_BORDER,
+  SINGLE_BORDER,
+  DOUBLE_BORDER,
+  ROUNDED_BORDER,
+  BorderChars,
+} from 'src/writer';
 
 describe('toText', () => {
 
@@ -284,6 +291,132 @@ describe('toText', () => {
       // Should contain nested parts table
       expect(text).to.contain('| pid');
       expect(text).to.contain('| color');
+    });
+  });
+
+  describe('border styles', () => {
+    const relation = Bmg([
+      { id: 1, name: 'Alice' },
+      { id: 2, name: 'Bob' },
+    ]);
+
+    describe('ascii (default)', () => {
+      const expected =
+        "+----+-------+\n" +
+        "| id | name  |\n" +
+        "+----+-------+\n" +
+        "|  1 | Alice |\n" +
+        "|  2 | Bob   |\n" +
+        "+----+-------+\n";
+
+      it('uses ASCII characters by default', () => {
+        expect(toText(relation)).to.eql(expected);
+      });
+
+      it('can be explicitly selected via string', () => {
+        expect(toText(relation, { border: 'ascii' })).to.eql(expected);
+      });
+
+      it('can be explicitly selected via constant', () => {
+        expect(toText(relation, { border: ASCII_BORDER })).to.eql(expected);
+      });
+    });
+
+    describe('single', () => {
+      const expected =
+        "┌────┬───────┐\n" +
+        "│ id │ name  │\n" +
+        "├────┼───────┤\n" +
+        "│  1 │ Alice │\n" +
+        "│  2 │ Bob   │\n" +
+        "└────┴───────┘\n";
+
+      it('uses single-line Unicode characters', () => {
+        expect(toText(relation, { border: 'single' })).to.eql(expected);
+      });
+
+      it('can be selected via constant', () => {
+        expect(toText(relation, { border: SINGLE_BORDER })).to.eql(expected);
+      });
+    });
+
+    describe('double', () => {
+      const expected =
+        "╔════╦═══════╗\n" +
+        "║ id ║ name  ║\n" +
+        "╠════╬═══════╣\n" +
+        "║  1 ║ Alice ║\n" +
+        "║  2 ║ Bob   ║\n" +
+        "╚════╩═══════╝\n";
+
+      it('uses double-line Unicode characters', () => {
+        expect(toText(relation, { border: 'double' })).to.eql(expected);
+      });
+
+      it('can be selected via constant', () => {
+        expect(toText(relation, { border: DOUBLE_BORDER })).to.eql(expected);
+      });
+    });
+
+    describe('rounded', () => {
+      const expected =
+        "╭────┬───────╮\n" +
+        "│ id │ name  │\n" +
+        "├────┼───────┤\n" +
+        "│  1 │ Alice │\n" +
+        "│  2 │ Bob   │\n" +
+        "╰────┴───────╯\n";
+
+      it('uses rounded corner Unicode characters', () => {
+        expect(toText(relation, { border: 'rounded' })).to.eql(expected);
+      });
+
+      it('can be selected via constant', () => {
+        expect(toText(relation, { border: ROUNDED_BORDER })).to.eql(expected);
+      });
+    });
+
+    describe('custom border', () => {
+      const customBorder: BorderChars = {
+        topLeft: '╒',
+        topCenter: '╤',
+        topRight: '╕',
+        midLeft: '╞',
+        midCenter: '╪',
+        midRight: '╡',
+        bottomLeft: '╘',
+        bottomCenter: '╧',
+        bottomRight: '╛',
+        horizontal: '═',
+        vertical: '│',
+      };
+
+      const expected =
+        "╒════╤═══════╕\n" +
+        "│ id │ name  │\n" +
+        "╞════╪═══════╡\n" +
+        "│  1 │ Alice │\n" +
+        "│  2 │ Bob   │\n" +
+        "╘════╧═══════╛\n";
+
+      it('supports custom BorderChars object', () => {
+        expect(toText(relation, { border: customBorder })).to.eql(expected);
+      });
+    });
+
+    describe('with nested relations', () => {
+      it('applies border style to nested tables', () => {
+        const inner = Bmg([{ x: 1 }]);
+        const outer = Bmg([{ id: 1, items: inner }]);
+        const text = toText(outer, { border: 'single' });
+
+        // Outer table uses single border
+        expect(text).to.contain('┌');
+        expect(text).to.contain('└');
+        expect(text).to.contain('│');
+        // Inner table also uses single border
+        expect(text).to.contain('├');
+      });
     });
   });
 

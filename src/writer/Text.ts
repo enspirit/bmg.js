@@ -2,6 +2,102 @@ import { Relation, Tuple } from '../types';
 import { isRelation } from '../sync/operators/isRelation';
 
 /**
+ * Characters used for table borders
+ */
+export interface BorderChars {
+  topLeft: string;
+  topCenter: string;
+  topRight: string;
+  midLeft: string;
+  midCenter: string;
+  midRight: string;
+  bottomLeft: string;
+  bottomCenter: string;
+  bottomRight: string;
+  horizontal: string;
+  vertical: string;
+}
+
+/** ASCII border style (default) - maximum compatibility */
+export const ASCII_BORDER: BorderChars = {
+  topLeft: '+',
+  topCenter: '+',
+  topRight: '+',
+  midLeft: '+',
+  midCenter: '+',
+  midRight: '+',
+  bottomLeft: '+',
+  bottomCenter: '+',
+  bottomRight: '+',
+  horizontal: '-',
+  vertical: '|',
+};
+
+/** Unicode single-line border style */
+export const SINGLE_BORDER: BorderChars = {
+  topLeft: '┌',
+  topCenter: '┬',
+  topRight: '┐',
+  midLeft: '├',
+  midCenter: '┼',
+  midRight: '┤',
+  bottomLeft: '└',
+  bottomCenter: '┴',
+  bottomRight: '┘',
+  horizontal: '─',
+  vertical: '│',
+};
+
+/** Unicode double-line border style */
+export const DOUBLE_BORDER: BorderChars = {
+  topLeft: '╔',
+  topCenter: '╦',
+  topRight: '╗',
+  midLeft: '╠',
+  midCenter: '╬',
+  midRight: '╣',
+  bottomLeft: '╚',
+  bottomCenter: '╩',
+  bottomRight: '╝',
+  horizontal: '═',
+  vertical: '║',
+};
+
+/** Unicode rounded corners border style */
+export const ROUNDED_BORDER: BorderChars = {
+  topLeft: '╭',
+  topCenter: '┬',
+  topRight: '╮',
+  midLeft: '├',
+  midCenter: '┼',
+  midRight: '┤',
+  bottomLeft: '╰',
+  bottomCenter: '┴',
+  bottomRight: '╯',
+  horizontal: '─',
+  vertical: '│',
+};
+
+/** Border style preset names */
+export type BorderStyleName = 'ascii' | 'single' | 'double' | 'rounded';
+
+const BORDER_PRESETS: Record<BorderStyleName, BorderChars> = {
+  ascii: ASCII_BORDER,
+  single: SINGLE_BORDER,
+  double: DOUBLE_BORDER,
+  rounded: ROUNDED_BORDER,
+};
+
+/** Resolve border option to BorderChars */
+const resolveBorder = (
+  border: BorderStyleName | BorderChars | undefined
+): BorderChars => {
+  if (border === undefined) return ASCII_BORDER;
+  if (typeof border === 'string') return BORDER_PRESETS[border];
+  return border;
+};
+
+/**
  * Options for text rendering
  */
 export interface TextOptions {
@@ -9,6 +105,8 @@ export interface TextOptions {
   floatPrecision?: number;
   /** Maximum width to trim output at */
   trimAt?: number;
+  /** Border style: preset name or custom BorderChars object */
+  border?: BorderStyleName | BorderChars;
 }
 
 // Type guards
@@ -138,7 +236,8 @@ class Row {
     return this.cells.map(cell => cell.minWidth);
   }
 
-  renderingLines(sizes: number[]): string[] {
+  renderingLines(sizes: number[], border: BorderChars): string[] {
+    const v = border.vertical;
     let nbLines = 0;
     const byCell = this.cells.map((cell, i) => {
       const lines = cell.renderingLines(sizes[i]);
@@ -150,11 +249,11 @@ class Row {
     for (let lineI = 0; lineI < nbLines; lineI++) {
       const lineContent = byCell
         .map((cellLines, i) => cellLines[lineI] ?? ' '.repeat(sizes[i]))
-        .join(' | ');
-      grid.push('| ' + lineContent + ' |');
+        .join(` ${v} `);
+      grid.push(`${v} ` + lineContent + ` ${v}`);
     }
 
-    return grid.length === 0 ? ['|  |'] : grid;
+    return grid.length === 0 ? [`${v}  ${v}`] : grid;
   }
 }
 
@@ -163,13 +262,14 @@ class Row {
  */
 class Table {
   private renderer: TextWriter;
+  private border: BorderChars;
   private header: Row;
   private rows: Row[];
   private _sizes: number[] | null = null;
-  private _sep: string | null = null;
 
   constructor(renderer: TextWriter, records: unknown[][], attributes: string[]) {
     this.renderer = renderer;
+    this.border = resolveBorder(renderer.options.border);
     this.header = new Row(renderer, attributes);
     this.rows = records.map(r => new Row(renderer, r));
   }
@@ -185,11 +285,21 @@ class Table {
     return this._sizes;
   }
 
-  get sep(): string {
-    if (this._sep === null) {
-      this._sep = '+-' + this.sizes.map(s => '-'.repeat(s)).join('-+-') + '-+';
-    }
-    return this._sep;
+  private makeSep(left: string, center: string, right: string): string {
+    const h = this.border.horizontal;
+    return left + h + this.sizes.map(s => h.repeat(s)).join(h + center + h) + h + right;
+  }
+
+  get topSep(): string {
+    return this.makeSep(this.border.topLeft, this.border.topCenter, this.border.topRight);
+  }
+
+  get midSep(): string {
+    return this.makeSep(this.border.midLeft, this.border.midCenter, this.border.midRight);
+  }
+
+  get bottomSep(): string {
+    return this.makeSep(this.border.bottomLeft, this.border.bottomCenter, this.border.bottomRight);
   }
 
   *eachLine(): Generator<string> {
@@ -205,15 +315,15 @@ class Table {
   }
 
   private *eachLineRaw(): Generator<string> {
-    yield this.sep;
-    yield this.header.renderingLines(this.sizes)[0];
-    yield this.sep;
+    yield this.topSep;
+    yield this.header.renderingLines(this.sizes, this.border)[0];
+    yield this.midSep;
     for (const row of this.rows) {
-      for (const line of row.renderingLines(this.sizes)) {
+      for (const line of row.renderingLines(this.sizes, this.border)) {
         yield line;
       }
     }
-    yield this.sep;
+    yield this.bottomSep;
   }
 
   *[Symbol.iterator](): Generator<string> {

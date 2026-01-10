@@ -16,6 +16,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Options: `floatPrecision` for decimal places, `trimAt` for line width limiting
   - Properly renders DEE (one tuple, no attributes) and DUM (no tuples, no attributes)
 
+- **Border Styles for toText**: New `border` option for customizable table borders
+  - Built-in styles: `'ascii'` (default), `'single'`, `'double'`, `'rounded'`
+  - Nested relations inherit border style from parent table
+
 - Added type guard signature to `isRelation()` for proper TypeScript type narrowing
 
 - **DEE and DUM constants**: Fundamental relational algebra constants

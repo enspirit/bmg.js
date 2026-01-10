@@ -2,6 +2,7 @@ export * from './sync/operators';
 export * from './types';
 export { LIB_DEFINITIONS } from './lib-definitions';
 export { toText } from './writer';
+export type { TextOptions, BorderStyleName } from './writer';
 
 import { MemoryRelation } from './sync/Relation';
 import { isRelation } from './sync/operators';
