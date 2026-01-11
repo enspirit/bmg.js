@@ -1,4 +1,4 @@
-import { OperationalOperand, Relation, RelationOperand, Renaming, RenamingFunc, Tuple, JoinKeys, AttrName } from "@/types";
+import { OperationalOperand, Relation, RelationOperand, Renaming, RenamingFunc, Tuple, JoinKeys, AttrName, GroupOptions } from "@/types";
 import { MemoryRelation } from '@/sync/Relation';
 import { isRelation } from "./isRelation";
 
@@ -237,4 +237,63 @@ export const projectOutKeys = (tuple: Tuple, keyMap: Record<AttrName, AttrName>)
     }
   }
   return result;
+}
+
+// Group helpers
+
+/**
+ * Generates a grouping key from a tuple based on the specified attributes.
+ */
+export const groupKey = (tuple: Tuple, byAttrs: AttrName[]): string => {
+  const keyParts = byAttrs.map(attr => JSON.stringify(tuple[attr]));
+  return keyParts.join('|');
+}
+
+/**
+ * Picks specific attributes from a tuple.
+ */
+export const pickAttrs = (tuple: Tuple, attrs: AttrName[]): Tuple => {
+  return attrs.reduce((acc, attr) => {
+    acc[attr] = tuple[attr];
+    return acc;
+  }, {} as Tuple);
+}
+
+/**
+ * Core grouping logic that operates on a materialized array of tuples.
+ * Returns null if the input is empty.
+ */
+export const groupTuples = (
+  tuples: Tuple[],
+  attrs: AttrName[],
+  options?: GroupOptions
+): { byAttrs: AttrName[], groupedAttrs: AttrName[], groups: Map<string, { base: Tuple, nested: Tuple[] }> } | null => {
+  if (tuples.length === 0) return null;
+
+  const allAttrs = Object.keys(tuples[0]);
+  const attrSet = new Set(attrs);
+
+  // With allbut: attrs are the ones to KEEP at top level (group all others)
+  // Without allbut: attrs are the ones to GROUP into nested relation
+  const byAttrs = options?.allbut
+    ? attrs.filter(a => allAttrs.includes(a))  // Keep these at top level
+    : allAttrs.filter(a => !attrSet.has(a));   // Keep non-grouped at top level
+
+  const groupedAttrs = options?.allbut
+    ? allAttrs.filter(a => !attrSet.has(a))    // Group non-specified into nested
+    : attrs.filter(a => allAttrs.includes(a)); // Group specified into nested
+
+  const groups = new Map<string, { base: Tuple, nested: Tuple[] }>();
+  for (const tuple of tuples) {
+    const key = groupKey(tuple, byAttrs);
+    if (!groups.has(key)) {
+      groups.set(key, {
+        base: pickAttrs(tuple, byAttrs),
+        nested: []
+      });
+    }
+    groups.get(key)!.nested.push(pickAttrs(tuple, groupedAttrs));
+  }
+
+  return { byAttrs, groupedAttrs, groups };
 }
