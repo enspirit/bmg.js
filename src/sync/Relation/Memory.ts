@@ -33,6 +33,7 @@ import type {
   AttrName,
   AutowrapOptions,
   GroupOptions,
+  WrapOptions,
   Relation,
   RelationOperand,
   TextOptions,
@@ -173,8 +174,11 @@ export class MemoryRelation<T = Tuple> implements Relation<T> {
     return ungroup(this as any, attr as AttrName) as unknown as Relation<Ungrouped<T, K>>;
   }
 
-  wrap<K extends keyof T, As extends string>(attrs: K[], as: As): Relation<Wrapped<T, K, As>> {
-    return wrap(this as any, attrs as AttrName[], as) as unknown as Relation<Wrapped<T, K, As>>;
+  wrap<K extends keyof T, As extends string>(attrs: K[], as: As): Relation<Wrapped<T, K, As>>
+  wrap<K extends keyof T, As extends string>(attrs: K[], as: As, options: { allbut: true }): Relation<Pick<T, K> & Record<As, Omit<T, K>>>
+  wrap<K extends keyof T, As extends string>(attrs: K[], as: As, options?: WrapOptions): Relation<Tuple>
+  wrap<K extends keyof T, As extends string>(attrs: K[], as: As, options?: WrapOptions): Relation<any> {
+    return wrap(this as any, attrs as AttrName[], as, options) as unknown as Relation<any>;
   }
 
   unwrap<K extends keyof T>(attr: K): Relation<Unwrapped<T, K>> {

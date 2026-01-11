@@ -64,4 +64,39 @@ describe('.wrap', () => {
     })
   })
 
+  describe('allbut option', () => {
+    it('wraps all attributes EXCEPT the specified ones', () => {
+      const result = SUPPLIERS.wrap(['sid', 'name'], 'details', { allbut: true });
+      const expected = Bmg([
+        { sid: 'S1', name: 'Smith', details: { status: 20, city: 'London' } },
+        { sid: 'S2', name: 'Jones', details: { status: 10, city: 'Paris' } },
+        { sid: 'S3', name: 'Blake', details: { status: 30, city: 'Paris' } },
+        { sid: 'S4', name: 'Clark', details: { status: 20, city: 'London' } },
+        { sid: 'S5', name: 'Adams', details: { status: 30, city: 'Athens' } },
+      ]);
+      expect(result.isEqual(expected)).to.be.true;
+    })
+
+    it('produces same result as regular wrap with inverted attrs', () => {
+      // wrap(['status', 'city'], 'details') should equal wrap(['sid', 'name'], 'details', { allbut: true })
+      const withoutAllbut = SUPPLIERS.wrap(['status', 'city'], 'details');
+      const withAllbut = SUPPLIERS.wrap(['sid', 'name'], 'details', { allbut: true });
+      expect(withAllbut.isEqual(withoutAllbut)).to.be.true;
+    })
+
+    it('keeps only specified attrs at top level when allbut is true', () => {
+      const result = SUPPLIERS.wrap(['sid'], 'rest', { allbut: true });
+      const smith = result.restrict({ sid: 'S1' }).one();
+      expect(smith.sid).to.eql('S1');
+      expect(smith.rest).to.eql({ name: 'Smith', status: 20, city: 'London' });
+      expect(Object.keys(smith).sort()).to.eql(['rest', 'sid']);
+    })
+
+    it('can be used standalone with allbut option', () => {
+      const res = wrap(SUPPLIERS.toArray(), ['sid', 'name'], 'details', { allbut: true });
+      const expected = SUPPLIERS.wrap(['sid', 'name'], 'details', { allbut: true });
+      expect(isEqual(res, expected)).to.be.true;
+    })
+  })
+
 });

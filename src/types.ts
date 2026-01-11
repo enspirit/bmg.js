@@ -168,6 +168,11 @@ export interface GroupOptions {
   allbut?: boolean
 }
 
+export interface WrapOptions {
+  /** If true, attrs specifies which attributes to KEEP at top level (wrap all others) */
+  allbut?: boolean
+}
+
 export type Renaming = RenamingObj | RenamingFunc
 export type RenamingFunc = (attr: AttrName) => AttrName
 export type RenamingObj = Record<AttrName, AttrName>
@@ -248,7 +253,12 @@ export interface Relation<T = Tuple> {
   /** Group with optional allbut flag */
   group<K extends keyof T, As extends string>(attrs: K[], as: As, options?: GroupOptions): Relation<Tuple>
   ungroup<K extends keyof T>(attr: K): Relation<Ungrouped<T, K>>
+  /** Wrap specified attributes into a nested object */
   wrap<K extends keyof T, As extends string>(attrs: K[], as: As): Relation<Wrapped<T, K, As>>
+  /** With allbut: true, keep specified attributes at top level, wrap all others */
+  wrap<K extends keyof T, As extends string>(attrs: K[], as: As, options: { allbut: true }): Relation<Pick<T, K> & Record<As, Omit<T, K>>>
+  /** Wrap with optional allbut flag */
+  wrap<K extends keyof T, As extends string>(attrs: K[], as: As, options?: WrapOptions): Relation<Tuple>
   unwrap<K extends keyof T>(attr: K): Relation<Unwrapped<T, K>>
 
   // === Aggregation ===

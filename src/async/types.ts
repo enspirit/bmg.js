@@ -1,4 +1,4 @@
-import type { Tuple, TypedPredicate, Relation, TypedExtension, RenameMap, Renamed, Prefixed, Suffixed, Transformation, JoinKeys, AttrName, Aggregators, AutowrapOptions, TextOptions, GroupOptions } from '../types';
+import type { Tuple, TypedPredicate, Relation, TypedExtension, RenameMap, Renamed, Prefixed, Suffixed, Transformation, JoinKeys, AttrName, Aggregators, AutowrapOptions, TextOptions, GroupOptions, WrapOptions } from '../types';
 
 /**
  * Async version of the Relation interface.
@@ -53,7 +53,7 @@ export interface AsyncRelation<T = Tuple> {
 
   group<K extends keyof T>(attrs: K[], as: AttrName, options?: GroupOptions): AsyncRelation<Tuple>
   ungroup(attr: AttrName): AsyncRelation<Tuple>
-  wrap<K extends keyof T>(attrs: K[], as: AttrName): AsyncRelation<Omit<T, K> & Record<string, Pick<T, K>>>
+  wrap<K extends keyof T>(attrs: K[], as: AttrName, options?: WrapOptions): AsyncRelation<Tuple>
   unwrap(attr: AttrName): AsyncRelation<Tuple>
   image<U = Tuple>(other: AsyncRelationOperand<U>, as: AttrName, keys?: JoinKeys): AsyncRelation<T & Record<string, Relation<U>>>
   summarize<K extends keyof T>(by: K[], aggs: Aggregators): AsyncRelation<Pick<T, K> & Tuple>

@@ -1,5 +1,5 @@
 import type { AsyncRelation, AsyncRelationOperand } from '../types';
-import type { Tuple, TypedPredicate, TypedExtension, AttrName, Relation, RenameMap, Renamed, Prefixed, Suffixed, Transformation, JoinKeys, Aggregators, AutowrapOptions, TextOptions, GroupOptions } from '../../types';
+import type { Tuple, TypedPredicate, TypedExtension, AttrName, Relation, RenameMap, Renamed, Prefixed, Suffixed, Transformation, JoinKeys, Aggregators, AutowrapOptions, TextOptions, GroupOptions, WrapOptions } from '../../types';
 import { MemoryRelation } from '../../sync/Relation';
 import {
   restrict as restrictOp,
@@ -183,10 +183,10 @@ export class BaseAsyncRelation<T = Tuple> implements AsyncRelation<T> {
     ) as unknown as AsyncRelation<Tuple>;
   }
 
-  wrap<K extends keyof T>(attrs: K[], as: string): AsyncRelation<Omit<T, K> & Record<string, Pick<T, K>>> {
+  wrap<K extends keyof T>(attrs: K[], as: string, options?: WrapOptions): AsyncRelation<Tuple> {
     return new BaseAsyncRelation(
-      wrapOp(this.source, attrs as string[], as)
-    ) as unknown as AsyncRelation<Omit<T, K> & Record<string, Pick<T, K>>>;
+      wrapOp(this.source, attrs as string[], as, options)
+    ) as unknown as AsyncRelation<Tuple>;
   }
 
   unwrap(attr: string): AsyncRelation<Tuple> {

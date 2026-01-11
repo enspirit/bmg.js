@@ -25,4 +25,18 @@ describe('AsyncRelation.wrap', () => {
     const unwrapped = wrapped.unwrap('details');
     expect(isEqual(unwrapped, syncSuppliers())).to.be.true;
   });
+
+  describe('allbut option', () => {
+    it('wraps all attributes EXCEPT the specified ones', async () => {
+      const got = await suppliers().wrap(['sid', 'name'], 'details', { allbut: true }).toRelation();
+      const expected = syncSuppliers().wrap(['sid', 'name'], 'details', { allbut: true });
+      expect(isEqual(got, expected)).to.be.true;
+    });
+
+    it('produces same result as regular wrap with inverted attrs', async () => {
+      const withoutAllbut = await suppliers().wrap(['status', 'city'], 'details').toRelation();
+      const withAllbut = await suppliers().wrap(['sid', 'name'], 'details', { allbut: true }).toRelation();
+      expect(isEqual(withAllbut, withoutAllbut)).to.be.true;
+    });
+  });
 });

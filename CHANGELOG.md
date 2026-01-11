@@ -14,6 +14,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - With allbut: `group(['city'], 'people', { allbut: true })` keeps `city` at top level, groups all other attributes
   - Matches Ruby BMG syntax: `r.group([:city], { allbut: true })`
 
+- **`allbut` option for `wrap` operator**: New `{ allbut: true }` option inverts the meaning of the attrs parameter
+  - Without allbut: `wrap(['status', 'city'], 'details')` wraps `status` and `city` into nested object
+  - With allbut: `wrap(['sid', 'name'], 'details', { allbut: true })` keeps `sid` and `name` at top level, wraps all other attributes
+  - Matches Ruby BMG syntax: `r.wrap([:sid, :name], { allbut: true })`
+
 - Extended DEE/DUM edge case tests to cover all remaining operators:
   - Filtering: `restrict`, `where`, `exclude`
   - Projection: `allbut`
