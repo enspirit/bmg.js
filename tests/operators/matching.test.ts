@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { Bmg, DEE, DUM } from 'src';
-import { matching , isEqual } from 'src/operators';
+import { matching , isEqual } from 'src/sync/operators';
 
 describe('.matching', () => {
 

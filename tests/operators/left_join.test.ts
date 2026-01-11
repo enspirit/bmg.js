@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { Bmg, DEE, DUM } from 'src';
-import { left_join , isEqual } from 'src/operators';
+import { left_join , isEqual } from 'src/sync/operators';
 
 describe('.left_join', () => {
 

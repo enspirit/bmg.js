@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { Bmg, DEE, DUM } from 'src';
-import { union , isEqual } from 'src/operators';
+import { union , isEqual } from 'src/sync/operators';
 
 describe('.union', () => {
 

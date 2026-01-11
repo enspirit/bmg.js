@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { Bmg } from 'src';
-import { cross_product, cross_join , isEqual } from 'src/operators';
+import { cross_product, cross_join , isEqual } from 'src/sync/operators';
 
 describe('.cross_product', () => {
 

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { Bmg, DEE, DUM } from 'src';
 import { SUPPLIERS } from 'tests/fixtures';
-import { exclude , isEqual } from 'src/operators';
+import { exclude , isEqual } from 'src/sync/operators';
 
 describe('.exclude', () => {
 

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { SUPPLIERS } from 'tests/fixtures';
-import { yByX } from 'src/operators';
+import { yByX } from 'src/sync/operators';
 
 describe('.yByX', () => {
 

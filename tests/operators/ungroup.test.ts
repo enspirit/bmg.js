@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { Bmg, DEE, DUM } from 'src';
-import { ungroup , isEqual } from 'src/operators';
+import { ungroup , isEqual } from 'src/sync/operators';
 
 describe('.ungroup', () => {
 

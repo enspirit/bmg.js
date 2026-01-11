@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 
 import { SUPPLIERS } from 'tests/fixtures';
-import { where , isEqual } from 'src/operators';
+import { where , isEqual } from 'src/sync/operators';
 import { DEE, DUM } from 'src';
 
 describe('.where', () => {

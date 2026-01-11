@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 
 import { SUPPLIERS } from 'tests/fixtures';
-import { extend , isEqual } from 'src/operators';
+import { extend , isEqual } from 'src/sync/operators';
 import { Bmg, DEE, DUM } from 'src';
 
 describe('.extend', () => {

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { SUPPLIERS } from 'tests/fixtures';
 import { Bmg, DEE, DUM } from 'src';
-import { summarize, isEqual } from 'src/operators';
+import { summarize, isEqual } from 'src/sync/operators';
 
 describe('.summarize', () => {
 

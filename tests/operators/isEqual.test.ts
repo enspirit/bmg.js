@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { Bmg } from 'src';
-import { isEqual } from 'src/operators';
+import { isEqual } from 'src/sync/operators';
 
 describe('.isEqual', () => {
 

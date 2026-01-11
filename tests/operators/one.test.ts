@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { SUPPLIERS } from 'tests/fixtures';
-import { one } from 'src/operators';
+import { one } from 'src/sync/operators';
 
 describe('.one', () => {
 
