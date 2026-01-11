@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { Bmg } from 'src';
+import { Bmg, DEE, DUM } from 'src';
 import { autowrap , isEqual } from 'src/operators';
 
 describe('.autowrap', () => {
@@ -77,6 +77,18 @@ describe('.autowrap', () => {
     const res = autowrap(input.toArray());
     const expected = input.autowrap();
     expect(isEqual(res, expected)).to.be.true;
+  })
+
+  describe('DEE and DUM', () => {
+    it('DEE.autowrap = DEE (no attributes to wrap)', () => {
+      const result = DEE.autowrap();
+      expect(result.isEqual(DEE)).to.be.true;
+    })
+
+    it('DUM.autowrap = DUM (no tuples to wrap)', () => {
+      const result = DUM.autowrap();
+      expect(result.isEqual(DUM)).to.be.true;
+    })
   })
 
 });

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { Bmg } from 'src';
+import { Bmg, DEE, DUM } from 'src';
 import { ungroup , isEqual } from 'src/operators';
 
 describe('.ungroup', () => {
@@ -62,6 +62,27 @@ describe('.ungroup', () => {
     const res = ungroup(grouped.toArray(), 'items');
     const expected = grouped.ungroup('items');
     expect(isEqual(res, expected)).to.be.true;
+  })
+
+  describe('DEE and DUM', () => {
+    it('ungroup with nested DEE yields the parent tuple', () => {
+      const withNested = Bmg([{ x: 1, nested: DEE }]);
+      const result = withNested.ungroup('nested');
+      const expected = Bmg([{ x: 1 }]);
+      expect(result.isEqual(expected)).to.be.true;
+    })
+
+    it('ungroup with nested DUM removes the parent tuple', () => {
+      const withNested = Bmg([{ x: 1, nested: DUM }]);
+      const result = withNested.ungroup('nested');
+      // ungrouping DUM produces no rows for that parent
+      expect(result.isEqual(Bmg([]))).to.be.true;
+    })
+
+    it('DUM.ungroup = DUM (no tuples to ungroup)', () => {
+      const result = DUM.ungroup('x');
+      expect(result.isEqual(DUM)).to.be.true;
+    })
   })
 
 });

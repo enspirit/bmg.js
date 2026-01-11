@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { Bmg } from 'src';
+import { Bmg, DEE, DUM } from 'src';
 import { SUPPLIERS } from 'tests/fixtures';
 import { allbut, isEqual } from 'src/operators';
 
@@ -46,6 +46,24 @@ describe('.allbut', () => {
     const res = allbut(input, ['status', 'city']);
     const expected = SUPPLIERS.allbut(['status', 'city']);
     expect(isEqual(res, expected)).to.be.true;
+  })
+
+  describe('DEE and DUM', () => {
+    it('allbut on nothing yields DEE for non-empty relation', () => {
+      // Removing all attributes from a non-empty relation yields DEE
+      const result = SUPPLIERS.allbut(['sid', 'name', 'status', 'city']);
+      expect(result.isEqual(DEE)).to.be.true;
+    })
+
+    it('DEE.allbut([]) = DEE', () => {
+      const result = DEE.allbut([]);
+      expect(result.isEqual(DEE)).to.be.true;
+    })
+
+    it('DUM.allbut([]) = DUM', () => {
+      const result = DUM.allbut([]);
+      expect(result.isEqual(DUM)).to.be.true;
+    })
   })
 
 });

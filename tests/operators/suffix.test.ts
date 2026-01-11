@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { Bmg } from 'src';
+import { Bmg, DEE, DUM } from 'src';
 import { SUPPLIERS } from 'tests/fixtures';
 import { suffix , isEqual } from 'src/operators';
 
@@ -32,6 +32,18 @@ describe('.suffix', () => {
     const res = suffix(input, '_y');
     const expected = SUPPLIERS.suffix('_y');
     expect(isEqual(res, expected)).to.be.true;
+  })
+
+  describe('DEE and DUM', () => {
+    it('DEE.suffix = DEE (no attributes to suffix)', () => {
+      const result = DEE.suffix('_x');
+      expect(result.isEqual(DEE)).to.be.true;
+    })
+
+    it('DUM.suffix = DUM (no attributes to suffix)', () => {
+      const result = DUM.suffix('_x');
+      expect(result.isEqual(DUM)).to.be.true;
+    })
   })
 
 });

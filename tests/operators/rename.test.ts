@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { Bmg } from 'src';
+import { Bmg, DEE, DUM } from 'src';
 import { SUPPLIERS } from 'tests/fixtures';
 import { rename , isEqual } from 'src/operators';
 
@@ -34,6 +34,18 @@ describe('.rename', () => {
     const smith = Bmg(renamed).restrict({ SID: 'S1' }).one();
     const keys = Object.keys(smith).sort();
     expect(keys).to.eql(['CITY', 'NAME', 'SID', 'STATUS']);
+  })
+
+  describe('DEE and DUM', () => {
+    it('DEE.rename({}) = DEE (no attributes to rename)', () => {
+      const result = DEE.rename({});
+      expect(result.isEqual(DEE)).to.be.true;
+    })
+
+    it('DUM.rename({}) = DUM (no attributes to rename)', () => {
+      const result = DUM.rename({});
+      expect(result.isEqual(DUM)).to.be.true;
+    })
   })
 
 });

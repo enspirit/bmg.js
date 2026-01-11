@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { Bmg } from 'src';
+import { Bmg, DEE, DUM } from 'src';
 import { SUPPLIERS } from 'tests/fixtures';
 import { wrap , isEqual } from 'src/operators';
 
@@ -49,6 +49,19 @@ describe('.wrap', () => {
     const res = wrap(SUPPLIERS.toArray(), ['status', 'city'], 'details');
     const expected = SUPPLIERS.wrap(['status', 'city'], 'details');
     expect(isEqual(res, expected)).to.be.true;
+  })
+
+  describe('DEE and DUM', () => {
+    it('DEE.wrap([], attr) creates tuple with empty nested object', () => {
+      const result = DEE.wrap([], 'wrapped');
+      const expected = Bmg([{ wrapped: {} }]);
+      expect(result.isEqual(expected)).to.be.true;
+    })
+
+    it('DUM.wrap([], attr) = DUM (no tuples to wrap)', () => {
+      const result = DUM.wrap([], 'wrapped');
+      expect(result.isEqual(DUM)).to.be.true;
+    })
   })
 
 });

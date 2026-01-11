@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { Bmg } from 'src';
+import { Bmg, DEE, DUM } from 'src';
 import { group , isEqual } from 'src/operators';
 
 describe('.group', () => {
@@ -64,6 +64,19 @@ describe('.group', () => {
     const res = group(orders.toArray(), ['item', 'qty'], 'items');
     const expected = orders.group(['item', 'qty'], 'items');
     expect(isEqual(res, expected)).to.be.true;
+  })
+
+  describe('DEE and DUM', () => {
+    it('DEE.group([], attr) creates relation with nested DEE', () => {
+      const result = DEE.group([], 'grouped');
+      const expected = Bmg([{ grouped: DEE }]);
+      expect(result.isEqual(expected)).to.be.true;
+    })
+
+    it('DUM.group([], attr) = DUM (no tuples to group)', () => {
+      const result = DUM.group([], 'grouped');
+      expect(result.isEqual(DUM)).to.be.true;
+    })
   })
 
 });

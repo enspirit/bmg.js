@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { Bmg } from 'src';
+import { Bmg, DEE, DUM } from 'src';
 import { SUPPLIERS } from 'tests/fixtures';
 import { exclude , isEqual } from 'src/operators';
 
@@ -38,6 +38,28 @@ describe('.exclude', () => {
     const res = exclude(input, { city: 'Paris' });
     const expected = SUPPLIERS.exclude({ city: 'Paris' });
     expect(isEqual(res, expected)).to.be.true;
+  })
+
+  describe('DEE and DUM', () => {
+    it('DEE.exclude(true) = DUM', () => {
+      const result = DEE.exclude(() => true);
+      expect(result.isEqual(DUM)).to.be.true;
+    })
+
+    it('DEE.exclude(false) = DEE', () => {
+      const result = DEE.exclude(() => false);
+      expect(result.isEqual(DEE)).to.be.true;
+    })
+
+    it('DUM.exclude(true) = DUM', () => {
+      const result = DUM.exclude(() => true);
+      expect(result.isEqual(DUM)).to.be.true;
+    })
+
+    it('DUM.exclude(false) = DUM', () => {
+      const result = DUM.exclude(() => false);
+      expect(result.isEqual(DUM)).to.be.true;
+    })
   })
 
 });

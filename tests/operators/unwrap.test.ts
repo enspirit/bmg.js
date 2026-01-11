@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { Bmg } from 'src';
+import { Bmg, DEE, DUM } from 'src';
 import { SUPPLIERS } from 'tests/fixtures';
 import { unwrap , isEqual } from 'src/operators';
 
@@ -45,6 +45,20 @@ describe('.unwrap', () => {
     const res = unwrap(wrapped.toArray(), 'details');
     const expected = wrapped.unwrap('details');
     expect(isEqual(res, expected)).to.be.true;
+  })
+
+  describe('DEE and DUM', () => {
+    it('unwrap with empty nested object yields parent attributes only', () => {
+      const withEmpty = Bmg([{ x: 1, nested: {} }]);
+      const result = withEmpty.unwrap('nested');
+      const expected = Bmg([{ x: 1 }]);
+      expect(result.isEqual(expected)).to.be.true;
+    })
+
+    it('DUM.unwrap = DUM (no tuples to unwrap)', () => {
+      const result = DUM.unwrap('x');
+      expect(result.isEqual(DUM)).to.be.true;
+    })
   })
 
 });

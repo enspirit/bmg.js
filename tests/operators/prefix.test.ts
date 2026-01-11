@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { Bmg } from 'src';
+import { Bmg, DEE, DUM } from 'src';
 import { SUPPLIERS } from 'tests/fixtures';
 import { prefix , isEqual } from 'src/operators';
 
@@ -32,6 +32,18 @@ describe('.prefix', () => {
     const res = prefix(input, 'x_');
     const expected = SUPPLIERS.prefix('x_');
     expect(isEqual(res, expected)).to.be.true;
+  })
+
+  describe('DEE and DUM', () => {
+    it('DEE.prefix = DEE (no attributes to prefix)', () => {
+      const result = DEE.prefix('x_');
+      expect(result.isEqual(DEE)).to.be.true;
+    })
+
+    it('DUM.prefix = DUM (no attributes to prefix)', () => {
+      const result = DUM.prefix('x_');
+      expect(result.isEqual(DUM)).to.be.true;
+    })
   })
 
 });

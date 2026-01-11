@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { SUPPLIERS } from 'tests/fixtures';
-import { Bmg } from 'src';
+import { Bmg, DEE, DUM } from 'src';
 import { summarize, isEqual } from 'src/operators';
 
 describe('.summarize', () => {
@@ -104,6 +104,26 @@ describe('.summarize', () => {
     const standalone = summarize(SUPPLIERS.toArray(), ['city'], { count: 'count' });
     const expected = SUPPLIERS.summarize(['city'], { count: 'count' });
     expect(isEqual(standalone, expected)).to.be.true;
+  })
+
+  describe('DEE and DUM', () => {
+    it('DEE.summarize([], count) = {count: 1}', () => {
+      const result = DEE.summarize([], { count: 'count' });
+      const expected = Bmg([{ count: 1 }]);
+      expect(result.isEqual(expected)).to.be.true;
+    })
+
+    it('DUM.summarize([], count) yields empty result (no groups)', () => {
+      // When summarizing an empty relation, no groups are formed
+      const result = DUM.summarize([], { count: 'count' });
+      expect(result.isEqual(DUM)).to.be.true;
+    })
+
+    it('empty relation with grouping yields empty result', () => {
+      const empty = Bmg<{ city: string; count: number }>([]);
+      const result = empty.summarize(['city'], { count: 'count' });
+      expect(result.isEqual(Bmg([]))).to.be.true;
+    })
   })
 
 });

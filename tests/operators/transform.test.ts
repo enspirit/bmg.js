@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { Bmg } from 'src';
+import { Bmg, DEE, DUM } from 'src';
 import { transform, isEqual } from 'src/operators';
 
 describe('.transform', () => {
@@ -89,6 +89,18 @@ describe('.transform', () => {
     const standalone = transform(data.toArray(), { name: (v) => (v as string).toUpperCase() });
     const expected = data.transform({ name: (v) => (v as string).toUpperCase() });
     expect(isEqual(standalone, expected)).to.be.true;
+  })
+
+  describe('DEE and DUM', () => {
+    it('DEE.transform = DEE (no attributes to transform)', () => {
+      const result = DEE.transform(String);
+      expect(result.isEqual(DEE)).to.be.true;
+    })
+
+    it('DUM.transform = DUM (no tuples to transform)', () => {
+      const result = DUM.transform(String);
+      expect(result.isEqual(DUM)).to.be.true;
+    })
   })
 
 });

@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 
 import { SUPPLIERS } from 'tests/fixtures';
 import { extend , isEqual } from 'src/operators';
+import { Bmg, DEE, DUM } from 'src';
 
 describe('.extend', () => {
 
@@ -40,6 +41,19 @@ describe('.extend', () => {
     const res = extend(input, { location: 'city' });
     const expected = SUPPLIERS.extend({ location: 'city' });
     expect(isEqual(res, expected)).to.be.true;
+  })
+
+  describe('DEE and DUM', () => {
+    it('DEE.extend adds attribute to the single empty tuple', () => {
+      const result = DEE.extend({ x: () => 1 });
+      const expected = Bmg([{ x: 1 }]);
+      expect(result.isEqual(expected)).to.be.true;
+    })
+
+    it('DUM.extend = DUM (no tuples to extend)', () => {
+      const result = DUM.extend({ x: () => 1 });
+      expect(result.isEqual(DUM)).to.be.true;
+    })
   })
 
 });
