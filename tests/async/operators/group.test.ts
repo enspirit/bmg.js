@@ -33,4 +33,18 @@ describe('AsyncRelation.group', () => {
     const expected = Bmg([]);
     expect(isEqual(got, expected)).to.be.true;
   });
+
+  describe('allbut option', () => {
+    it('groups all attributes EXCEPT the specified ones', async () => {
+      const got = await asyncOrders().group(['order_id', 'customer'], 'items', { allbut: true }).toRelation();
+      const expected = syncOrders().group(['order_id', 'customer'], 'items', { allbut: true });
+      expect(isEqual(got, expected)).to.be.true;
+    });
+
+    it('produces same result as regular group with inverted attrs', async () => {
+      const withoutAllbut = await asyncOrders().group(['item', 'qty'], 'items').toRelation();
+      const withAllbut = await asyncOrders().group(['order_id', 'customer'], 'items', { allbut: true }).toRelation();
+      expect(isEqual(withAllbut, withoutAllbut)).to.be.true;
+    });
+  });
 });

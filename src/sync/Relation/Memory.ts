@@ -32,6 +32,7 @@ import {
 import type {
   AttrName,
   AutowrapOptions,
+  GroupOptions,
   Relation,
   RelationOperand,
   TextOptions,
@@ -161,8 +162,11 @@ export class MemoryRelation<T = Tuple> implements Relation<T> {
     return image(this as any, right as any, as, keys as any) as unknown as Relation<T & Record<As, Relation<Omit<R, keyof T & keyof R>>>>;
   }
 
-  group<K extends keyof T, As extends string>(attrs: K[], as: As): Relation<Omit<T, K> & Record<As, Relation<Pick<T, K>>>> {
-    return group(this as any, attrs as AttrName[], as) as unknown as Relation<Omit<T, K> & Record<As, Relation<Pick<T, K>>>>;
+  group<K extends keyof T, As extends string>(attrs: K[], as: As): Relation<Omit<T, K> & Record<As, Relation<Pick<T, K>>>>
+  group<K extends keyof T, As extends string>(attrs: K[], as: As, options: { allbut: true }): Relation<Pick<T, K> & Record<As, Relation<Omit<T, K>>>>
+  group<K extends keyof T, As extends string>(attrs: K[], as: As, options?: GroupOptions): Relation<Tuple>
+  group<K extends keyof T, As extends string>(attrs: K[], as: As, options?: GroupOptions): Relation<any> {
+    return group(this as any, attrs as AttrName[], as, options) as unknown as Relation<any>;
   }
 
   ungroup<K extends keyof T>(attr: K): Relation<Ungrouped<T, K>> {

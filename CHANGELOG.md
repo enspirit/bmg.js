@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **`allbut` option for `group` operator**: New `{ allbut: true }` option inverts the meaning of the attrs parameter
+  - Without allbut: `group(['item', 'qty'], 'items')` groups `item` and `qty` into nested relation
+  - With allbut: `group(['city'], 'people', { allbut: true })` keeps `city` at top level, groups all other attributes
+  - Matches Ruby BMG syntax: `r.group([:city], { allbut: true })`
+
 - Extended DEE/DUM edge case tests to cover all remaining operators:
   - Filtering: `restrict`, `where`, `exclude`
   - Projection: `allbut`

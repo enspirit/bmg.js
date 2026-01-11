@@ -66,6 +66,6 @@ Additional methods on `Relation<T>`:
 
 **Aggregation:** `Aggregator`, `Aggregators`, `AggregatorName`, `AggregatorSpec`
 
-**Options:** `TextOptions`, `AutowrapOptions`, `PrefixOptions`, `SuffixOptions`
+**Options:** `TextOptions`, `AutowrapOptions`, `PrefixOptions`, `SuffixOptions`, `GroupOptions`
 
 **Utility types:** `Renamed`, `Prefixed`, `Suffixed`, `Joined`, `LeftJoined`, `Wrapped`, `Unwrapped`, `Ungrouped`, `CommonKeys`

@@ -344,6 +344,19 @@ describe('Type Safety', () => {
       // items should be a Relation of the grouped attributes
       expectTypeOf(tuple.items).toMatchTypeOf<Relation<{ item: string; qty: number }>>();
     });
+
+    it('with allbut: true keeps specified attrs at top level', () => {
+      const r = Bmg<{ orderId: number; item: string; qty: number }>([
+        { orderId: 1, item: 'A', qty: 10 }
+      ]);
+
+      // With allbut: true, orderId stays at top, item and qty go into nested
+      const grouped = r.group(['orderId'], 'items', { allbut: true });
+      const tuple = grouped.one();
+
+      expectTypeOf(tuple.orderId).toBeNumber();
+      expectTypeOf(tuple.items).toMatchTypeOf<Relation<{ item: string; qty: number }>>();
+    });
   });
 
   describe('wrap()', () => {

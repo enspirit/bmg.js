@@ -1,5 +1,5 @@
 import type { AsyncRelationOperand } from '../types';
-import type { AttrName, Tuple } from '../../types';
+import type { AttrName, Tuple, GroupOptions } from '../../types';
 import { MemoryRelation } from '../../sync/Relation';
 
 const groupKey = (tuple: Tuple, byAttrs: AttrName[]): string => {
@@ -17,11 +17,15 @@ const pickAttrs = (tuple: Tuple, attrs: AttrName[]): Tuple => {
 /**
  * Groups specified attributes into a nested relation.
  * Materializes all tuples to perform grouping.
+ *
+ * With `options.allbut: true`, the attrs specify which attributes to KEEP
+ * at the top level, and all others are grouped into the nested relation.
  */
 export async function* group<T>(
   operand: AsyncRelationOperand<T>,
   attrs: AttrName[],
-  as: AttrName
+  as: AttrName,
+  options?: GroupOptions
 ): AsyncIterable<Tuple> {
   // Materialize all tuples
   const tuples: Tuple[] = [];
@@ -33,10 +37,18 @@ export async function* group<T>(
     return;
   }
 
-  // Determine which attributes to keep at the top level (all except grouped ones)
   const allAttrs = Object.keys(tuples[0]);
-  const groupedSet = new Set(attrs);
-  const byAttrs = allAttrs.filter(a => !groupedSet.has(a));
+  const attrSet = new Set(attrs);
+
+  // With allbut: attrs are the ones to KEEP at top level (group all others)
+  // Without allbut: attrs are the ones to GROUP into nested relation
+  const byAttrs = options?.allbut
+    ? attrs.filter(a => allAttrs.includes(a))  // Keep these at top level
+    : allAttrs.filter(a => !attrSet.has(a));   // Keep non-grouped at top level
+
+  const groupedAttrs = options?.allbut
+    ? allAttrs.filter(a => !attrSet.has(a))    // Group non-specified into nested
+    : attrs.filter(a => allAttrs.includes(a)); // Group specified into nested
 
   // Group tuples
   const groups = new Map<string, { base: Tuple; nested: Tuple[] }>();
@@ -48,7 +60,7 @@ export async function* group<T>(
         nested: []
       });
     }
-    groups.get(key)!.nested.push(pickAttrs(tuple, attrs));
+    groups.get(key)!.nested.push(pickAttrs(tuple, groupedAttrs));
   }
 
   // Yield results with nested relations

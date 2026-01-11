@@ -163,6 +163,11 @@ export interface AutowrapOptions {
   separator?: string
 }
 
+export interface GroupOptions {
+  /** If true, attrs specifies which attributes to KEEP at top level (group all others) */
+  allbut?: boolean
+}
+
 export type Renaming = RenamingObj | RenamingFunc
 export type RenamingFunc = (attr: AttrName) => AttrName
 export type RenamingObj = Record<AttrName, AttrName>
@@ -236,7 +241,12 @@ export interface Relation<T = Tuple> {
   // === Nesting operators ===
 
   image<R, As extends string>(right: RelationOperand<R>, as: As, keys?: TypedJoinKeysArray<T, R> | TypedJoinKeysObject<T, R>): Relation<T & Record<As, Relation<Omit<R, keyof T & keyof R>>>>
+  /** Group specified attributes into a nested relation */
   group<K extends keyof T, As extends string>(attrs: K[], as: As): Relation<Omit<T, K> & Record<As, Relation<Pick<T, K>>>>
+  /** With allbut: true, keep specified attributes at top level, group all others */
+  group<K extends keyof T, As extends string>(attrs: K[], as: As, options: { allbut: true }): Relation<Pick<T, K> & Record<As, Relation<Omit<T, K>>>>
+  /** Group with optional allbut flag */
+  group<K extends keyof T, As extends string>(attrs: K[], as: As, options?: GroupOptions): Relation<Tuple>
   ungroup<K extends keyof T>(attr: K): Relation<Ungrouped<T, K>>
   wrap<K extends keyof T, As extends string>(attrs: K[], as: As): Relation<Wrapped<T, K, As>>
   unwrap<K extends keyof T>(attr: K): Relation<Unwrapped<T, K>>

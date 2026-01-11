@@ -1,5 +1,5 @@
 import type { AsyncRelation, AsyncRelationOperand } from '../types';
-import type { Tuple, TypedPredicate, TypedExtension, AttrName, Relation, RenameMap, Renamed, Prefixed, Suffixed, Transformation, JoinKeys, Aggregators, AutowrapOptions, TextOptions } from '../../types';
+import type { Tuple, TypedPredicate, TypedExtension, AttrName, Relation, RenameMap, Renamed, Prefixed, Suffixed, Transformation, JoinKeys, Aggregators, AutowrapOptions, TextOptions, GroupOptions } from '../../types';
 import { MemoryRelation } from '../../sync/Relation';
 import {
   restrict as restrictOp,
@@ -171,10 +171,10 @@ export class BaseAsyncRelation<T = Tuple> implements AsyncRelation<T> {
 
   // === Nesting/Grouping ===
 
-  group<K extends keyof T>(attrs: K[], as: string): AsyncRelation<Omit<T, K> & Record<string, Relation<Pick<T, K>>>> {
+  group<K extends keyof T>(attrs: K[], as: string, options?: GroupOptions): AsyncRelation<Tuple> {
     return new BaseAsyncRelation(
-      groupOp(this.source, attrs as string[], as)
-    ) as unknown as AsyncRelation<Omit<T, K> & Record<string, Relation<Pick<T, K>>>>;
+      groupOp(this.source, attrs as string[], as, options)
+    ) as unknown as AsyncRelation<Tuple>;
   }
 
   ungroup(attr: string): AsyncRelation<Tuple> {

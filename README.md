@@ -100,7 +100,7 @@ See the [full type-safe example](./example/index.ts) for more.
 | | `cross_product(other)` | Cartesian product |
 | | `cross_join(other)` | Alias for cross_product |
 | **Nesting & Grouping** | `image(other, as, keys?)` | Nest matching tuples as relation attribute |
-| | `group(attrs, as)` | Group attributes into nested relation |
+| | `group(attrs, as, options?)` | Group attributes into nested relation. With `{ allbut: true }`, keep attrs at top level instead |
 | | `ungroup(attr)` | Flatten nested relation |
 | | `wrap(attrs, as)` | Wrap attributes into tuple-valued attribute |
 | | `unwrap(attr)` | Flatten tuple-valued attribute |
