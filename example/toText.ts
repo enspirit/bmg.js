@@ -166,11 +166,42 @@ console.log('\n--- Trimmed output (trimAt: 40) ---');
 console.log(suppliers.toText({ trimAt: 40 }));
 
 // =============================================================================
-// Example 8: Complex Nesting (group + summarize)
+// Example 8: Border Styles
 // =============================================================================
 
 console.log('='.repeat(70));
-console.log('EXAMPLE 8: Complex Nesting');
+console.log('EXAMPLE 8: Border Styles');
+console.log('='.repeat(70));
+
+const sample = Bmg([
+  { id: 1, name: 'Alice' },
+  { id: 2, name: 'Bob' },
+]);
+
+console.log('\n--- ASCII (default) ---');
+console.log(sample.toText({ border: 'ascii' }));
+
+console.log('\n--- Single (Unicode single lines) ---');
+console.log(sample.toText({ border: 'single' }));
+
+console.log('\n--- Double (Unicode double lines) ---');
+console.log(sample.toText({ border: 'double' }));
+
+console.log('\n--- Rounded (Unicode rounded corners) ---');
+console.log(sample.toText({ border: 'rounded' }));
+
+console.log('\n--- Border style with nested relations ---');
+const nested = suppliers
+  .project(['sid', 'name', 'city'])
+  .group(['sid', 'name'], 'suppliers');
+console.log(nested.toText({ border: 'single' }));
+
+// =============================================================================
+// Example 9: Complex Nesting (group + summarize)
+// =============================================================================
+
+console.log('='.repeat(70));
+console.log('EXAMPLE 9: Complex Nesting');
 console.log('='.repeat(70));
 
 console.log('\n--- Shipments summarized by supplier, with supplier info ---');
