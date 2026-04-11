@@ -1,0 +1,43 @@
+{
+  "name": "@enspirit/predicate",
+  "version": "0.1.0",
+  "description": "Boolean predicate algebra with AST, evaluation, and SQL compilation",
+  "keywords": [
+    "predicate",
+    "boolean",
+    "algebra",
+    "sql",
+    "ast",
+    "query"
+  ],
+  "license": "MIT",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/enspirit/bmg.js"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "tsup": "^8.5.1",
+    "typescript": "^5.0.0",
+    "vitest": "^4.0.16"
+  }
+}
