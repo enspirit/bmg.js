@@ -6,7 +6,7 @@
     "outDir": "dist",
     "lib": ["esnext"],
     "skipLibCheck": true,
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,

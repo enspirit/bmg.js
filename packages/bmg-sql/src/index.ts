@@ -33,6 +33,12 @@ export type { SqlDialect } from './dialect';
 export { compile, compilePredicate } from './compile';
 export type { CompiledSql } from './compile';
 
+// Adapter
+export type { DatabaseAdapter } from './adapter';
+
+// Relation
+export { SqlRelation, BmgSql } from './relation';
+
 // Processors
 export {
   processWhere,

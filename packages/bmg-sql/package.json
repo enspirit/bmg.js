@@ -36,6 +36,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@enspirit/bmg-js": "workspace:^",
     "@enspirit/predicate": "workspace:^"
   },
   "devDependencies": {

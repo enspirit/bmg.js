@@ -5,6 +5,9 @@ export default defineConfig({
   resolve: {
     alias: {
       '@enspirit/predicate': path.resolve(__dirname, '../predicate/src/index.ts'),
+      '@enspirit/bmg-js/async': path.resolve(__dirname, '../bmg/src/async.ts'),
+      '@enspirit/bmg-js': path.resolve(__dirname, '../bmg/src/index.ts'),
+      '@': path.resolve(__dirname, '../bmg/src'),
     },
   },
   test: {
