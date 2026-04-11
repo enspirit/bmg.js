@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Monorepo structure**: Repository converted to pnpm workspace monorepo. Core package moved to `packages/bmg/`.
 - **Build tool**: Replaced microbundle with tsup for more reliable TypeScript builds.
 - **Exports**: Updated package exports to standard ESM/CJS dual format (`.js`/`.cjs`).
+- **Structured predicates**: `restrict()`, `where()`, and `exclude()` now accept structured predicate AST nodes from `@enspirit/predicate` alongside plain objects and functions.
 
 ### Added
 

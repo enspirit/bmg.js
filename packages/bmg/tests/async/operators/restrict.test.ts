@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { Pred } from '@enspirit/predicate';
 import { Bmg, isEqual } from 'src';
 import { AsyncBmg } from 'src/async';
 import { createAsyncIterable, SUPPLIERS_DATA, Supplier } from '../fixtures';
@@ -27,6 +28,21 @@ describe('AsyncRelation.restrict', () => {
     const expected = syncSuppliers()
       .restrict({ city: 'Paris' })
       .restrict((t) => t.status === 30);
+    expect(isEqual(got, expected)).to.be.true;
+  });
+
+  it('accepts structured predicates', async () => {
+    const got = await suppliers().restrict(Pred.eq('sid', 'S1')).toRelation();
+    const expected = syncSuppliers().restrict({ sid: 'S1' });
+    expect(isEqual(got, expected)).to.be.true;
+  });
+
+  it('accepts complex structured predicates', async () => {
+    const got = await suppliers()
+      .restrict(Pred.and(Pred.eq('city', 'London'), Pred.gte('status', 20)))
+      .toRelation();
+    const expected = syncSuppliers()
+      .restrict((t) => t.city === 'London' && t.status >= 20);
     expect(isEqual(got, expected)).to.be.true;
   });
 

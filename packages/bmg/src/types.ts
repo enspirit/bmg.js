@@ -115,15 +115,17 @@ export type AggregatorResults<Aggs extends Record<string, unknown>> = {
 // Predicate Types
 // ============================================================================
 
+import type { Predicate as StructuredPredicate } from '@enspirit/predicate';
+
 /** Predicate function that receives a typed tuple */
 export type TypedPredicateFunc<T> = (t: T) => boolean
 
-/** Predicate: either a partial tuple for equality matching, or a function */
-export type TypedPredicate<T> = Partial<T> | TypedPredicateFunc<T>
+/** Predicate: a partial tuple for equality matching, a function, or a structured predicate AST */
+export type TypedPredicate<T> = Partial<T> | TypedPredicateFunc<T> | StructuredPredicate
 
 // Legacy predicate types (for backwards compatibility with standalone operators)
 export type PredicateFunc = ((t: Tuple) => any)
-export type Predicate = Tuple | PredicateFunc
+export type Predicate = Tuple | PredicateFunc | StructuredPredicate
 
 // ============================================================================
 // Extension Types
