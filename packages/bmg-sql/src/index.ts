@@ -32,3 +32,16 @@ export type { SqlDialect } from './dialect';
 // Compiler
 export { compile, compilePredicate } from './compile';
 export type { CompiledSql } from './compile';
+
+// Processors
+export {
+  processWhere,
+  processProject,
+  processAllbut,
+  processRename,
+  processExtend,
+  processConstants,
+  processRequalify,
+  processJoin,
+  processMerge,
+} from './processors';
