@@ -1,0 +1,52 @@
+{
+  "name": "@enspirit/bmg-js",
+  "version": "1.1.1",
+  "description": "Relational algebra for JavaScript/TypeScript - work with arrays of objects using powerful set operations",
+  "keywords": [
+    "relational",
+    "algebra",
+    "relation",
+    "set",
+    "query",
+    "data",
+    "functional"
+  ],
+  "license": "MIT",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/enspirit/bmg.js"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./async": {
+      "types": "./dist/async.d.ts",
+      "import": "./dist/async.js",
+      "require": "./dist/async.cjs"
+    }
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "generate:lib-definitions": "tsx scripts/generate-lib-definitions.ts",
+    "build": "npm run generate:lib-definitions && tsup",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "tsup": "^8.5.1",
+    "tsx": "^4.19.0",
+    "typescript": "^5.0.0",
+    "vite-tsconfig-paths": "^5.1.4",
+    "vitest": "^4.0.16"
+  }
+}

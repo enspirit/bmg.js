@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.2.0] - Unreleased
 
+### Changed
+
+- **Monorepo structure**: Repository converted to pnpm workspace monorepo. Core package moved to `packages/bmg/`.
+- **Build tool**: Replaced microbundle with tsup for more reliable TypeScript builds.
+- **Exports**: Updated package exports to standard ESM/CJS dual format (`.js`/`.cjs`).
+
 ### Added
 
 - **`allbut` option for `group` operator**: New `{ allbut: true }` option inverts the meaning of the attrs parameter
