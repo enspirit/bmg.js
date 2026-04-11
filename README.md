@@ -1,16 +1,23 @@
 # Bmg.js - Relational Algebra for JavaScript/TypeScript
 
-A TypeScript/JavaScript implementation of [BMG](https://www.relational-algebra.dev/), providing relational algebra operators for working with arrays of objects.
+A TypeScript/JavaScript implementation of [BMG](https://www.relational-algebra.dev/), providing relational algebra operators for in-memory arrays and SQL databases.
 
-## Installation
+## Packages
+
+This is a monorepo with the following packages:
+
+| Package | Description |
+|---------|-------------|
+| [`@enspirit/bmg-js`](./packages/bmg) | Core relational algebra for in-memory arrays |
+| [`@enspirit/predicate`](./packages/predicate) | Boolean predicate algebra with AST, evaluation, and SQL compilation |
+| [`@enspirit/bmg-sql`](./packages/bmg-sql) | SQL AST, compiler, processors, and `SqlRelation` |
+| [`@enspirit/bmg-pg`](./packages/bmg-pg) | PostgreSQL adapter for `bmg-sql` |
+
+## Quick Start (in-memory)
 
 ```bash
 npm install @enspirit/bmg-js
 ```
-
-## Quick Start
-
-Using the Relation abstraction:
 
 ```typescript
 import { Bmg } from '@enspirit/bmg-js'
@@ -19,62 +26,158 @@ const suppliers = Bmg([
   { sid: 'S1', name: 'Smith', status: 20, city: 'London' },
   { sid: 'S2', name: 'Jones', status: 10, city: 'Paris' },
   { sid: 'S3', name: 'Blake', status: 30, city: 'Paris' },
+  { sid: 'S4', name: 'Clark', status: 20, city: 'London' },
+  { sid: 'S5', name: 'Adams', status: 30, city: 'Athens' },
 ])
 
-// Chain operations fluently
 const parisSuppliers = suppliers
   .restrict({ city: 'Paris' })
   .project(['sid', 'name'])
 
 console.log(parisSuppliers.toArray())
-// => [{ sid: 'S2', name: 'Jones' }, { sid: 'S3', name: 'Blake' }]
+// [{ sid: 'S2', name: 'Jones' }, { sid: 'S3', name: 'Blake' }]
 
-// Extract a single tuple
-const smith = suppliers.restrict({ sid: 'S1' }).one()
-// => { sid: 'S1', name: 'Smith', status: 20, city: 'London' }
+console.log(parisSuppliers.toText())
+// +-----+-------+
+// | sid | name  |
+// +-----+-------+
+// | S2  | Jones |
+// | S3  | Blake |
+// +-----+-------+
 ```
 
-Using standalone operators on plain arrays:
+## Quick Start (PostgreSQL)
 
-```typescript
-import { restrict, project } from '@enspirit/bmg-js'
-
-const suppliers = [
-  { sid: 'S1', name: 'Smith', city: 'London' },
-  { sid: 'S2', name: 'Jones', city: 'Paris' },
-]
-
-const result = project(restrict(suppliers, { city: 'Paris' }), ['name'])
-// => [{ name: 'Jones' }]
+```bash
+npm install @enspirit/bmg-pg @enspirit/predicate pg
 ```
 
-## TypeScript Support
-
-Bmg.js provides full TypeScript support with generic types:
-
 ```typescript
-import { Bmg } from '@enspirit/bmg-js'
+import { Pool } from 'pg'
+import { PostgresAdapter, BmgSql } from '@enspirit/bmg-pg'
+import { Pred } from '@enspirit/predicate'
 
-interface Supplier {
-  sid: string
-  name: string
-  status: number
-  city: string
+// Connect to your database
+const pool = new Pool({ connectionString: 'postgresql://user:pass@localhost/mydb' })
+const adapter = new PostgresAdapter({ pool })
+
+// Create a SQL-backed relation (lazy — no query yet)
+const suppliers = BmgSql(adapter, 'suppliers', ['sid', 'name', 'status', 'city'], {
+  keys: [['sid']],  // declare the primary key for DISTINCT optimization
+})
+
+// Chain operations — builds a SQL AST, nothing hits the DB
+const london = suppliers
+  .restrict(Pred.eq('city', 'London'))
+  .project(['sid', 'name'])
+
+// Inspect the generated SQL without executing
+console.log(london.toSql())
+// {
+//   sql: 'SELECT "t1"."sid", "t1"."name" FROM "suppliers" "t1" WHERE "t1"."city" = $1',
+//   params: ['London']
+// }
+
+// Execute against the database
+const rows = await london.toArray()
+// [{ sid: 'S1', name: 'Smith' }, { sid: 'S4', name: 'Clark' }]
+
+// Stream large results via cursor
+for await (const row of suppliers) {
+  console.log(row)
 }
 
-const suppliers = Bmg<Supplier>([
-  { sid: 'S1', name: 'Smith', status: 20, city: 'London' },
-])
-
-// Type-safe operations with autocomplete
-const projected = suppliers.project(['sid', 'name'])
-// Type: Relation<{ sid: string; name: string }>
-
-const one = suppliers.restrict({ sid: 'S1' }).one()
-// Type: Supplier
+// Clean up
+await adapter.close()
 ```
 
-See the [full type-safe example](./example/index.ts) for more.
+### Structured predicates
+
+The `@enspirit/predicate` package provides a typed predicate AST that compiles to SQL:
+
+```typescript
+import { Pred } from '@enspirit/predicate'
+
+// Simple comparisons
+suppliers.restrict(Pred.eq('city', 'London'))
+suppliers.restrict(Pred.gt('status', 20))
+
+// Compound predicates
+suppliers.restrict(
+  Pred.and(Pred.gte('status', 20), Pred.neq('city', 'Athens'))
+)
+
+// Set membership
+suppliers.restrict(Pred.in('city', ['London', 'Paris']))
+
+// Plain objects still work (converted to eq predicates automatically)
+suppliers.restrict({ city: 'London' })
+
+// JS functions work too (triggers fallback to in-memory evaluation)
+suppliers.restrict(t => t.status > 20)
+```
+
+### SQL push-down and transparent fallback
+
+`SqlRelation` pushes as many operations as possible to the database. When an operation can't be compiled to SQL (e.g., a JS function predicate, or structural operations like `group`/`wrap`), it materializes the current query and continues in-memory transparently:
+
+```typescript
+// All pushed to SQL — single query to the DB
+const result = await suppliers
+  .restrict(Pred.eq('city', 'London'))  // → SQL WHERE
+  .project(['sid', 'name'])             // → SQL SELECT
+  .rename({ name: 'sname' })            // → SQL AS
+  .toArray()
+
+// Mixed: SQL push-down + in-memory fallback
+const result = await suppliers
+  .restrict(Pred.gt('status', 10))      // → SQL WHERE
+  .restrict(t => customLogic(t))        // → materializes, continues in-memory
+  .project(['sid', 'name'])             // → in-memory project
+  .toArray()
+```
+
+**Operations pushed to SQL:**
+restrict, where, exclude, project, allbut, rename, extend (attr refs), constants, union, minus, intersect, join, left_join, summarize (built-in aggregators), matching, not_matching
+
+**Operations that fall back to in-memory:**
+prefix, suffix, transform, group, ungroup, wrap, unwrap, image, autowrap, cross_product, function predicates
+
+### Joins and set operations
+
+Binary operations (join, union, etc.) check whether both operands target the same database. If so, they merge into a single SQL query. Otherwise, both sides are materialized and the operation runs in-memory:
+
+```typescript
+const suppliers = BmgSql(adapter, 'suppliers', ['sid', 'name', 'city'])
+const shipments = BmgSql(adapter, 'shipments', ['sid', 'pid', 'qty'])
+
+// Same adapter → single SQL query with JOIN
+const joined = await suppliers.join(shipments, ['sid']).toArray()
+
+// Suppliers who have at least one shipment (EXISTS subquery)
+const active = await suppliers.matching(shipments, ['sid']).toArray()
+
+// Suppliers with no shipments (NOT EXISTS subquery)
+const idle = await suppliers.not_matching(shipments, ['sid']).toArray()
+
+// Set operations on same adapter → UNION/EXCEPT/INTERSECT in SQL
+const london = suppliers.restrict(Pred.eq('city', 'London'))
+const paris = suppliers.restrict(Pred.eq('city', 'Paris'))
+const both = await london.union(paris).toArray()
+```
+
+### Aggregation
+
+```typescript
+// GROUP BY + aggregates → pushed to SQL
+const stats = await suppliers
+  .summarize(['city'], {
+    cnt: { op: 'count', attr: 'sid' },
+    avg_status: { op: 'avg', attr: 'status' },
+  })
+  .toArray()
+// [{ city: 'London', cnt: 2, avg_status: 20 }, ...]
+```
 
 ## Available Operators
 
@@ -100,7 +203,7 @@ See the [full type-safe example](./example/index.ts) for more.
 | | `cross_product(other)` | Cartesian product |
 | | `cross_join(other)` | Alias for cross_product |
 | **Nesting & Grouping** | `image(other, as, keys?)` | Nest matching tuples as relation attribute |
-| | `group(attrs, as, options?)` | Group attributes into nested relation. With `{ allbut: true }`, keep attrs at top level instead |
+| | `group(attrs, as, options?)` | Group attributes into nested relation |
 | | `ungroup(attr)` | Flatten nested relation |
 | | `wrap(attrs, as)` | Wrap attributes into tuple-valued attribute |
 | | `unwrap(attr)` | Flatten tuple-valued attribute |
@@ -112,9 +215,48 @@ See the [full type-safe example](./example/index.ts) for more.
 | | `isEqual(other)` | Check set equality |
 | | `yByX(y, x)` | Create `{ x-value: y-value }` mapping |
 | | `toText(options?)` | Render as ASCII table |
-| | `Bmg.isRelation(value)` | Check if value is a Relation (static) |
 
 Built-in aggregators for `summarize`: `count`, `sum`, `min`, `max`, `avg`, `collect`
+
+## TypeScript Support
+
+All packages provide full TypeScript support with generic types:
+
+```typescript
+interface Supplier {
+  sid: string
+  name: string
+  status: number
+  city: string
+}
+
+const suppliers = Bmg<Supplier>([...])
+
+// Type-safe operations with autocomplete
+const projected = suppliers.project(['sid', 'name'])
+// Type: Relation<{ sid: string; name: string }>
+
+const one = suppliers.restrict({ sid: 'S1' }).one()
+// Type: Supplier
+```
+
+## Development
+
+```bash
+# Install dependencies
+pnpm install
+
+# Run unit tests (all packages)
+pnpm test
+
+# Run integration tests (requires Docker)
+docker compose up -d
+pnpm test:integration
+docker compose down
+
+# Build all packages
+pnpm build
+```
 
 ## Theory
 
@@ -137,34 +279,6 @@ suppliers
 ```
 
 This will be provided by [Elo](https://elo-lang.org).
-
-## Versioning
-
-Bmg.js follows [Semantic Versioning](https://semver.org/) (SemVer). See [API.md](API.md) for the public API reference.
-
-- **MAJOR** (x.0.0) - Breaking changes to the public API
-- **MINOR** (0.x.0) - New operators or features, fully backward-compatible
-- **PATCH** (0.0.x) - Bug fixes and performance improvements, no API changes
-
-For Bmg.js specifically:
-- Adding a new operator (e.g., `sort`, `page`) is a **minor** release
-- Fixing incorrect behavior in an existing operator is a **patch** release
-- Changing an operator's signature or renaming it is a **major** release
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/new-operator`)
-3. Add your changes with tests
-4. Ensure tests pass: `npm run test`
-5. Commit following conventional commits (e.g., `feat: add sort operator`)
-6. Open a pull request
-
-When adding a new operator:
-- Add the operator implementation
-- Add unit tests (use relational comparisons with `isEqual`, avoid accessing "first" tuple)
-- Update the README operators table
-- One commit per operator
 
 ## License
 
