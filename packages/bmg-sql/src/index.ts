@@ -50,4 +50,8 @@ export {
   processRequalify,
   processJoin,
   processMerge,
+  processSummarize,
+  processSemiJoin,
+  processOrderBy,
+  processLimitOffset,
 } from './processors';

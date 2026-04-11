@@ -248,6 +248,50 @@ describe('Postgres integration', () => {
   });
 
   // =========================================================================
+  // summarize
+  // =========================================================================
+  describe('summarize', () => {
+    it('GROUP BY with count', async () => {
+      const rows = await suppliers()
+        .summarize(['city'] as any, { cnt: { op: 'count', attr: 'sid' } })
+        .toArray();
+      expect(rows.length).toBeGreaterThan(0);
+      const london = rows.find((r: any) => r.city === 'London') as any;
+      expect(london).toBeDefined();
+      expect(Number(london.cnt)).toBe(2);
+    });
+
+    it('GROUP BY with sum', async () => {
+      const rows = await suppliers()
+        .summarize(['city'] as any, { total: { op: 'sum', attr: 'status' } })
+        .toArray();
+      const paris = rows.find((r: any) => r.city === 'Paris') as any;
+      expect(paris).toBeDefined();
+      expect(Number(paris.total)).toBe(40); // Jones(10) + Blake(30)
+    });
+  });
+
+  // =========================================================================
+  // matching / not_matching
+  // =========================================================================
+  describe('matching', () => {
+    it('keeps only suppliers with shipments', async () => {
+      const rows = await suppliers().matching(shipments(), ['sid']).toArray();
+      // S5 (Adams) has no shipments
+      const sids = rows.map(r => r.sid).sort();
+      expect(sids).toEqual(['S1', 'S2', 'S3', 'S4']);
+    });
+  });
+
+  describe('not_matching', () => {
+    it('keeps only suppliers without shipments', async () => {
+      const rows = await suppliers().not_matching(shipments(), ['sid']).toArray();
+      expect(rows).toHaveLength(1);
+      expect(rows[0].name).toBe('Adams');
+    });
+  });
+
+  // =========================================================================
   // chained operations
   // =========================================================================
   describe('chained', () => {

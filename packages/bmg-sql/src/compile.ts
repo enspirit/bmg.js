@@ -167,6 +167,16 @@ export function compilePredicate(
 
       case 'contradiction':
         return '1 = 0';
+
+      default: {
+        // Extension: EXISTS subquery (used by processSemiJoin)
+        const pAny = p as any;
+        if (pAny.kind === 'exists' && pAny.subquery) {
+          const subSql = compileExpr(pAny.subquery, ctx);
+          return `EXISTS (${subSql})`;
+        }
+        return '1 = 1';
+      }
     }
   }
 

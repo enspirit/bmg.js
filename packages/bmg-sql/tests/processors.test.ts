@@ -5,6 +5,7 @@ import {
   processWhere, processProject, processAllbut, processRename,
   processExtend, processConstants, processRequalify,
   processJoin, processMerge,
+  processSummarize, processSemiJoin, processOrderBy, processLimitOffset,
 } from '../src';
 import type { SelectExpr } from '../src';
 
@@ -342,6 +343,124 @@ describe('processors', () => {
       const compiled = compile(restricted);
       expect(compiled.sql).toContain('SELECT DISTINCT');
       expect(compiled.sql).toContain('WHERE');
+    });
+  });
+
+  // ========================================================================
+  // processSummarize
+  // ========================================================================
+  describe('processSummarize', () => {
+    it('GROUP BY with COUNT(*)', () => {
+      const b = new SqlBuilder();
+      const base = b.selectFrom(['sid', 'name', 'status', 'city'], 'suppliers');
+      const result = processSummarize(base, ['city'], { cnt: 'count' }, b);
+      const compiled = compile(result);
+      expect(compiled.sql).toBe(
+        'SELECT "t1"."city", COUNT(*) AS "cnt" FROM "suppliers" "t1" GROUP BY "t1"."city"'
+      );
+    });
+
+    it('GROUP BY with SUM', () => {
+      const b = new SqlBuilder();
+      const base = b.selectFrom(['sid', 'name', 'status', 'city'], 'suppliers');
+      const result = processSummarize(base, ['city'], {
+        total: { func: 'sum', attr: 'status' }
+      }, b);
+      const compiled = compile(result);
+      expect(compiled.sql).toBe(
+        'SELECT "t1"."city", SUM("t1"."status") AS "total" FROM "suppliers" "t1" GROUP BY "t1"."city"'
+      );
+    });
+
+    it('multiple aggregates', () => {
+      const b = new SqlBuilder();
+      const base = b.selectFrom(['sid', 'name', 'status', 'city'], 'suppliers');
+      const result = processSummarize(base, ['city'], {
+        cnt: 'count',
+        avg_status: { func: 'avg', attr: 'status' },
+        max_status: { func: 'max', attr: 'status' },
+      }, b);
+      const compiled = compile(result);
+      expect(compiled.sql).toContain('COUNT(*)');
+      expect(compiled.sql).toContain('AVG("t1"."status")');
+      expect(compiled.sql).toContain('MAX("t1"."status")');
+      expect(compiled.sql).toContain('GROUP BY');
+    });
+
+    it('wraps in subquery if already grouped', () => {
+      const b = new SqlBuilder();
+      const base = b.selectFrom(['sid', 'name', 'status', 'city'], 'suppliers');
+      const grouped = processSummarize(base, ['city'], { cnt: 'count' }, b);
+      // Summarize again on top of grouped result
+      const result = processSummarize(grouped, [], { total: 'count' }, b);
+      const compiled = compile(result);
+      // Should wrap the first GROUP BY in a subquery
+      expect(compiled.sql).toContain('FROM (SELECT');
+    });
+  });
+
+  // ========================================================================
+  // processSemiJoin
+  // ========================================================================
+  describe('processSemiJoin', () => {
+    it('matching generates EXISTS', () => {
+      const b = new SqlBuilder();
+      const left = b.selectFrom(['sid', 'name', 'city'], 'suppliers');
+      const b2 = new SqlBuilder(1);
+      const right = b2.selectFrom(['sid', 'pid', 'qty'], 'shipments');
+      const result = processSemiJoin(left, right, ['sid'], false, b);
+      const compiled = compile(result);
+      expect(compiled.sql).toContain('EXISTS');
+      expect(compiled.sql).toContain('"shipments"');
+      expect(compiled.sql).not.toContain('NOT EXISTS');
+    });
+
+    it('not_matching generates NOT EXISTS', () => {
+      const b = new SqlBuilder();
+      const left = b.selectFrom(['sid', 'name', 'city'], 'suppliers');
+      const b2 = new SqlBuilder(1);
+      const right = b2.selectFrom(['sid', 'pid', 'qty'], 'shipments');
+      const result = processSemiJoin(left, right, ['sid'], true, b);
+      const compiled = compile(result);
+      expect(compiled.sql).toContain('NOT EXISTS');
+    });
+  });
+
+  // ========================================================================
+  // processOrderBy
+  // ========================================================================
+  describe('processOrderBy', () => {
+    it('adds ORDER BY', () => {
+      const b = new SqlBuilder();
+      const base = b.selectFrom(['sid', 'name', 'city'], 'suppliers');
+      const result = processOrderBy(base, [
+        { attr: 'city', direction: 'asc' },
+        { attr: 'name', direction: 'desc' },
+      ], b);
+      const compiled = compile(result);
+      expect(compiled.sql).toContain('ORDER BY "t1"."city" ASC, "t1"."name" DESC');
+    });
+  });
+
+  // ========================================================================
+  // processLimitOffset
+  // ========================================================================
+  describe('processLimitOffset', () => {
+    it('adds LIMIT', () => {
+      const b = new SqlBuilder();
+      const base = b.selectFrom(['sid'], 'suppliers');
+      const result = processLimitOffset(base, 10, undefined, b);
+      const compiled = compile(result);
+      expect(compiled.sql).toContain('LIMIT 10');
+    });
+
+    it('adds LIMIT and OFFSET', () => {
+      const b = new SqlBuilder();
+      const base = b.selectFrom(['sid'], 'suppliers');
+      const result = processLimitOffset(base, 10, 20, b);
+      const compiled = compile(result);
+      expect(compiled.sql).toContain('LIMIT 10');
+      expect(compiled.sql).toContain('OFFSET 20');
     });
   });
 });

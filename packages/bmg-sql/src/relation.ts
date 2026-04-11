@@ -45,6 +45,8 @@ import {
   processConstants,
   processJoin,
   processMerge,
+  processSummarize,
+  processSemiJoin,
 } from './processors';
 
 /**
@@ -325,14 +327,26 @@ export class SqlRelation<T = Tuple> implements AsyncRelation<T> {
   }
 
   // ===========================================================================
-  // Semi-joins (fall back for now)
+  // Semi-joins (EXISTS / NOT EXISTS)
   // ===========================================================================
 
   matching<U>(other: AsyncRelationOperand<U>, keys?: JoinKeys): AsyncRelation<T> {
+    const rightExpr = this.extractCompatibleExpr(other);
+    if (rightExpr && keys && Array.isArray(keys)) {
+      return this.withExpr(
+        processSemiJoin(this.expr, rightExpr, keys as string[], false, this.builder)
+      );
+    }
     return this.fallback().matching(other, keys);
   }
 
   not_matching<U>(other: AsyncRelationOperand<U>, keys?: JoinKeys): AsyncRelation<T> {
+    const rightExpr = this.extractCompatibleExpr(other);
+    if (rightExpr && keys && Array.isArray(keys)) {
+      return this.withExpr(
+        processSemiJoin(this.expr, rightExpr, keys as string[], true, this.builder)
+      );
+    }
     return this.fallback().not_matching(other, keys);
   }
 
@@ -361,6 +375,27 @@ export class SqlRelation<T = Tuple> implements AsyncRelation<T> {
   }
 
   summarize<K extends keyof T>(by: K[], aggs: Aggregators): AsyncRelation<Pick<T, K> & Tuple> {
+    // Try to compile aggregators to SQL
+    const compilableOps = new Set(['count', 'sum', 'avg', 'min', 'max']);
+    const sqlAggs: Record<string, { func: any; attr?: string }> = {};
+    let allCompilable = true;
+
+    for (const [name, spec] of Object.entries(aggs)) {
+      if (typeof spec === 'string' && compilableOps.has(spec)) {
+        sqlAggs[name] = { func: spec };
+      } else if (typeof spec === 'object' && 'op' in spec && compilableOps.has(spec.op)) {
+        sqlAggs[name] = { func: spec.op, attr: spec.attr };
+      } else {
+        allCompilable = false;
+        break;
+      }
+    }
+
+    if (allCompilable) {
+      return this.withExpr(
+        processSummarize(this.expr, by as string[], sqlAggs, this.builder)
+      ) as unknown as AsyncRelation<Pick<T, K> & Tuple>;
+    }
     return this.fallback().summarize(by, aggs);
   }
 

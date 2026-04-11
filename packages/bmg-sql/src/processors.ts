@@ -13,11 +13,12 @@ import type {
   SelectExpr,
   SelectItem,
   ColumnRef,
+  AggregateExpr,
   TableSpec,
   FromClause,
 } from './ast';
 import type { Predicate } from '@enspirit/predicate';
-import { and as predAnd } from '@enspirit/predicate';
+import { and as predAnd, eq as predEq, not as predNot, attr as predAttr } from '@enspirit/predicate';
 import { SqlBuilder } from './builder';
 
 // ============================================================================
@@ -423,4 +424,183 @@ export function processMerge(
     case 'intersect':
       return { kind: 'intersect', left, right };
   }
+}
+
+// ============================================================================
+// processSummarize — GROUP BY + aggregates
+// ============================================================================
+
+type SummarizeFn = 'count' | 'sum' | 'avg' | 'min' | 'max' | 'distinct_count';
+
+/**
+ * Summarize: GROUP BY + aggregates.
+ * @param by - Attributes to group by.
+ * @param aggs - Map from result name to { func, attr } or func name.
+ */
+export function processSummarize(
+  expr: SqlExpr,
+  by: string[],
+  aggs: Record<string, { func: SummarizeFn; attr?: string } | SummarizeFn>,
+  builder: SqlBuilder
+): SqlExpr {
+  let select = ensureSelect(expr, builder);
+
+  // If already has GROUP BY, wrap first
+  if (select.groupBy && select.groupBy.length > 0) {
+    select = builder.fromSelf(select);
+  }
+
+  const alias = getPrimaryAlias(select.from);
+  if (!alias) return select;
+
+  // Build new select list: group-by columns + aggregate columns
+  const byItems: SelectItem[] = by.map(attr => {
+    const existing = select.selectList.find(i => i.alias === attr);
+    if (existing) return existing;
+    return { expr: builder.columnRef(alias, attr), alias: attr };
+  });
+
+  const aggItems: SelectItem[] = Object.entries(aggs).map(([name, spec]) => {
+    const funcName = typeof spec === 'string' ? spec : spec.func;
+    const attrName = typeof spec === 'string' ? undefined : spec.attr;
+
+    const aggExpr: AggregateExpr = {
+      kind: 'aggregate',
+      func: funcName,
+      expr: attrName ? findColumnRef(select, alias, attrName) : undefined,
+    };
+    return { expr: aggExpr, alias: name };
+  });
+
+  // Build GROUP BY column refs
+  const groupBy: ColumnRef[] = by.map(attr => {
+    const existing = select.selectList.find(i => i.alias === attr);
+    if (existing && existing.expr.kind === 'column_ref') return existing.expr;
+    return builder.columnRef(alias, attr);
+  });
+
+  return {
+    ...select,
+    selectList: [...byItems, ...aggItems],
+    groupBy: groupBy.length > 0 ? groupBy : undefined,
+  };
+}
+
+/** Find the column ref for an attribute in the current select list */
+function findColumnRef(select: SelectExpr, defaultAlias: string, attr: string): ColumnRef {
+  const existing = select.selectList.find(i => i.alias === attr);
+  if (existing && existing.expr.kind === 'column_ref') return existing.expr;
+  return { kind: 'column_ref', qualifier: defaultAlias, column: attr };
+}
+
+// ============================================================================
+// processSemiJoin — matching / not_matching via EXISTS
+// ============================================================================
+
+/**
+ * Semi-join: matching (EXISTS) or not_matching (NOT EXISTS).
+ * Generates: WHERE [NOT] EXISTS (SELECT 1 FROM right WHERE left.key = right.key)
+ */
+export function processSemiJoin(
+  left: SqlExpr,
+  right: SqlExpr,
+  on: string[],
+  negate: boolean,
+  builder: SqlBuilder
+): SqlExpr {
+  let leftSel = ensureSelect(left, builder);
+  let rightSel = ensureSelect(right, builder);
+
+  // Requalify right to avoid alias conflicts
+  rightSel = processRequalify(rightSel, builder) as SelectExpr;
+
+  const leftAlias = getPrimaryAlias(leftSel.from);
+  const rightAlias = getPrimaryAlias(rightSel.from);
+  if (!leftAlias || !rightAlias || !rightSel.from) return leftSel;
+
+  // Build the correlated subquery predicate: left.key = right.key
+  const joinPreds = on.map(key =>
+    predEq(predAttr(`${leftAlias}.${key}`), predAttr(`${rightAlias}.${key}`))
+  );
+  const joinPred = joinPreds.length === 1 ? joinPreds[0] : predAnd(...joinPreds);
+
+  // Merge with right's existing WHERE
+  const subqueryWhere = rightSel.where
+    ? predAnd(rightSel.where, joinPred)
+    : joinPred;
+
+  // Build: SELECT 1 FROM right WHERE join_pred
+  const subquery: SelectExpr = {
+    kind: 'select',
+    quantifier: 'all',
+    selectList: [{ expr: { kind: 'sql_literal', value: 1 }, alias: '_exists' }],
+    from: rightSel.from,
+    where: subqueryWhere,
+  };
+
+  // Build EXISTS/NOT EXISTS predicate
+  // We represent this as a special predicate that the compiler handles
+  // For now, we use a raw approach: add the EXISTS as part of the WHERE
+  const existsPred: Predicate = {
+    kind: 'exists' as any,
+    subquery,
+  } as any;
+
+  const finalPred = negate
+    ? predNot(existsPred)
+    : existsPred;
+
+  // Add to left's WHERE
+  const where = leftSel.where
+    ? predAnd(leftSel.where, finalPred)
+    : finalPred;
+
+  return { ...leftSel, where };
+}
+
+// ============================================================================
+// processOrderBy — ORDER BY
+// ============================================================================
+
+/**
+ * Add ORDER BY to a SQL expression.
+ */
+export function processOrderBy(
+  expr: SqlExpr,
+  ordering: Array<{ attr: string; direction: 'asc' | 'desc' }>,
+  builder: SqlBuilder
+): SqlExpr {
+  let select = ensureSelect(expr, builder);
+
+  const alias = getPrimaryAlias(select.from);
+  if (!alias) return select;
+
+  const orderBy = ordering.map(({ attr, direction }) => ({
+    expr: findColumnRef(select, alias, attr),
+    direction,
+  }));
+
+  return { ...select, orderBy };
+}
+
+// ============================================================================
+// processLimitOffset — LIMIT / OFFSET
+// ============================================================================
+
+/**
+ * Add LIMIT and/or OFFSET to a SQL expression.
+ */
+export function processLimitOffset(
+  expr: SqlExpr,
+  limit?: number,
+  offset?: number,
+  builder?: SqlBuilder
+): SqlExpr {
+  let select = builder ? ensureSelect(expr, builder) : expr as SelectExpr;
+
+  return {
+    ...select,
+    limit: limit ?? select.limit,
+    offset: offset ?? select.offset,
+  };
 }
