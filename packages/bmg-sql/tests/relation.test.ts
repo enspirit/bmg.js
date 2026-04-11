@@ -169,6 +169,67 @@ describe('SqlRelation', () => {
   });
 
   // =========================================================================
+  // DISTINCT optimization with keys
+  // =========================================================================
+  describe('DISTINCT optimization', () => {
+    it('skips DISTINCT when key is preserved in project', () => {
+      const adapter = mockAdapter();
+      const rel = BmgSql<Supplier>(adapter, 'suppliers', ['sid', 'name', 'status', 'city'], {
+        keys: [['sid']],
+      });
+      const projected = rel.project(['sid', 'name'] as any);
+      const { sql } = (projected as SqlRelation).toSql();
+      // sid is the key and is preserved → no DISTINCT needed
+      expect(sql).not.toContain('DISTINCT');
+      expect(sql).toContain('SELECT "t1"."sid"');
+    });
+
+    it('adds DISTINCT when key is NOT preserved in project', () => {
+      const adapter = mockAdapter();
+      const rel = BmgSql<Supplier>(adapter, 'suppliers', ['sid', 'name', 'status', 'city'], {
+        keys: [['sid']],
+      });
+      const projected = rel.project(['name', 'city'] as any);
+      const { sql } = (projected as SqlRelation).toSql();
+      // sid is not in projection → DISTINCT is needed
+      expect(sql).toContain('SELECT DISTINCT');
+    });
+
+    it('adds DISTINCT when no keys are known', () => {
+      const adapter = mockAdapter();
+      const rel = BmgSql<Supplier>(adapter, 'suppliers', ['sid', 'name', 'status', 'city']);
+      const projected = rel.project(['sid', 'name'] as any);
+      const { sql } = (projected as SqlRelation).toSql();
+      // No keys known → DISTINCT is needed
+      expect(sql).toContain('SELECT DISTINCT');
+    });
+
+    it('skips DISTINCT in allbut when key is preserved', () => {
+      const adapter = mockAdapter();
+      const rel = BmgSql<Supplier>(adapter, 'suppliers', ['sid', 'name', 'status', 'city'], {
+        keys: [['sid']],
+      });
+      const result = rel.allbut(['status', 'city'] as any);
+      const { sql } = (result as SqlRelation).toSql();
+      // sid is preserved → no DISTINCT
+      expect(sql).not.toContain('DISTINCT');
+    });
+
+    it('propagates key through restrict → project', () => {
+      const adapter = mockAdapter();
+      const rel = BmgSql<Supplier>(adapter, 'suppliers', ['sid', 'name', 'status', 'city'], {
+        keys: [['sid']],
+      });
+      const result = rel
+        .restrict(Pred.eq('city', 'London') as any)
+        .project(['sid', 'name'] as any);
+      const { sql } = (result as SqlRelation).toSql();
+      // Key survives restrict and is preserved in project
+      expect(sql).not.toContain('DISTINCT');
+    });
+  });
+
+  // =========================================================================
   // rename
   // =========================================================================
   describe('rename', () => {

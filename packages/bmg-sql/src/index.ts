@@ -38,6 +38,11 @@ export type { DatabaseAdapter } from './adapter';
 
 // Relation
 export { SqlRelation, BmgSql } from './relation';
+export type { BmgSqlOptions } from './relation';
+
+// Type system
+export { RelationType } from './reltype';
+export type { Key } from './reltype';
 
 // Processors
 export {

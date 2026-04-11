@@ -20,6 +20,7 @@ import type {
 import type { Predicate } from '@enspirit/predicate';
 import { and as predAnd, eq as predEq, not as predNot, attr as predAttr } from '@enspirit/predicate';
 import { SqlBuilder } from './builder';
+import type { RelationType } from './reltype';
 
 // ============================================================================
 // Helpers
@@ -105,42 +106,49 @@ export function processWhere(
 
 /**
  * Project: keep only the specified columns in the select list.
- * Adds DISTINCT since projection may introduce duplicates.
+ * Adds DISTINCT unless a key is preserved (when relType is provided).
  */
 export function processProject(
   expr: SqlExpr,
   attrs: string[],
-  builder: SqlBuilder
+  builder: SqlBuilder,
+  relType?: RelationType
 ): SqlExpr {
   let select = ensureSelect(expr, builder);
 
   const attrSet = new Set(attrs);
   const filtered = select.selectList.filter(item => attrSet.has(item.alias));
 
+  const needsDistinct = !(relType && relType.hasPreservedKey(attrs));
+
   return {
     ...select,
-    quantifier: 'distinct',
+    quantifier: needsDistinct ? 'distinct' : select.quantifier,
     selectList: filtered,
   };
 }
 
 /**
  * Allbut: remove the specified columns from the select list.
- * Adds DISTINCT since projection may introduce duplicates.
+ * Adds DISTINCT unless a key is preserved (when relType is provided).
  */
 export function processAllbut(
   expr: SqlExpr,
   attrs: string[],
-  builder: SqlBuilder
+  builder: SqlBuilder,
+  relType?: RelationType
 ): SqlExpr {
   let select = ensureSelect(expr, builder);
 
   const attrSet = new Set(attrs);
   const filtered = select.selectList.filter(item => !attrSet.has(item.alias));
+  const remainingAttrs = filtered.map(item => item.alias);
+
+  const needsDistinct = !(relType && relType.hasPreservedKey(remainingAttrs));
 
   return {
     ...select,
-    quantifier: 'distinct',
+    quantifier: needsDistinct ? 'distinct' : select.quantifier,
     selectList: filtered,
   };
 }

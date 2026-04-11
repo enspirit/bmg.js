@@ -48,6 +48,13 @@ import {
   processSummarize,
   processSemiJoin,
 } from './processors';
+import { RelationType } from './reltype';
+import type { Key } from './reltype';
+
+export interface BmgSqlOptions {
+  /** Primary key or candidate keys for DISTINCT optimization */
+  keys?: Key[];
+}
 
 /**
  * Create a SqlRelation from a database adapter and table name.
@@ -56,12 +63,16 @@ export function BmgSql<T = Tuple>(
   adapter: DatabaseAdapter,
   table: string,
   attrs?: string[],
+  options?: BmgSqlOptions,
 ): SqlRelation<T> {
   const builder = new SqlBuilder();
   const expr = attrs
     ? builder.selectFrom(attrs, table)
     : builder.selectStarFrom(table);
-  return new SqlRelation<T>(adapter, expr, builder);
+  const relType = attrs
+    ? new RelationType(attrs, options?.keys ?? [])
+    : undefined;
+  return new SqlRelation<T>(adapter, expr, builder, relType);
 }
 
 export class SqlRelation<T = Tuple> implements AsyncRelation<T> {
@@ -69,6 +80,7 @@ export class SqlRelation<T = Tuple> implements AsyncRelation<T> {
     readonly adapter: DatabaseAdapter,
     readonly expr: SqlExpr,
     readonly builder: SqlBuilder,
+    readonly relType?: RelationType,
   ) {}
 
   // ===========================================================================
@@ -84,9 +96,9 @@ export class SqlRelation<T = Tuple> implements AsyncRelation<T> {
   // Internal helpers
   // ===========================================================================
 
-  /** Create a new SqlRelation with a modified AST */
-  private withExpr(expr: SqlExpr): SqlRelation<any> {
-    return new SqlRelation(this.adapter, expr, this.builder);
+  /** Create a new SqlRelation with a modified AST and optional new type */
+  private withExpr(expr: SqlExpr, relType?: RelationType): SqlRelation<any> {
+    return new SqlRelation(this.adapter, expr, this.builder, relType ?? this.relType);
   }
 
   /** Materialize the SQL result and wrap in BaseAsyncRelation for in-memory ops */
@@ -158,7 +170,7 @@ export class SqlRelation<T = Tuple> implements AsyncRelation<T> {
   restrict(p: TypedPredicate<T>): AsyncRelation<T> {
     const pred = this.toStructuredPredicate(p);
     if (pred) {
-      return this.withExpr(processWhere(this.expr, pred, this.builder));
+      return this.withExpr(processWhere(this.expr, pred, this.builder), this.relType);
     }
     return this.fallback().restrict(p);
   }
@@ -180,14 +192,20 @@ export class SqlRelation<T = Tuple> implements AsyncRelation<T> {
   // ===========================================================================
 
   project<K extends keyof T>(attrs: K[]): AsyncRelation<Pick<T, K>> {
+    const strAttrs = attrs as string[];
+    const newType = this.relType?.project(strAttrs);
     return this.withExpr(
-      processProject(this.expr, attrs as string[], this.builder)
+      processProject(this.expr, strAttrs, this.builder, this.relType),
+      newType
     ) as unknown as AsyncRelation<Pick<T, K>>;
   }
 
   allbut<K extends keyof T>(attrs: K[]): AsyncRelation<Omit<T, K>> {
+    const strAttrs = attrs as string[];
+    const newType = this.relType?.allbut(strAttrs);
     return this.withExpr(
-      processAllbut(this.expr, attrs as string[], this.builder)
+      processAllbut(this.expr, strAttrs, this.builder, this.relType),
+      newType
     ) as unknown as AsyncRelation<Omit<T, K>>;
   }
 
@@ -239,8 +257,10 @@ export class SqlRelation<T = Tuple> implements AsyncRelation<T> {
     for (const [k, v] of Object.entries(r)) {
       if (typeof v === 'string') renaming[k] = v;
     }
+    const newType = this.relType?.rename(renaming);
     return this.withExpr(
-      processRename(this.expr, renaming, this.builder)
+      processRename(this.expr, renaming, this.builder),
+      newType
     ) as unknown as AsyncRelation<Renamed<T, R>>;
   }
 
