@@ -10,9 +10,9 @@ iteration**. Stop conditions are at the bottom.
 
 ## Current state
 
-- **Ported operators:** 8 / 14
-- **Last completed:** `not_matching` (3/4 cases; .04 blocked on subquery factory)
-- **Next up:** `matching`
+- **Ported operators:** 9 / 14
+- **Last completed:** `matching` (5/7 cases; .06 known-bug flagged via it.fails(), .07 blocked)
+- **Next up:** `left_join`
 - **Stopped?** no
 
 Update the three bullets above at the end of every iteration.
@@ -163,7 +163,7 @@ Only operators supported by bmg-sql today. Port in this order.
 - [x] **rename** (4 cases) — done, `rename.test.ts`; params asserted for restrict literals
 - [x] **allbut** (5 cases) — done, `allbut.test.ts`; .04 divergent (key-inference gap)
 - [x] **not_matching** (3/4 cases) — done, `not_matching.test.ts`; .04 blocked
-- [ ] **matching** (6 of 7 cases) — semi-join; case .07 blocked
+- [x] **matching** (5/7 cases) — done, `matching.test.ts`; .06 known-bug (alias in join-under-EXISTS); .07 blocked
 - [ ] **left_join** (8 cases) — coalesce defaults + CTE-wrap
 - [ ] **restrict** (11 cases) — predicate edge cases; .08/.09 may be
   blocked on `Predicate.match`

@@ -3,14 +3,15 @@
 - **Source:** [spec/integration/sequel/base/matching.yml](https://github.com/enspirit/bmg/blob/fa8c7e0/spec/integration/sequel/base/matching.yml)
 - **Imported SHA:** `fa8c7e0`
 - **Total cases:** 7
-- **Ported:** 0/7
+- **Ported:** 5/7 (1 known-bug, 1 blocked)
 - **bmg-sql support:** full — semi-join via `WHERE EXISTS (...)` (commit 9a676bb)
+- **Test file:** `matching.test.ts`
 
 ## Cases
 
 ### matching.01 — Single-key semi-join
 
-**Status:** todo
+**Status:** ported
 
 **Ruby:**
 ```ruby
@@ -31,7 +32,7 @@ WHERE (EXISTS (
 
 ### matching.02 — Empty key list (degenerates to "right is non-empty")
 
-**Status:** todo
+**Status:** ported
 
 **Warnings:** bmg-rb uses alias `t4` in the subquery (fresh counter), and omits the WHERE clause since there are no equi-predicates. Alias-numbering mismatch is expected — normalizer or test must be alias-agnostic.
 
@@ -53,7 +54,7 @@ WHERE (EXISTS (
 
 ### matching.03 — Multi-attribute key
 
-**Status:** todo
+**Status:** ported
 
 **Ruby:**
 ```ruby
@@ -73,7 +74,7 @@ WHERE (EXISTS (
 
 ### matching.04 — Matching against a restricted relation
 
-**Status:** todo
+**Status:** ported
 
 **Warnings:** The right side's restrict is preserved *inside* the EXISTS subquery. Order in AND may differ.
 
@@ -95,7 +96,7 @@ WHERE (EXISTS (
 
 ### matching.05 — Matching against a projection
 
-**Status:** todo
+**Status:** ported
 
 **Ruby:**
 ```ruby
@@ -115,7 +116,13 @@ WHERE (EXISTS (
 
 ### matching.06 — Matching against an inner-join
 
-**Status:** todo
+**Status:** divergent — **KNOWN BUG in bmg-sql**
+
+**Bug:** When the right-side of `matching()` is itself a join, the inner `JOIN ... ON` clause emits the wrong aliases: `"t1"."pid" = "t1"."pid"` (referencing the outer relation instead of the inner join's operands). Correct form would be `"t7"."pid" = "t8"."pid"`.
+
+**Impact:** This query returns incorrect results against a real database — the EXISTS subquery reduces to a cartesian product filtered only on the outer equi-join, not on the inner `pid = pid`. Fix is in `processSemiJoin` or the inner-join compilation when embedded in an EXISTS subquery — needs alias rewiring so the nested join operates on its own aliases.
+
+**Test marker:** `it.fails()` with the CORRECT expected SQL. When the bug is fixed, the test will start passing and `it.fails()` will invert it to a fail, alerting us to remove the marker.
 
 **Ruby:**
 ```ruby
@@ -136,7 +143,7 @@ WHERE (EXISTS (
 
 ### matching.07 — Matching against a native SQL relation
 
-**Status:** todo
+**Status:** blocked — needs raw-SQL subquery relation factory
 
 **Warnings:** `native_sids_of_suppliers_in_london` is a bmg-rb relation built from a raw SQL string. Requires bmg-sql to expose a raw-SQL/subquery relation factory. May be `blocked` until that factory exists (see base.02).
 
