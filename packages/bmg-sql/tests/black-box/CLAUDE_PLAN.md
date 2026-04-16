@@ -10,9 +10,9 @@ iteration**. Stop conditions are at the bottom.
 
 ## Current state
 
-- **Ported operators:** 4 / 14
-- **Last completed:** `union` (2/3 cases; .03 UNION ALL blocked)
-- **Next up:** `minus`
+- **Ported operators:** 5 / 14
+- **Last completed:** `minus` (3/3 cases; derived-table wrap instead of CTE)
+- **Next up:** `rename`
 - **Stopped?** no
 
 Update the three bullets above at the end of every iteration.
@@ -159,7 +159,7 @@ Only operators supported by bmg-sql today. Port in this order.
 - [x] **extend** (1 case) — done, `extend.test.ts`; string-ref form works
 - [x] **project** (3 cases) — done, `project.test.ts`; DISTINCT optimization verified
 - [x] **union** (2/3 cases) — done, `union.test.ts`; UNION ALL blocked on core API
-- [ ] **minus** (3 cases) — EXCEPT + CTE-wrap case
+- [x] **minus** (3 cases) — done, `minus.test.ts`; subquery-in-FROM used instead of CTE
 - [ ] **rename** (4 cases) — 1 case is a duplicate upstream
 - [ ] **allbut** (5 cases) — DISTINCT preservation + Predicate.eq OR case
 - [ ] **not_matching** (3 of 4 cases) — anti-join; case .04 blocked

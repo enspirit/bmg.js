@@ -3,7 +3,7 @@
 Source: bmg-rb `spec/integration/sequel/base/*.yml` @ SHA `fa8c7e0`
 (imported 2026-04-16).
 
-**Totals:** 19 source files · 89 cases · 7 ported.
+**Totals:** 19 source files · 89 cases · 10 ported.
 
 ## Per-file status
 
@@ -16,7 +16,7 @@ Source: bmg-rb `spec/integration/sequel/base/*.yml` @ SHA `fa8c7e0`
 | [join.md](./join.md) | 14 | 0 | full (inner + cross) | includes cross-join (`[]` key) cases |
 | [left_join.md](./left_join.md) | 8 | 0 | full (pushed down) | defaults-via-coalesce cases TBD |
 | [matching.md](./matching.md) | 7 | 0 | full (semi-join via EXISTS) | |
-| [minus.md](./minus.md) | 3 | 0 | full (EXCEPT) | |
+| [minus.md](./minus.md) | 3 | 3 | full (EXCEPT) | derived-table wrap instead of CTE for post-minus ops |
 | [not_matching.md](./not_matching.md) | 4 | 0 | full (anti-join via NOT EXISTS) | |
 | [page.md](./page.md) | 5 | 0 | **missing surface** | `processOrderBy`/`processLimitOffset` exist but `Relation.page()` is not exposed |
 | [prefix.md](./prefix.md) | 1 | 0 | **fallback only** | pushed-down prefix via rename would be cleaner |

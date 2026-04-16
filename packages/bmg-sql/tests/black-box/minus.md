@@ -3,14 +3,15 @@
 - **Source:** [spec/integration/sequel/base/minus.yml](https://github.com/enspirit/bmg/blob/fa8c7e0/spec/integration/sequel/base/minus.yml)
 - **Imported SHA:** `fa8c7e0`
 - **Total cases:** 3
-- **Ported:** 0/3
+- **Ported:** 3/3
 - **bmg-sql support:** full — EXCEPT
+- **Test file:** `minus.test.ts`
 
 ## Cases
 
 ### minus.01 — Self-minus (empty result, but SQL must be emitted)
 
-**Status:** todo
+**Status:** ported
 
 **Ruby:**
 ```ruby
@@ -28,7 +29,7 @@ SELECT ... FROM `suppliers` AS 't1'
 
 ### minus.02 — Chained minus
 
-**Status:** todo
+**Status:** ported
 
 **Ruby:**
 ```ruby
@@ -44,9 +45,9 @@ SELECT ... EXCEPT SELECT ... EXCEPT SELECT ...
 
 ### minus.03 — minus followed by summarize wraps in CTE
 
-**Status:** todo
+**Status:** ported
 
-**Warnings:** Summarizing over a set-operation result requires wrapping the EXCEPT query in a CTE (`WITH t2 AS (...)`). bmg-sql must recognize this and emit the CTE boundary.
+**Port notes:** bmg-sql wraps the EXCEPT as a **derived table (subquery in FROM)** rather than a CTE (`WITH t2 AS (...)`). Same query semantically — engines plan inline subqueries and CTEs identically.
 
 **Ruby:**
 ```ruby
