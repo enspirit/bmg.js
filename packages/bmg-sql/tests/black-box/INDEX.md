@@ -3,7 +3,7 @@
 Source: bmg-rb `spec/integration/sequel/base/*.yml` @ SHA `fa8c7e0`
 (imported 2026-04-16).
 
-**Totals:** 19 source files · 89 cases · 10 ported.
+**Totals:** 19 source files · 89 cases · 14 ported.
 
 ## Per-file status
 
@@ -21,7 +21,7 @@ Source: bmg-rb `spec/integration/sequel/base/*.yml` @ SHA `fa8c7e0`
 | [page.md](./page.md) | 5 | 0 | **missing surface** | `processOrderBy`/`processLimitOffset` exist but `Relation.page()` is not exposed |
 | [prefix.md](./prefix.md) | 1 | 0 | **fallback only** | pushed-down prefix via rename would be cleaner |
 | [project.md](./project.md) | 3 | 3 | full (DISTINCT-aware via RelationType) | |
-| [rename.md](./rename.md) | 4 | 0 | full (pushed down) | |
+| [rename.md](./rename.md) | 4 | 4 | full (pushed down) | restrict literals parameterized (`?`) vs bmg-rb inlined |
 | [restrict.md](./restrict.md) | 11 | 0 | full (pushed down) | includes null/IN/chaining cases |
 | [rxmatch.md](./rxmatch.md) | 2 | 0 | **not implemented** | operator missing entirely |
 | [suffix.md](./suffix.md) | 1 | 0 | **fallback only** | see prefix |
