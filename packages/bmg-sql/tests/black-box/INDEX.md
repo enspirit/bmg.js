@@ -3,13 +3,13 @@
 Source: bmg-rb `spec/integration/sequel/base/*.yml` @ SHA `fa8c7e0`
 (imported 2026-04-16).
 
-**Totals:** 19 source files · 89 cases · 14 ported.
+**Totals:** 19 source files · 89 cases · 19 ported (1 divergent).
 
 ## Per-file status
 
 | File | Cases | Ported | bmg-sql support | Notes |
 |---|---:|---:|---|---|
-| [allbut.md](./allbut.md) | 5 | 0 | full (pushed down, DISTINCT-aware) | |
+| [allbut.md](./allbut.md) | 5 | 5 | full (pushed down, DISTINCT-aware) | .04 divergent: redundant DISTINCT after key-prefix restrict |
 | [base.md](./base.md) | 2 | 1 | full | baseline `.toSql()` with no operators; .02 blocked (subquery factory) |
 | [constants.md](./constants.md) | 1 | 0 | **fallback only** | falls back to in-memory; SQL push-down TBD |
 | [extend.md](./extend.md) | 1 | 1 | full (pushed down) | type quirk: string-ref form infers literal type |
