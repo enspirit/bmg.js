@@ -10,9 +10,9 @@ iteration**. Stop conditions are at the bottom.
 
 ## Current state
 
-- **Ported operators:** 2 / 14
-- **Last completed:** `extend` (1/1 case)
-- **Next up:** `project`
+- **Ported operators:** 3 / 14
+- **Last completed:** `project` (3/3 cases, including DISTINCT optimization)
+- **Next up:** `union`
 - **Stopped?** no
 
 Update the three bullets above at the end of every iteration.
@@ -157,7 +157,7 @@ Only operators supported by bmg-sql today. Port in this order.
 
 - [x] **base** (1 of 2 cases) — done, `base.test.ts`; .02 blocked (subquery factory)
 - [x] **extend** (1 case) — done, `extend.test.ts`; string-ref form works
-- [ ] **project** (3 cases) — exercises DISTINCT optimization
+- [x] **project** (3 cases) — done, `project.test.ts`; DISTINCT optimization verified
 - [ ] **union** (3 cases) — UNION + UNION ALL option
 - [ ] **minus** (3 cases) — EXCEPT + CTE-wrap case
 - [ ] **rename** (4 cases) — 1 case is a duplicate upstream
