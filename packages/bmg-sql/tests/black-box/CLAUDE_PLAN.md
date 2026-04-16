@@ -10,10 +10,10 @@ iteration**. Stop conditions are at the bottom.
 
 ## Current state
 
-- **Ported operators:** 1 / 14
-- **Last completed:** `base` (1/2 cases; .02 blocked on subquery factory)
-- **Next up:** `extend`
-- **Stopped?** yes — first-iteration checkpoint; awaiting user review before committing and continuing
+- **Ported operators:** 2 / 14
+- **Last completed:** `extend` (1/1 case)
+- **Next up:** `project`
+- **Stopped?** no
 
 Update the three bullets above at the end of every iteration.
 
@@ -156,8 +156,7 @@ bmg-sql source fixes. Never stage unrelated changes.
 Only operators supported by bmg-sql today. Port in this order.
 
 - [x] **base** (1 of 2 cases) — done, `base.test.ts`; .02 blocked (subquery factory)
-- [ ] **extend** (1 case) — column-aliasing extend; verify API accepts
-  `{ supplier_id: col('sid') }` form
+- [x] **extend** (1 case) — done, `extend.test.ts`; string-ref form works
 - [ ] **project** (3 cases) — exercises DISTINCT optimization
 - [ ] **union** (3 cases) — UNION + UNION ALL option
 - [ ] **minus** (3 cases) — EXCEPT + CTE-wrap case
