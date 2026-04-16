@@ -14,7 +14,7 @@ Source: bmg-rb `spec/integration/sequel/base/*.yml` @ SHA `fa8c7e0`
 | [constants.md](./constants.md) | 1 | 0 | **fallback only** | falls back to in-memory; SQL push-down TBD |
 | [extend.md](./extend.md) | 1 | 1 | full (pushed down) | type quirk: string-ref form infers literal type |
 | [join.md](./join.md) | 14 | 0 | full (inner + cross) | includes cross-join (`[]` key) cases |
-| [left_join.md](./left_join.md) | 8 | 0 | full (pushed down) | defaults-via-coalesce cases TBD |
+| [left_join.md](./left_join.md) | 8 | 0 | **broken: join alias bug** | all 8 blocked; bug also affects `join`, `matching.06` |
 | [matching.md](./matching.md) | 7 | 5 | full (EXISTS) | .06 known-bug (alias in join-under-EXISTS); .07 blocked |
 | [minus.md](./minus.md) | 3 | 3 | full (EXCEPT) | derived-table wrap instead of CTE for post-minus ops |
 | [not_matching.md](./not_matching.md) | 4 | 3 | full (NOT EXISTS) | .04 blocked (subquery factory) |
@@ -28,6 +28,10 @@ Source: bmg-rb `spec/integration/sequel/base/*.yml` @ SHA `fa8c7e0`
 | [summarize.md](./summarize.md) | 10 | 0 | full (GROUP BY + CTE wrap) | distinct_count + Summarizer API divergence TBD |
 | [transform.md](./transform.md) | 4 | 0 | unknown coverage | Ruby `String`/`Integer`/`Date` class literals need TS mapping |
 | [union.md](./union.md) | 3 | 2 | UNION only | UNION ALL blocked: core Relation.union() has no options arg |
+
+## New bmg-sql bug surfaced by porting
+
+**Join alias bug** (blocks `left_join`, most of `join`, `matching.06`): `buildJoinPredicate` uses each relation's own `SqlBuilder` so both operands resolve to `t1`. `processJoin` calls `processRequalify` to rename the right side's table, but the pre-built `ON` predicate isn't rewritten. Result: join predicates look like `t1.sid = t1.sid`. Query returns wrong results on a real DB. Fix is a non-trivial API reshape in `processJoin` / `processRequalify` — out of scope for test porting. See `left_join.md` and `matching.md` for details.
 
 ## Blockers summary
 
