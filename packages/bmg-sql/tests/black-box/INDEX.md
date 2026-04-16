@@ -3,7 +3,7 @@
 Source: bmg-rb `spec/integration/sequel/base/*.yml` @ SHA `fa8c7e0`
 (imported 2026-04-16).
 
-**Totals:** 19 source files · 89 cases · 5 ported.
+**Totals:** 19 source files · 89 cases · 7 ported.
 
 ## Per-file status
 
@@ -27,7 +27,7 @@ Source: bmg-rb `spec/integration/sequel/base/*.yml` @ SHA `fa8c7e0`
 | [suffix.md](./suffix.md) | 1 | 0 | **fallback only** | see prefix |
 | [summarize.md](./summarize.md) | 10 | 0 | full (GROUP BY + CTE wrap) | distinct_count + Summarizer API divergence TBD |
 | [transform.md](./transform.md) | 4 | 0 | unknown coverage | Ruby `String`/`Integer`/`Date` class literals need TS mapping |
-| [union.md](./union.md) | 3 | 0 | full (UNION / UNION ALL) | |
+| [union.md](./union.md) | 3 | 2 | UNION only | UNION ALL blocked: core Relation.union() has no options arg |
 
 ## Blockers summary
 
