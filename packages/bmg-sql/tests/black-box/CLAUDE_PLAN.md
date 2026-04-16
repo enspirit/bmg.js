@@ -10,10 +10,10 @@ iteration**. Stop conditions are at the bottom.
 
 ## Current state
 
-- **Ported operators:** 0 / 14
-- **Last completed:** _none_
-- **Next up:** `base` (1 case, smoke test)
-- **Stopped?** no
+- **Ported operators:** 1 / 14
+- **Last completed:** `base` (1/2 cases; .02 blocked on subquery factory)
+- **Next up:** `extend`
+- **Stopped?** yes — first-iteration checkpoint; awaiting user review before committing and continuing
 
 Update the three bullets above at the end of every iteration.
 
@@ -39,15 +39,18 @@ On iteration 1 (operator = `base`), create:
 - `helpers/mock-adapter.ts` — a minimal `DatabaseAdapter` that throws on
   `query()` (we only need `.toSql()`). Look at
   `../relation.test.ts` for how existing tests build adapters.
-- `helpers/normalize.ts` — SQL-string normalizer + assertion (see spec).
 
 On every subsequent iteration, import these — do not duplicate.
+
+**No SQL normalizer.** Tests assert against bmg-sql's **native** output
+(double-quoted identifiers, no `AS`, bmg-sql's own whitespace). Use
+plain `expect(sql).toBe(expected)`. See "Asserting SQL" below.
 
 ### 3. Write the test file
 
 Create `<operator>.test.ts` in this folder. One `it()` per case in the
 tracking doc. Translate each Ruby expression to a TS `BmgSql` chain.
-Compare `rel.toSql().sql` against the expected SQLite via `assertSqlEqual`.
+Assert on `rel.toSql().sql` — see "Asserting SQL" below.
 
 **Type-level assertions.** For **type-reshaping operators**, also add an
 `expectTypeOf(rel).toEqualTypeOf<...>()` assertion in each case. For
@@ -64,11 +67,9 @@ Filter / set (skip `expectTypeOf`): `base`, `restrict`, `where`,
 Test file structure:
 
 ```typescript
-import { describe, it, expectTypeOf } from 'vitest';
-import { BmgSql } from '@enspirit/bmg-sql';
-import type { AsyncRelation } from '@enspirit/bmg';
+import { describe, it, expect, expectTypeOf } from 'vitest';
+import type { AsyncRelation } from '@enspirit/bmg-js';
 import { buildFixtures } from './helpers/fixtures';
-import { assertSqlEqual } from './helpers/normalize';
 
 describe('black-box: <operator>', () => {
   const { suppliers, supplies, parts, cities } = buildFixtures();
@@ -77,10 +78,10 @@ describe('black-box: <operator>', () => {
     const rel = suppliers.project(['sid', 'name']);
     // Type assertion for type-reshaping operators:
     expectTypeOf(rel).toEqualTypeOf<AsyncRelation<{ sid: string; name: string }>>();
-    // SQL-shape assertion:
-    assertSqlEqual(rel.toSql().sql, `
-      SELECT t1.sid, t1.name FROM suppliers AS t1
-    `);
+    // SQL assertion — bmg-sql's native output, exact string match:
+    expect(rel.toSql().sql).toBe(
+      'SELECT "t1"."sid", "t1"."name" FROM "suppliers" "t1"',
+    );
   });
 
   // ... one it() per case
@@ -97,11 +98,17 @@ pnpm --filter @enspirit/bmg-sql test -- black-box/<operator>
 
 For each failure, pick the right response:
 
-- **Normalizer too strict / alias drift** → relax the normalizer, or
-  update the expected SQL in the test to match bmg-sql's alias
-  numbering. Note "alias drift, expected updated" in the tracking doc.
+- **Expected string wrong** (first time you wrote the test) → paste
+  the actual `.toSql().sql` output as the expected value, AFTER
+  verifying semantic equivalence against the bmg-rb reference SQL in
+  the `.md` tracking doc. See "Asserting SQL" for what "semantically
+  equivalent" means here.
 - **Clear localized bug in bmg-sql** → fix it in the same commit. Keep
   the fix small and scoped.
+- **bmg-sql query differs semantically from bmg-rb** (missing join,
+  missing where, wrong SELECT list, missing optimization) → mark the
+  case `divergent` in the tracking doc, document the delta, and snapshot
+  what bmg-sql currently produces. Move on.
 - **Needs operator change / processor refactor** → mark the case
   `blocked` or `divergent` in the tracking doc with a clear explanation.
   Do NOT bundle a big refactor into the test-porting commit — hand it
@@ -148,7 +155,7 @@ bmg-sql source fixes. Never stage unrelated changes.
 
 Only operators supported by bmg-sql today. Port in this order.
 
-- [ ] **base** (1 of 2 cases) — trivial smoke test; case .02 is blocked
+- [x] **base** (1 of 2 cases) — done, `base.test.ts`; .02 blocked (subquery factory)
 - [ ] **extend** (1 case) — column-aliasing extend; verify API accepts
   `{ supplier_id: col('sid') }` form
 - [ ] **project** (3 cases) — exercises DISTINCT optimization
@@ -201,39 +208,60 @@ Define once in `helpers/fixtures.ts`, reuse everywhere:
 
 ---
 
-## Normalizer spec
+## Asserting SQL
 
-`helpers/normalize.ts` must export:
+Tests assert **bmg-sql's own native output**, not bmg-rb's. No normalizer.
+Plain `expect(rel.toSql().sql).toBe('...')` with the exact string bmg-sql
+emits.
 
-```typescript
-export function normalize(sql: string): string;
-export function assertSqlEqual(got: string, expected: string): void;
-```
+**The .md tracking doc keeps bmg-rb's SQL as the semantic reference.**
+It describes the query shape — which joins, which WHERE, which SELECT
+list, which optimizations (DISTINCT, CTE wrap). The test does NOT
+replicate that string; it snapshots bmg-sql's actual output.
 
-`normalize` steps:
+### The porting procedure for a single case
 
-1. Collapse runs of whitespace (including newlines) to a single space.
-2. Lowercase SQL keywords: `SELECT FROM WHERE GROUP ORDER BY JOIN INNER
-   LEFT CROSS ON AS AND OR NOT EXISTS UNION EXCEPT INTERSECT DISTINCT
-   ALL LIMIT OFFSET IN IS NULL WITH LIKE ESCAPE CAST COALESCE UPPER
-   CASE WHEN THEN ELSE END ASC DESC HAVING`.
-3. Strip backticks around identifiers: `` `t1` `` → `t1`.
-4. Strip double quotes around identifiers: `"t1"` → `t1`.
-5. Strip single quotes around **alias names only** (after `AS`), not
-   around string literals. Use a regex that only matches `AS 'ident'`.
-6. Normalize paren spacing: `( ` → `(`, ` )` → `)`.
-7. Trim.
+1. Read the bmg-rb reference SQL from `<operator>.md`.
+2. Translate the Ruby chain to TS.
+3. Write the test with a placeholder expected string:
+   ```typescript
+   expect(rel.toSql().sql).toBe('PLACEHOLDER');
+   ```
+4. Run the test — it fails, vitest prints the actual SQL.
+5. **Read the actual output. Verify it's semantically equivalent to
+   bmg-rb's reference**, i.e. for every clause in the bmg-rb SQL the
+   corresponding construct appears in bmg-sql's SQL:
+   - Same SELECT list (same columns, same aliases, same `DISTINCT` if
+     applicable, same aggregates).
+   - Same FROM clause (same tables, same alias count, same join types
+     and join conditions).
+   - Same WHERE predicate (same set of conditions ANDed/ORed, same
+     comparison operators, same literals).
+   - Same set operation (UNION / EXCEPT / INTERSECT) if any, same arity.
+   - Same ORDER BY / LIMIT / OFFSET / GROUP BY / HAVING if any.
+   - Same CTE wrapping where bmg-rb uses `WITH`.
+   Differences in **syntax** are fine: quoting (`` ` `` vs `"`), `AS`
+   keyword presence, whitespace, alias numbering (`t1` vs `t4`). A
+   different SQL string that runs the same query is accepted.
+6. If semantically equivalent: paste the actual output as the expected
+   string. Test passes. Mark the case `ported`.
+7. If NOT equivalent: note the divergence in the tracking doc, mark the
+   case `divergent`, and still snapshot bmg-sql's current output (so
+   future regressions are caught). Add a warning line explaining the
+   delta.
 
-`assertSqlEqual(got, expected)`:
-- Normalize both.
-- If equal, return.
-- If not, throw an error showing both the original and normalized forms
-  side-by-side for debugging.
+### What "different SQL, same query" looks like
 
-**Alias-number drift** (e.g. bmg-rb emits `t4` but bmg-sql emits `t2`)
-is NOT handled by the normalizer. When hit, update the expected string
-in the test file to match bmg-sql's output and annotate the case in the
-tracking doc with "alias drift, expected updated to match bmg-sql".
+| bmg-rb (SQLite via Sequel)         | bmg-sql (our compiler)               |
+|------------------------------------|--------------------------------------|
+| `` `t1`.`sid` ``                   | `"t1"."sid"`                         |
+| `` FROM `suppliers` AS 't1' ``     | `FROM "suppliers" "t1"`              |
+| `` WHERE (`t1`.`sid` = 'S1') ``    | `WHERE ("t1"."sid" = 'S1')`          |
+| uppercase `SELECT, FROM, WHERE`    | uppercase `SELECT, FROM, WHERE`      |
+| `AS 'alias'`                       | `AS "alias"` or omitted              |
+| Alias counter may emit `t4`        | Alias counter may emit `t2`          |
+
+All of the above are the **same query**. Test asserts bmg-sql's side.
 
 ---
 

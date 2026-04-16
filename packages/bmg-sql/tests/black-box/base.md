@@ -3,14 +3,15 @@
 - **Source:** [spec/integration/sequel/base/base.yml](https://github.com/enspirit/bmg/blob/fa8c7e0/spec/integration/sequel/base/base.yml)
 - **Imported SHA:** `fa8c7e0`
 - **Total cases:** 2
-- **Ported:** 0/2
+- **Ported:** 1/2 (1 blocked)
+- **Test file:** `base.test.ts`
 - **bmg-sql support:** full — baseline `.toSql()` with no operators applied
 
 ## Cases
 
 ### base.01 — Plain table relation
 
-**Status:** todo
+**Status:** ported (as `base.test.ts > base.01`)
 
 **Ruby:**
 ```ruby
@@ -27,7 +28,7 @@ FROM `suppliers` AS 't1'
 
 ### base.02 — Relation over an underlying dataset/subquery
 
-**Status:** todo
+**Status:** blocked — needs raw-SQL subquery relation factory
 
 **Warnings:** `suppliers_dataset` in bmg-rb is a pre-built Sequel dataset (subquery). bmg-js equivalent is a relation built from a SQL fragment / subquery source. Decide during port whether `bmg-sql` exposes this API (likely via a `sql()` or `subquery()` factory). May be `blocked` until that factory exists. Columns are aliased (`AS 'sid'`, etc.) because the subquery is opaque.
 

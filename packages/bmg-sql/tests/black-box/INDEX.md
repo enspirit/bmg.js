@@ -3,14 +3,14 @@
 Source: bmg-rb `spec/integration/sequel/base/*.yml` @ SHA `fa8c7e0`
 (imported 2026-04-16).
 
-**Totals:** 19 source files · 89 cases · 0 ported.
+**Totals:** 19 source files · 89 cases · 1 ported.
 
 ## Per-file status
 
 | File | Cases | Ported | bmg-sql support | Notes |
 |---|---:|---:|---|---|
 | [allbut.md](./allbut.md) | 5 | 0 | full (pushed down, DISTINCT-aware) | |
-| [base.md](./base.md) | 2 | 0 | full | baseline `.toSql()` with no operators |
+| [base.md](./base.md) | 2 | 1 | full | baseline `.toSql()` with no operators; .02 blocked (subquery factory) |
 | [constants.md](./constants.md) | 1 | 0 | **fallback only** | falls back to in-memory; SQL push-down TBD |
 | [extend.md](./extend.md) | 1 | 0 | full (pushed down) | |
 | [join.md](./join.md) | 14 | 0 | full (inner + cross) | includes cross-join (`[]` key) cases |
