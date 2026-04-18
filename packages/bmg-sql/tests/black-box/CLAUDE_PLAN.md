@@ -14,12 +14,16 @@ iteration**. Stop conditions are at the bottom.
   operators; `join` and `left_join` remain blocked per option (b))
 - **Last completed:** `transform` (0/4 cases — all blocked, test file
   written with `it.todo`)
-- **Next up:** **option (b) is exhausted.** Remaining work is either
-  (a) fix the cross-cutting join-alias bug in `processJoin` /
-  `processRequalify` to unblock `left_join` / `join` / `matching.06` /
-  `summarize.05` / `.07`, or accept 12/14 and stop the loop.
-- **Stopped?** awaiting user decision — no more non-join operators
-  available to port.
+- **Totals:** 89 cases · 43 ported (7 divergent, 2 known-bug, 24 blocked)
+- **Next up (if resumed):** cross-cutting join-alias bug fix in
+  `processJoin` / `processRequalify`. Would unblock `left_join` (0/8),
+  `join` (0/14), `matching.06`, `summarize.05`, `summarize.07`.
+  Belongs on its own branch with its own plan — bundling it here would
+  dilute review.
+- **Stopped?** yes — option (b) exhausted (non-join operators
+  iterated). Loop paused, not completed. Resume when the join-alias
+  refactor lands, then tackle `join` and `left_join` in a follow-up
+  porting pass.
 
 Update the three bullets above at the end of every iteration.
 
