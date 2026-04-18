@@ -100,15 +100,22 @@ describe('black-box: summarize', () => {
     );
   });
 
-  // summarize.09 — distinct_count as keyword aggregator
-  // Blocked: bmg core's AggregatorName does not include 'distinct_count'.
-  // bmg-sql's AST and compiler already know `distinct_count` → `COUNT(DISTINCT x)`,
-  // but the allowlist in SqlRelation.summarize() and bmg core's AggregatorName
-  // type both reject it. Unblocking requires adding 'distinct_count' to core
-  // types + in-memory applyAggregator + bmg-sql's compilableOps. Cross-package.
-  it.todo('summarize.09 — distinct_count short form (blocked: not in bmg core AggregatorName)');
+  // summarize.09 — bmg-rb's `:qty => :distinct_count` short form has no
+  // direct bmg-js equivalent: the short form `'distinct_count'` would
+  // mean "distinct-count on SUM(*)" with no column (see the note at the
+  // top of this file re: `{ qty: 'sum' }` vs `{ qty: { op: 'sum',
+  // attr: 'qty' } }`). The verbose form is the single API.
+  it('summarize.09 — distinct_count (verbose form, result named qty)', () => {
+    const rel = supplies.summarize([], { qty: { op: 'distinct_count', attr: 'qty' } });
+    expect(rel.toSql().sql).toBe(
+      'SELECT COUNT(DISTINCT "t1"."qty") AS "qty" FROM "supplies" "t1"',
+    );
+  });
 
-  // summarize.10 — Summarizer.distinct_count(:qty) helper form
-  // Blocked: same as summarize.09; only the API syntax differs.
-  it.todo('summarize.10 — distinct_count helper form (blocked: not in bmg core AggregatorName)');
+  it('summarize.10 — distinct_count helper form (result named count)', () => {
+    const rel = supplies.summarize([], { count: { op: 'distinct_count', attr: 'qty' } });
+    expect(rel.toSql().sql).toBe(
+      'SELECT COUNT(DISTINCT "t1"."qty") AS "count" FROM "supplies" "t1"',
+    );
+  });
 });

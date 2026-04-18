@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Exports**: Updated package exports to standard ESM/CJS dual format (`.js`/`.cjs`).
 - **Structured predicates**: `restrict()`, `where()`, and `exclude()` now accept structured predicate AST nodes from `@enspirit/predicate` alongside plain objects and functions.
 
+- **`distinct_count` aggregator**: new aggregator name alongside `count`/`sum`/`avg`/`min`/`max`/`collect`. Counts distinct non-null values of an attribute. Usage: `r.summarize(['city'], { n: { op: 'distinct_count', attr: 'sid' } })`. In `@enspirit/bmg-sql` this compiles to `COUNT(DISTINCT col)`.
+
 ### Added
 
 - **`allbut` option for `group` operator**: New `{ allbut: true }` option inverts the meaning of the attrs parameter

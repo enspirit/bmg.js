@@ -48,6 +48,15 @@ const applyAggregator = (tuples: Tuple[], agg: Aggregator): unknown => {
       return tuples.map(t => t[attr]);
     }
 
+    case 'distinct_count': {
+      const seen = new Set<unknown>();
+      for (const t of tuples) {
+        const v = t[attr];
+        if (v !== undefined && v !== null) seen.add(v);
+      }
+      return seen.size;
+    }
+
     default:
       throw new Error(`Unknown aggregator: ${op}`);
   }

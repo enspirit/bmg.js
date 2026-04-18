@@ -62,6 +62,24 @@ describe('.summarize', () => {
     expect(paris.names).to.include('Blake');
   })
 
+  it('counts distinct values per group (distinct_count)', () => {
+    const data = Bmg([
+      { city: 'NYC', status: 10 },
+      { city: 'NYC', status: 10 },
+      { city: 'NYC', status: 20 },
+      { city: 'LA',  status: 30 },
+      { city: 'LA',  status: null },
+    ]);
+    const result = data.summarize(['city'], {
+      distinctStatuses: { op: 'distinct_count', attr: 'status' }
+    });
+    const expected = Bmg([
+      { city: 'NYC', distinctStatuses: 2 }, // 10, 20 (duplicates dropped)
+      { city: 'LA',  distinctStatuses: 1 }, // 30 (null dropped)
+    ]);
+    expect(result.isEqual(expected)).to.be.true;
+  })
+
   it('supports custom aggregator functions', () => {
     const data = Bmg([
       { city: 'NYC', name: 'Alice' },

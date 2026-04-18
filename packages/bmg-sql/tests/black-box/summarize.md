@@ -3,7 +3,7 @@
 - **Source:** [spec/integration/sequel/base/summarize.yml](https://github.com/enspirit/bmg/blob/fa8c7e0/spec/integration/sequel/base/summarize.yml)
 - **Imported SHA:** `fa8c7e0`
 - **Total cases:** 10
-- **Ported:** 7/10 (6 ported, 1 known-bug via `it.fails`, 3 blocked)
+- **Ported:** 9/10 (8 ported, 1 known-bug via `it.fails`, 1 blocked)
 - **bmg-sql support:** GROUP BY + standard aggregates are solid; the
   join-dependent cases hit the cross-cutting join-alias bug, and
   `distinct_count` is not reachable via the public API.
@@ -21,10 +21,11 @@ Tracked at the top of `summarize.test.ts`.
   the correct expected SQL so a future fix alerts us. `.07` is
   `it.todo` because the subquery requalify bug layers on top of the
   alias bug and isn't expressible as a single correct-SQL snapshot.
-- **distinct_count (.09, .10)**: bmg-sql's AST already emits
-  `COUNT(DISTINCT x)`, but `'distinct_count'` isn't in bmg core's
-  `AggregatorName` nor in bmg-sql's `compilableOps` allowlist. Cases
-  left `it.todo` until distinct_count is added end-to-end.
+- **distinct_count (.09, .10)**: unblocked by unblocker B.
+  `'distinct_count'` is now in `AggregatorName` (bmg core),
+  `applyAggregator` (sync + async in-memory paths), and
+  `compilableOps` (bmg-sql). Both cases ported via the verbose
+  `{ name: { op: 'distinct_count', attr: 'qty' } }` form.
 - **CTE vs derived table (.06)**: bmg-rb wraps post-summarize in `WITH
   ... AS (...)`; bmg-sql uses a subquery in FROM. Same semantics, same
   precedent as minus.03. Ported as-is.
@@ -201,19 +202,12 @@ SELECT min(`t1`.`qty`) AS 'min_qty' FROM `supplies` AS 't1'
 
 ### summarize.09 — `distinct_count` as keyword aggregator
 
-**Status:** blocked (it.todo)
+**Status:** ported (unblocker B)
 
-**Reason:** bmg-sql's SQL AST already handles `distinct_count`
-(emits `COUNT(DISTINCT col)`), but the public API won't let you reach
-it: bmg core's `AggregatorName` union and bmg-sql's `compilableOps`
-allowlist both exclude it. Adding it requires:
-1. `'distinct_count'` added to `AggregatorName` in `packages/bmg/src/types.ts`
-   (and `lib-definitions.ts`).
-2. A `distinct_count` case in in-memory `applyAggregator`
-   (`packages/bmg/src/sync/operators/summarize.ts` and async).
-3. `'distinct_count'` added to `compilableOps` in bmg-sql's
-   `SqlRelation.summarize()` allowlist.
-Cross-package change, out of scope for test porting.
+**Note:** bmg-js has no true short form — the verbose
+`{ qty: { op: 'distinct_count', attr: 'qty' } }` is the only form,
+because bmg-sql's short form attaches no column (same story as
+`'sum'` vs the verbose sum spec; see API-divergence note at the top).
 
 **Ruby:**
 ```ruby
@@ -230,12 +224,10 @@ SELECT count(DISTINCT `t1`.`qty`) AS 'qty' FROM `supplies` AS 't1'
 
 ### summarize.10 — `Summarizer.distinct_count(:qty)` helper form
 
-**Status:** blocked (it.todo)
+**Status:** ported (unblocker B)
 
-**Reason:** same as summarize.09. bmg-js would express this as
-`{ count: { op: 'distinct_count', attr: 'qty' } }` — verbose form — but
-the `distinct_count` op isn't in `AggregatorName`, so the type rejects
-it before it reaches bmg-sql.
+**Note:** `{ count: { op: 'distinct_count', attr: 'qty' } }` — same
+operator as .09, differs only in the result name.
 
 **Ruby:**
 ```ruby

@@ -91,7 +91,7 @@ export type Ungrouped<T, K extends keyof T> =
 // Aggregator Types
 // ============================================================================
 
-export type AggregatorName = 'count' | 'sum' | 'min' | 'max' | 'avg' | 'collect'
+export type AggregatorName = 'count' | 'sum' | 'min' | 'max' | 'avg' | 'collect' | 'distinct_count'
 export type AggregatorSpec = { op: AggregatorName, attr: AttrName }
 export type AggregatorFunc = (tuples: Tuple[]) => unknown
 export type Aggregator = AggregatorName | AggregatorSpec | AggregatorFunc
@@ -99,8 +99,8 @@ export type Aggregators = Record<AttrName, Aggregator>
 
 /** Infer result type from aggregator specification */
 export type AggregatorResult<A> =
-  A extends 'count' ? number :
-  A extends { op: 'count' } ? number :
+  A extends 'count' | 'distinct_count' ? number :
+  A extends { op: 'count' | 'distinct_count' } ? number :
   A extends { op: 'sum' | 'avg' | 'min' | 'max' } ? number | null :
   A extends { op: 'collect' } ? unknown[] :
   A extends (tuples: Tuple[]) => infer R ? R :

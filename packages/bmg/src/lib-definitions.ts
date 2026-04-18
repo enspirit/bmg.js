@@ -95,7 +95,7 @@ type Ungrouped<T, K extends keyof T> =
 // Aggregator Types
 // ============================================================================
 
-type AggregatorName = 'count' | 'sum' | 'min' | 'max' | 'avg' | 'collect'
+type AggregatorName = 'count' | 'sum' | 'min' | 'max' | 'avg' | 'collect' | 'distinct_count'
 type AggregatorSpec = { op: AggregatorName, attr: AttrName }
 type AggregatorFunc = (tuples: Tuple[]) => unknown
 type Aggregator = AggregatorName | AggregatorSpec | AggregatorFunc
@@ -103,8 +103,8 @@ type Aggregators = Record<AttrName, Aggregator>
 
 /** Infer result type from aggregator specification */
 type AggregatorResult<A> =
-  A extends 'count' ? number :
-  A extends { op: 'count' } ? number :
+  A extends 'count' | 'distinct_count' ? number :
+  A extends { op: 'count' | 'distinct_count' } ? number :
   A extends { op: 'sum' | 'avg' | 'min' | 'max' } ? number | null :
   A extends { op: 'collect' } ? unknown[] :
   A extends (tuples: Tuple[]) => infer R ? R :
@@ -119,15 +119,17 @@ type AggregatorResults<Aggs extends Record<string, unknown>> = {
 // Predicate Types
 // ============================================================================
 
+import type { Predicate as StructuredPredicate } from '@enspirit/predicate';
+
 /** Predicate function that receives a typed tuple */
 type TypedPredicateFunc<T> = (t: T) => boolean
 
-/** Predicate: either a partial tuple for equality matching, or a function */
-type TypedPredicate<T> = Partial<T> | TypedPredicateFunc<T>
+/** Predicate: a partial tuple for equality matching, a function, or a structured predicate AST */
+type TypedPredicate<T> = Partial<T> | TypedPredicateFunc<T> | StructuredPredicate
 
 // Legacy predicate types (for backwards compatibility with standalone operators)
 type PredicateFunc = ((t: Tuple) => any)
-type Predicate = Tuple | PredicateFunc
+type Predicate = Tuple | PredicateFunc | StructuredPredicate
 
 // ============================================================================
 // Extension Types

@@ -21,8 +21,9 @@ iteration**. Stop conditions are at the bottom.
   Belongs on its own branch with its own plan — bundling it here would
   dilute review.
 - **Stopped?** no — user opted into a small-unblocker pass (A→D).
-  Unblocker A (NULL-in-IN) landed: restrict.03/.04/.05 flipped from
-  divergent to ported. Loop continues with B, C, D.
+  Unblockers landed so far: A (NULL-in-IN → restrict.03/.04/.05
+  ported), B (distinct_count end-to-end → summarize.09/.10 ported).
+  Loop continues with C (page surface), D (fromSubquery factory).
 
 Update the three bullets above at the end of every iteration.
 

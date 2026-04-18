@@ -396,7 +396,7 @@ export class SqlRelation<T = Tuple> implements AsyncRelation<T> {
 
   summarize<K extends keyof T>(by: K[], aggs: Aggregators): AsyncRelation<Pick<T, K> & Tuple> {
     // Try to compile aggregators to SQL
-    const compilableOps = new Set(['count', 'sum', 'avg', 'min', 'max']);
+    const compilableOps = new Set(['count', 'sum', 'avg', 'min', 'max', 'distinct_count']);
     const sqlAggs: Record<string, { func: any; attr?: string }> = {};
     let allCompilable = true;
 

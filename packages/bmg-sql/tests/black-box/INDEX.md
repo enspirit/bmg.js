@@ -3,7 +3,7 @@
 Source: bmg-rb `spec/integration/sequel/base/*.yml` @ SHA `fa8c7e0`
 (imported 2026-04-16).
 
-**Totals:** 19 source files · 89 cases · 43 ported (4 divergent, 2 known-bug).
+**Totals:** 19 source files · 89 cases · 45 ported (4 divergent, 2 known-bug).
 
 ## Per-file status
 
@@ -25,7 +25,7 @@ Source: bmg-rb `spec/integration/sequel/base/*.yml` @ SHA `fa8c7e0`
 | [restrict.md](./restrict.md) | 11 | 9 | full (pushed down), with caveats | 6 ported, 3 divergent (alias-in-WHERE, union push-down), 2 blocked (match predicate missing). NULL-in-IN fixed in unblocker A. |
 | [rxmatch.md](./rxmatch.md) | 2 | 0 | **not implemented** | operator missing entirely |
 | [suffix.md](./suffix.md) | 1 | 0 | **fallback only** | see prefix |
-| [summarize.md](./summarize.md) | 10 | 7 | full (GROUP BY + CTE wrap) | 6 ported, .05 known-bug (join alias), 3 blocked: .07 layered join bugs, .09/.10 distinct_count missing from core API |
+| [summarize.md](./summarize.md) | 10 | 9 | full (GROUP BY + CTE wrap) | 8 ported, .05 known-bug (join alias), .07 blocked (layered join bugs). distinct_count unblocked by unblocker B. |
 | [transform.md](./transform.md) | 4 | 0 | **none — fully blocked** | bmg core `Transformation` is JS-function-only; bmg-sql has no `processTransform` / CAST emission. All 4 cases `it.todo`. |
 | [union.md](./union.md) | 3 | 2 | UNION only | UNION ALL blocked: core Relation.union() has no options arg |
 
@@ -48,12 +48,11 @@ Source: bmg-rb `spec/integration/sequel/base/*.yml` @ SHA `fa8c7e0`
   just falls back to in-memory. Unblocking is a cross-package feature:
   add a typed-token extension to `Transformation`, a `processTransform`
   emitting CAST / date(), and a dialect hook for the varchar spelling.
-- **summarize** — for standard aggregators (`min`, `max`, `sum`, `avg`,
-  `count`), bmg-js uses the verbose `AggregatorSpec` form
-  `{ qty: { op: 'sum', attr: 'qty' } }` — no separate helper class.
-  For `distinct_count`, the op is absent from bmg core's `AggregatorName`
-  type (and in-memory `applyAggregator`), and from bmg-sql's
-  `compilableOps` allowlist, so `.09`/`.10` remain blocked.
+- **summarize** — bmg-js uses the verbose `AggregatorSpec` form
+  `{ qty: { op: 'sum', attr: 'qty' } }` for standard aggregators. As of
+  unblocker B, `'distinct_count'` joins `count`/`sum`/`min`/`max`/`avg`
+  end-to-end (core types, in-memory, bmg-sql push-down), emitted as
+  `COUNT(DISTINCT col)`.
 
 ## Gate
 
