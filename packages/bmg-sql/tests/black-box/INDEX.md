@@ -3,7 +3,7 @@
 Source: bmg-rb `spec/integration/sequel/base/*.yml` @ SHA `fa8c7e0`
 (imported 2026-04-16).
 
-**Totals:** 19 source files · 89 cases · 27 ported (1 divergent, 1 known-bug).
+**Totals:** 19 source files · 89 cases · 36 ported (7 divergent, 1 known-bug).
 
 ## Per-file status
 
@@ -22,7 +22,7 @@ Source: bmg-rb `spec/integration/sequel/base/*.yml` @ SHA `fa8c7e0`
 | [prefix.md](./prefix.md) | 1 | 0 | **fallback only** | pushed-down prefix via rename would be cleaner |
 | [project.md](./project.md) | 3 | 3 | full (DISTINCT-aware via RelationType) | |
 | [rename.md](./rename.md) | 4 | 4 | full (pushed down) | restrict literals parameterized (`?`) vs bmg-rb inlined |
-| [restrict.md](./restrict.md) | 11 | 0 | full (pushed down) | includes null/IN/chaining cases |
+| [restrict.md](./restrict.md) | 11 | 9 | full (pushed down), with caveats | 3 ported, 6 divergent (NULL-in-IN, alias-in-WHERE, union push-down), 2 blocked (match predicate missing) |
 | [rxmatch.md](./rxmatch.md) | 2 | 0 | **not implemented** | operator missing entirely |
 | [suffix.md](./suffix.md) | 1 | 0 | **fallback only** | see prefix |
 | [summarize.md](./summarize.md) | 10 | 0 | full (GROUP BY + CTE wrap) | distinct_count + Summarizer API divergence TBD |
@@ -35,8 +35,8 @@ Source: bmg-rb `spec/integration/sequel/base/*.yml` @ SHA `fa8c7e0`
 
 ## Blockers summary
 
-- **rxmatch** — operator not implemented in `bmg-sql` or `bmg` core. Cases
-  will be tracked as `blocked` until the operator is added.
+- **rxmatch** / **restrict.08-09** — `@enspirit/predicate` does not
+  implement a `match`/LIKE predicate kind. Cases blocked until added.
 - **page** — processors exist (`processOrderBy`, `processLimitOffset`)
   but `SqlRelation.page()` (and `Relation.page()` in core) is not exposed.
   Cases blocked until surfaced.

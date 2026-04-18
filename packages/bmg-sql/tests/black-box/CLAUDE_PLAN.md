@@ -10,11 +10,12 @@ iteration**. Stop conditions are at the bottom.
 
 ## Current state
 
-- **Ported operators:** 9 / 14
-- **Last completed:** `matching` (5/7 cases)
-- **Attempted:** `left_join` — all 8 cases blocked on **join alias bug** (see below)
-- **Next up:** `restrict` (does not use joins, safe to continue) OR fix the join alias bug first
-- **Stopped?** yes — surfaced a cross-cutting bmg-sql bug affecting `join`, `left_join`, and `matching.06`. Stop condition #3: "A fix requires non-trivial bmg-sql refactor". Awaiting user decision: (a) fix the bug, then resume; (b) skip `left_join`/`join`, continue with non-join operators (`restrict`, `transform`, most of `summarize`); (c) mark join-using cases as `it.fails()` and continue.
+- **Ported operators:** 10 / 14
+- **Last completed:** `restrict` (9/11 cases — 3 ported, 6 divergent, 2 blocked)
+- **Next up:** `summarize` (skipping `join` per option b — see below)
+- **Stopped?** no — user chose option (b): skip join-dependent operators,
+  continue with non-join work. `left_join` and `join` remain blocked on
+  the join-alias bug and are left for a later refactor pass.
 
 Update the three bullets above at the end of every iteration.
 
@@ -165,13 +166,14 @@ Only operators supported by bmg-sql today. Port in this order.
 - [x] **allbut** (5 cases) — done, `allbut.test.ts`; .04 divergent (key-inference gap)
 - [x] **not_matching** (3/4 cases) — done, `not_matching.test.ts`; .04 blocked
 - [x] **matching** (5/7 cases) — done, `matching.test.ts`; .06 known-bug (alias in join-under-EXISTS); .07 blocked
-- [ ] **left_join** (0/8 cases — BLOCKED on join alias bug; all `it.todo`)
-- [ ] **restrict** (11 cases) — predicate edge cases; .08/.09 may be
-  blocked on `Predicate.match`
-- [ ] **summarize** (10 cases) — aggregator API API decision needed
+- [ ] **left_join** (0/8 — BLOCKED on join alias bug; revisit after bug
+  fix, out of scope per option (b))
+- [x] **restrict** (9/11 cases — 3 ported, 6 divergent, 2 blocked)
+  — surfaced NULL-in-IN gap, alias-in-WHERE bug, no UNION push-down
+- [ ] **summarize** (10 cases) — aggregator API decision needed
   (decide `'sum'` string tokens vs typed helpers — match bmg-rb's `:sum`)
-- [ ] **join** (14 cases) — biggest file; .02 depends on `prefix`
-  push-down which is fallback-only → expect `divergent`
+- [ ] **join** (14 cases — BLOCKED on join alias bug; revisit after bug
+  fix, out of scope per option (b))
 - [ ] **transform** (4 cases) — decide class-token mapping (`String` →
   `'string'` or `'varchar(255)'`); if CAST emission is missing in
   bmg-sql, mark all `blocked` and move on
