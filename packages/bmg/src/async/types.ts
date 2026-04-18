@@ -1,4 +1,4 @@
-import type { Tuple, TypedPredicate, Relation, TypedExtension, RenameMap, Renamed, Prefixed, Suffixed, Transformation, JoinKeys, AttrName, Aggregators, AutowrapOptions, TextOptions, GroupOptions, WrapOptions } from '../types';
+import type { Tuple, TypedPredicate, Relation, TypedExtension, RenameMap, Renamed, Prefixed, Suffixed, Transformation, JoinKeys, AttrName, Aggregators, AutowrapOptions, TextOptions, GroupOptions, WrapOptions, TypedOrdering, PageOptions } from '../types';
 
 /**
  * Async version of the Relation interface.
@@ -58,6 +58,10 @@ export interface AsyncRelation<T = Tuple> {
   image<U = Tuple>(other: AsyncRelationOperand<U>, as: AttrName, keys?: JoinKeys): AsyncRelation<T & Record<string, Relation<U>>>
   summarize<K extends keyof T>(by: K[], aggs: Aggregators): AsyncRelation<Pick<T, K> & Tuple>
   autowrap(options?: AutowrapOptions): AsyncRelation<Tuple>
+
+  // === Pagination ===
+
+  page(ordering: TypedOrdering<T>, page: number, options?: PageOptions): AsyncRelation<T>
 
   // === Terminal operations (return Promises) ===
 

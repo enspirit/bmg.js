@@ -3,7 +3,7 @@
 Source: bmg-rb `spec/integration/sequel/base/*.yml` @ SHA `fa8c7e0`
 (imported 2026-04-16).
 
-**Totals:** 19 source files · 89 cases · 45 ported (4 divergent, 2 known-bug).
+**Totals:** 19 source files · 89 cases · 50 ported (4 divergent, 2 known-bug).
 
 ## Per-file status
 
@@ -18,7 +18,7 @@ Source: bmg-rb `spec/integration/sequel/base/*.yml` @ SHA `fa8c7e0`
 | [matching.md](./matching.md) | 7 | 5 | full (EXISTS) | .06 known-bug (alias in join-under-EXISTS); .07 blocked |
 | [minus.md](./minus.md) | 3 | 3 | full (EXCEPT) | derived-table wrap instead of CTE for post-minus ops |
 | [not_matching.md](./not_matching.md) | 4 | 3 | full (NOT EXISTS) | .04 blocked (subquery factory) |
-| [page.md](./page.md) | 5 | 0 | **missing surface** | `processOrderBy`/`processLimitOffset` exist but `Relation.page()` is not exposed |
+| [page.md](./page.md) | 5 | 5 | full (pushed down) | surfaced by unblocker C (Relation.page() added to core + bmg-sql) |
 | [prefix.md](./prefix.md) | 1 | 0 | **fallback only** | pushed-down prefix via rename would be cleaner |
 | [project.md](./project.md) | 3 | 3 | full (DISTINCT-aware via RelationType) | |
 | [rename.md](./rename.md) | 4 | 4 | full (pushed down) | restrict literals parameterized (`?`) vs bmg-rb inlined |
@@ -37,9 +37,9 @@ Source: bmg-rb `spec/integration/sequel/base/*.yml` @ SHA `fa8c7e0`
 
 - **rxmatch** / **restrict.08-09** — `@enspirit/predicate` does not
   implement a `match`/LIKE predicate kind. Cases blocked until added.
-- **page** — processors exist (`processOrderBy`, `processLimitOffset`)
-  but `SqlRelation.page()` (and `Relation.page()` in core) is not exposed.
-  Cases blocked until surfaced.
+- **page** — unblocked by unblocker C. `Relation.page(ordering, page,
+  { pageSize })` surfaced on core + bmg-sql; processOrderBy wraps
+  complex SELECTs in a subquery before applying ORDER BY.
 - **constants / prefix / suffix** — currently fall back to in-memory
   evaluation. They execute, but the compiled SQL will not match bmg-rb's
   single-query output. Cases will be `divergent` until push-down is added.

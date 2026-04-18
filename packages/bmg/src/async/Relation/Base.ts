@@ -1,5 +1,5 @@
 import type { AsyncRelation, AsyncRelationOperand } from '../types';
-import type { Tuple, TypedPredicate, TypedExtension, AttrName, Relation, RenameMap, Renamed, Prefixed, Suffixed, Transformation, JoinKeys, Aggregators, AutowrapOptions, TextOptions, GroupOptions, WrapOptions } from '../../types';
+import type { Tuple, TypedPredicate, TypedExtension, AttrName, Relation, RenameMap, Renamed, Prefixed, Suffixed, Transformation, JoinKeys, Aggregators, AutowrapOptions, TextOptions, GroupOptions, WrapOptions, Ordering, TypedOrdering, PageOptions } from '../../types';
 import { MemoryRelation } from '../../sync/Relation';
 import {
   restrict as restrictOp,
@@ -30,6 +30,7 @@ import { wrap as wrapOp } from '../operators/wrap';
 import { unwrap as unwrapOp } from '../operators/unwrap';
 import { image as imageOp } from '../operators/image';
 import { summarize as summarizeOp } from '../operators/summarize';
+import { page as pageOp } from '../operators/page';
 import { autowrap as autowrapOp } from '../operators/autowrap';
 import { yByX as yByXOp } from '../operators/yByX';
 import { one as oneOp } from '../operators/one';
@@ -211,6 +212,14 @@ export class BaseAsyncRelation<T = Tuple> implements AsyncRelation<T> {
     return new BaseAsyncRelation(
       autowrapOp(this.source, options)
     ) as unknown as AsyncRelation<Tuple>;
+  }
+
+  // === Pagination ===
+
+  page(ordering: TypedOrdering<T>, pageNumber: number, options?: PageOptions): AsyncRelation<T> {
+    return new BaseAsyncRelation(
+      pageOp(this.source, ordering as Ordering, pageNumber, options)
+    );
   }
 
   // === Terminal operations ===

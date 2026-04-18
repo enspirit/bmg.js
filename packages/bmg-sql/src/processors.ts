@@ -572,6 +572,11 @@ export function processSemiJoin(
 
 /**
  * Add ORDER BY to a SQL expression.
+ *
+ * If the current SELECT is complex (GROUP BY, LIMIT, or computed
+ * columns like aggregates), wraps it in a subquery first so the
+ * ORDER BY can reference aggregate results by their alias as plain
+ * columns of the outer relation. Mirrors processWhere's behavior.
  */
 export function processOrderBy(
   expr: SqlExpr,
@@ -579,6 +584,10 @@ export function processOrderBy(
   builder: SqlBuilder
 ): SqlExpr {
   let select = ensureSelect(expr, builder);
+
+  if (isComplex(select)) {
+    select = builder.fromSelf(select);
+  }
 
   const alias = getPrimaryAlias(select.from);
   if (!alias) return select;

@@ -20,6 +20,7 @@ export { wrap } from './wrap';
 export { unwrap } from './unwrap';
 export { image } from './image';
 export { summarize } from './summarize';
+export { page } from './page';
 export { autowrap } from './autowrap';
 export { yByX } from './yByX';
 export { isEqual } from './isEqual';

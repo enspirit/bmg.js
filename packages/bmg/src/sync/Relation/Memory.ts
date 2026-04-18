@@ -16,6 +16,7 @@ import {
   not_matching,
   one,
   prefix,
+  page,
   project,
   rename,
   restrict,
@@ -34,11 +35,14 @@ import type {
   AutowrapOptions,
   GroupOptions,
   WrapOptions,
+  Ordering,
+  PageOptions,
   Relation,
   RelationOperand,
   TextOptions,
   Transformation,
   Tuple,
+  TypedOrdering,
   TypedPredicate,
   TypedExtension,
   RenameMap,
@@ -189,6 +193,12 @@ export class MemoryRelation<T = Tuple> implements Relation<T> {
 
   summarize<By extends keyof T, Aggs extends Record<string, unknown>>(by: By[], aggs: Aggs): Relation<Pick<T, By> & AggregatorResults<Aggs>> {
     return summarize(this as any, by as AttrName[], aggs as any) as unknown as Relation<Pick<T, By> & AggregatorResults<Aggs>>;
+  }
+
+  // === Pagination ===
+
+  page(ordering: TypedOrdering<T>, pageNumber: number, options?: PageOptions): Relation<T> {
+    return page(this as any, ordering as Ordering, pageNumber, options) as unknown as Relation<T>;
   }
 
   // === Transform ===

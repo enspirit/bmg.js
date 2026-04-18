@@ -91,6 +91,17 @@ export type Ungrouped<T, K extends keyof T> =
 // Aggregator Types
 // ============================================================================
 
+/** Pagination: ordering + page number + page size (default 20). */
+export type OrderingDirection = 'asc' | 'desc'
+export type TypedOrderingAttr<T> = (keyof T & string) | [(keyof T & string), OrderingDirection]
+export type TypedOrdering<T> = TypedOrderingAttr<T>[]
+export type OrderingAttr = string | [string, OrderingDirection]
+export type Ordering = OrderingAttr[]
+
+export interface PageOptions {
+  pageSize?: number
+}
+
 export type AggregatorName = 'count' | 'sum' | 'min' | 'max' | 'avg' | 'collect' | 'distinct_count'
 export type AggregatorSpec = { op: AggregatorName, attr: AttrName }
 export type AggregatorFunc = (tuples: Tuple[]) => unknown
@@ -266,6 +277,21 @@ export interface Relation<T = Tuple> {
   // === Aggregation ===
 
   summarize<By extends keyof T, Aggs extends Aggregators>(by: By[], aggs: Aggs): Relation<Pick<T, By> & AggregatorResults<Aggs>>
+
+  // === Pagination ===
+
+  /**
+   * Restrict to a single page of tuples, sorted by `ordering`.
+   *
+   * Pages are 1-indexed. Default page size is 20. Each ordering entry is
+   * either an attribute name (ASC) or `[name, 'asc' | 'desc']`.
+   *
+   * Note: relations are sets, but a page is inherently ordered. Callers
+   * that need the ordering preserved should read via toArray() or async
+   * iteration — isEqual and set operations still treat the result as a
+   * set.
+   */
+  page(ordering: TypedOrdering<T>, page: number, options?: PageOptions): Relation<T>
 
   // === Transform ===
 

@@ -22,8 +22,9 @@ iteration**. Stop conditions are at the bottom.
   dilute review.
 - **Stopped?** no — user opted into a small-unblocker pass (A→D).
   Unblockers landed so far: A (NULL-in-IN → restrict.03/.04/.05
-  ported), B (distinct_count end-to-end → summarize.09/.10 ported).
-  Loop continues with C (page surface), D (fromSubquery factory).
+  ported), B (distinct_count end-to-end → summarize.09/.10 ported),
+  C (page() surface + processOrderBy isComplex wrap → page.01-.05
+  ported). Loop continues with D (fromSubquery factory).
 
 Update the three bullets above at the end of every iteration.
 

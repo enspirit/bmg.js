@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **`distinct_count` aggregator**: new aggregator name alongside `count`/`sum`/`avg`/`min`/`max`/`collect`. Counts distinct non-null values of an attribute. Usage: `r.summarize(['city'], { n: { op: 'distinct_count', attr: 'sid' } })`. In `@enspirit/bmg-sql` this compiles to `COUNT(DISTINCT col)`.
 
+- **`page` operator**: pagination on `Relation` and `AsyncRelation`. Sorts by an ordering then slices to a page. Default `pageSize` is 20, pages are 1-indexed. Usage: `r.page(['name', 'sid'], 2, { pageSize: 10 })` or with direction: `r.page([['status', 'desc'], 'name'], 1)`. New types: `OrderingDirection`, `Ordering`, `TypedOrdering<T>`, `PageOptions`. In `@enspirit/bmg-sql` this compiles to `ORDER BY ... LIMIT ... OFFSET ...`.
+
 ### Added
 
 - **`allbut` option for `group` operator**: New `{ allbut: true }` option inverts the meaning of the attrs parameter

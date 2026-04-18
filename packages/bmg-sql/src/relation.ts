@@ -26,6 +26,9 @@ import type {
   Relation,
   GroupOptions,
   WrapOptions,
+  Ordering,
+  TypedOrdering,
+  PageOptions,
 } from '@enspirit/bmg-js';
 import { BaseAsyncRelation } from '@enspirit/bmg-js/async';
 import { isPredicate, fromObject, eq, and, not, attr } from '@enspirit/predicate';
@@ -47,6 +50,8 @@ import {
   processMerge,
   processSummarize,
   processSemiJoin,
+  processOrderBy,
+  processLimitOffset,
 } from './processors';
 import { RelationType } from './reltype';
 import type { Key } from './reltype';
@@ -421,6 +426,26 @@ export class SqlRelation<T = Tuple> implements AsyncRelation<T> {
 
   autowrap(options?: AutowrapOptions): AsyncRelation<Tuple> {
     return this.fallback().autowrap(options);
+  }
+
+  // ===========================================================================
+  // Pagination
+  // ===========================================================================
+
+  page(ordering: TypedOrdering<T>, pageNumber: number, options?: PageOptions): AsyncRelation<T> {
+    const pageSize = options?.pageSize ?? 20;
+    const normalized = (ordering as Ordering).map(entry => {
+      const [attr, direction] = Array.isArray(entry) ? entry : [entry, 'asc' as const];
+      return { attr: attr as string, direction };
+    });
+    const ordered = processOrderBy(this.expr, normalized, this.builder);
+    const limited = processLimitOffset(
+      ordered,
+      pageSize,
+      (pageNumber - 1) * pageSize || undefined,
+      this.builder,
+    );
+    return this.withExpr(limited);
   }
 
   // ===========================================================================
