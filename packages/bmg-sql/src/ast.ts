@@ -95,6 +95,7 @@ export interface FromClause {
 export type TableSpec =
   | TableRef
   | SubqueryRef
+  | RawSubqueryRef
   | InnerJoin
   | LeftJoin
   | CrossJoin;
@@ -110,6 +111,18 @@ export interface TableRef {
 export interface SubqueryRef {
   kind: 'subquery_ref';
   subquery: SqlExpr;
+  alias: string;
+}
+
+/**
+ * An opaque raw-SQL subquery with an alias and optional bind params.
+ * Used when a relation is built from a SQL fragment the compiler
+ * cannot (and should not) parse — e.g., BmgSql.fromSubquery().
+ */
+export interface RawSubqueryRef {
+  kind: 'raw_subquery_ref';
+  sql: string;
+  params?: unknown[];
   alias: string;
 }
 

@@ -1,8 +1,9 @@
 import { describe, it, expect } from 'vitest';
+import { BmgSql } from '../../src';
 import { buildFixtures } from './helpers/fixtures';
 
 describe('black-box: base', () => {
-  const { suppliers } = buildFixtures();
+  const { adapter, suppliers } = buildFixtures();
 
   it('base.01 — Plain table relation', () => {
     expect(suppliers.toSql().sql).toBe(
@@ -10,7 +11,15 @@ describe('black-box: base', () => {
     );
   });
 
-  // base.02 — Relation over a subquery/dataset source
-  // Blocked: requires a raw-SQL subquery relation factory in bmg-sql.
-  it.todo('base.02 — Relation over an underlying dataset/subquery (blocked)');
+  it('base.02 — Relation over a subquery/dataset source', () => {
+    const rel = BmgSql.fromSubquery(
+      adapter,
+      'SELECT * FROM suppliers',
+      ['sid', 'name', 'city', 'status'],
+    );
+    expect(rel.toSql().sql).toBe(
+      'SELECT "t1"."sid", "t1"."name", "t1"."city", "t1"."status"' +
+      ' FROM (SELECT * FROM suppliers) "t1"',
+    );
+  });
 });

@@ -3,21 +3,21 @@
 Source: bmg-rb `spec/integration/sequel/base/*.yml` @ SHA `fa8c7e0`
 (imported 2026-04-16).
 
-**Totals:** 19 source files · 89 cases · 50 ported (4 divergent, 2 known-bug).
+**Totals:** 19 source files · 89 cases · 53 ported (4 divergent, 2 known-bug).
 
 ## Per-file status
 
 | File | Cases | Ported | bmg-sql support | Notes |
 |---|---:|---:|---|---|
 | [allbut.md](./allbut.md) | 5 | 5 | full (pushed down, DISTINCT-aware) | .04 divergent: redundant DISTINCT after key-prefix restrict |
-| [base.md](./base.md) | 2 | 1 | full | baseline `.toSql()` with no operators; .02 blocked (subquery factory) |
+| [base.md](./base.md) | 2 | 2 | full | baseline `.toSql()` with no operators; .02 ported via `BmgSql.fromSubquery` (unblocker D) |
 | [constants.md](./constants.md) | 1 | 0 | **fallback only** | falls back to in-memory; SQL push-down TBD |
 | [extend.md](./extend.md) | 1 | 1 | full (pushed down) | type quirk: string-ref form infers literal type |
 | [join.md](./join.md) | 14 | 0 | full (inner + cross) | includes cross-join (`[]` key) cases |
 | [left_join.md](./left_join.md) | 8 | 0 | **broken: join alias bug** | all 8 blocked; bug also affects `join`, `matching.06` |
-| [matching.md](./matching.md) | 7 | 5 | full (EXISTS) | .06 known-bug (alias in join-under-EXISTS); .07 blocked |
+| [matching.md](./matching.md) | 7 | 6 | full (EXISTS) | .06 known-bug (alias in join-under-EXISTS); .07 ported via `BmgSql.fromSubquery` (unblocker D) |
 | [minus.md](./minus.md) | 3 | 3 | full (EXCEPT) | derived-table wrap instead of CTE for post-minus ops |
-| [not_matching.md](./not_matching.md) | 4 | 3 | full (NOT EXISTS) | .04 blocked (subquery factory) |
+| [not_matching.md](./not_matching.md) | 4 | 4 | full (NOT EXISTS) | .04 ported via `BmgSql.fromSubquery` (unblocker D) |
 | [page.md](./page.md) | 5 | 5 | full (pushed down) | surfaced by unblocker C (Relation.page() added to core + bmg-sql) |
 | [prefix.md](./prefix.md) | 1 | 0 | **fallback only** | pushed-down prefix via rename would be cleaner |
 | [project.md](./project.md) | 3 | 3 | full (DISTINCT-aware via RelationType) | |

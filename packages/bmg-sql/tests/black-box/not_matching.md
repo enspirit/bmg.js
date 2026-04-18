@@ -3,7 +3,7 @@
 - **Source:** [spec/integration/sequel/base/not_matching.yml](https://github.com/enspirit/bmg/blob/fa8c7e0/spec/integration/sequel/base/not_matching.yml)
 - **Imported SHA:** `fa8c7e0`
 - **Total cases:** 4
-- **Ported:** 3/4 (1 blocked)
+- **Ported:** 4/4 (.04 ported by unblocker D)
 - **bmg-sql support:** full — anti-join via `WHERE NOT EXISTS (...)` (via processSemiJoin)
 - **Test file:** `not_matching.test.ts`
 - **Port notes:** bmg-sql emits `SELECT 1 AS "_exists"` inside EXISTS (where bmg-rb uses `SELECT *`) and adds a vacuous `WHERE 1=1` in the empty-key case. Both are semantically equivalent for EXISTS evaluation.
@@ -74,9 +74,9 @@ WHERE NOT (EXISTS (
 
 ### not_matching.04 — Against a native SQL relation
 
-**Status:** blocked — needs raw-SQL subquery relation factory
+**Status:** ported (unblocker D)
 
-**Warnings:** Same raw-SQL-subquery concern as matching.07.
+**Note:** Same pattern as matching.07 — uses `BmgSql.fromSubquery`.
 
 **Ruby:**
 ```ruby

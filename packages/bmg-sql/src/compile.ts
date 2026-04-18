@@ -210,6 +210,13 @@ function compileTableSpec(spec: TableSpec, ctx: CompileContext): string {
       return `(${sub}) ${ctx.dialect.quoteIdentifier(spec.alias)}`;
     }
 
+    case 'raw_subquery_ref': {
+      if (spec.params) {
+        for (const param of spec.params) ctx.params.push(param);
+      }
+      return `(${spec.sql}) ${ctx.dialect.quoteIdentifier(spec.alias)}`;
+    }
+
     case 'inner_join': {
       const left = compileTableSpec(spec.left, ctx);
       const right = compileTableSpec(spec.right, ctx);
@@ -253,6 +260,7 @@ function getTableAlias(spec: TableSpec): string | undefined {
   switch (spec.kind) {
     case 'table_ref':
     case 'subquery_ref':
+    case 'raw_subquery_ref':
       return spec.alias;
     case 'inner_join':
     case 'left_join':

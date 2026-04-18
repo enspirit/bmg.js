@@ -3,7 +3,7 @@
 - **Source:** [spec/integration/sequel/base/base.yml](https://github.com/enspirit/bmg/blob/fa8c7e0/spec/integration/sequel/base/base.yml)
 - **Imported SHA:** `fa8c7e0`
 - **Total cases:** 2
-- **Ported:** 1/2 (1 blocked)
+- **Ported:** 2/2 (unblocker D)
 - **Test file:** `base.test.ts`
 - **bmg-sql support:** full — baseline `.toSql()` with no operators applied
 
@@ -28,9 +28,14 @@ FROM `suppliers` AS 't1'
 
 ### base.02 — Relation over an underlying dataset/subquery
 
-**Status:** blocked — needs raw-SQL subquery relation factory
+**Status:** ported (unblocker D)
 
-**Warnings:** `suppliers_dataset` in bmg-rb is a pre-built Sequel dataset (subquery). bmg-js equivalent is a relation built from a SQL fragment / subquery source. Decide during port whether `bmg-sql` exposes this API (likely via a `sql()` or `subquery()` factory). May be `blocked` until that factory exists. Columns are aliased (`AS 'sid'`, etc.) because the subquery is opaque.
+**Note:** `BmgSql.fromSubquery(adapter, sql, attrs, { params? })`
+factory added. Builds a `SelectExpr` whose FROM is a new
+`RawSubqueryRef` AST node carrying the opaque SQL and bind params.
+bmg-rb aliases every projected column (`AS 'sid'`, etc.); bmg-sql
+elides the AS clause when alias == column name (same precedent as
+restrict.01). Same query shape.
 
 **Ruby:**
 ```ruby

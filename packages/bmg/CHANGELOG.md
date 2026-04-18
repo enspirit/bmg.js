@@ -18,6 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **`page` operator**: pagination on `Relation` and `AsyncRelation`. Sorts by an ordering then slices to a page. Default `pageSize` is 20, pages are 1-indexed. Usage: `r.page(['name', 'sid'], 2, { pageSize: 10 })` or with direction: `r.page([['status', 'desc'], 'name'], 1)`. New types: `OrderingDirection`, `Ordering`, `TypedOrdering<T>`, `PageOptions`. In `@enspirit/bmg-sql` this compiles to `ORDER BY ... LIMIT ... OFFSET ...`.
 
+- **`BmgSql.fromSubquery` factory** (in `@enspirit/bmg-sql`): build a relation from an opaque raw-SQL fragment, with optional bind params. Usage: `BmgSql.fromSubquery(adapter, 'SELECT sid FROM suppliers WHERE city = ?', ['sid'], { params: ['London'] })`. New AST node `RawSubqueryRef` carries the fragment verbatim in FROM. Composes with all existing operators.
+
 ### Added
 
 - **`allbut` option for `group` operator**: New `{ allbut: true }` option inverts the meaning of the attrs parameter

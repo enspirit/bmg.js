@@ -3,7 +3,7 @@
 - **Source:** [spec/integration/sequel/base/matching.yml](https://github.com/enspirit/bmg/blob/fa8c7e0/spec/integration/sequel/base/matching.yml)
 - **Imported SHA:** `fa8c7e0`
 - **Total cases:** 7
-- **Ported:** 5/7 (1 known-bug, 1 blocked)
+- **Ported:** 6/7 (1 known-bug via `it.fails`). .07 ported by unblocker D.
 - **bmg-sql support:** full — semi-join via `WHERE EXISTS (...)` (commit 9a676bb)
 - **Test file:** `matching.test.ts`
 
@@ -143,9 +143,12 @@ WHERE (EXISTS (
 
 ### matching.07 — Matching against a native SQL relation
 
-**Status:** blocked — needs raw-SQL subquery relation factory
+**Status:** ported (unblocker D)
 
-**Warnings:** `native_sids_of_suppliers_in_london` is a bmg-rb relation built from a raw SQL string. Requires bmg-sql to expose a raw-SQL/subquery relation factory. May be `blocked` until that factory exists (see base.02).
+**Note:** Uses `BmgSql.fromSubquery` with a parameterized fragment
+(`SELECT sid FROM suppliers WHERE city = ?`, `params: ['London']`).
+The subquery alias counter starts at `t9` because prior matching
+tests have used up t1-t8 in the shared SqlBuilder via the fixtures.
 
 **Ruby:**
 ```ruby

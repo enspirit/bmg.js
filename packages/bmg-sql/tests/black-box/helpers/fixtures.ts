@@ -13,6 +13,7 @@ export interface City { city: string; country: string; }
 export function buildFixtures() {
   const adapter = mockAdapter();
   return {
+    adapter,
     suppliers: BmgSql<Supplier>(adapter, 'suppliers', ['sid', 'name', 'city', 'status'], { keys: [['sid']] }),
     supplies: BmgSql<Supply>(adapter, 'supplies', ['sid', 'pid', 'qty'], { keys: [['sid', 'pid']] }),
     parts: BmgSql<Part>(adapter, 'parts', ['pid', 'name', 'color', 'weight', 'city'], { keys: [['pid']] }),

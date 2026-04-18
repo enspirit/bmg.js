@@ -20,11 +20,18 @@ iteration**. Stop conditions are at the bottom.
   `join` (0/14), `matching.06`, `summarize.05`, `summarize.07`.
   Belongs on its own branch with its own plan — bundling it here would
   dilute review.
-- **Stopped?** no — user opted into a small-unblocker pass (A→D).
-  Unblockers landed so far: A (NULL-in-IN → restrict.03/.04/.05
-  ported), B (distinct_count end-to-end → summarize.09/.10 ported),
-  C (page() surface + processOrderBy isComplex wrap → page.01-.05
-  ported). Loop continues with D (fromSubquery factory).
+- **Stopped?** yes — all four unblockers (A→D) landed.
+  A: NULL-in-IN → restrict.03/.04/.05 ported.
+  B: distinct_count end-to-end → summarize.09/.10 ported.
+  C: page() surface + processOrderBy isComplex wrap → page.01-.05 ported.
+  D: `BmgSql.fromSubquery` factory → base.02, matching.07,
+     not_matching.04 ported.
+  Total cases ported in this pass: **+13** (43 → 53/89).
+  Remaining blockers are primarily the cross-cutting join-alias bug
+  (blocks join 14 + left_join 8 + matching.06 + summarize.05/.07),
+  plus prefix/suffix/constants push-down, transform type-token API,
+  UNION ALL option, LIKE predicate, alias-in-WHERE-after-rename, and
+  union push-down — all documented in INDEX.md.
 
 Update the three bullets above at the end of every iteration.
 

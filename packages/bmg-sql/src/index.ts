@@ -13,6 +13,7 @@ export type {
   TableSpec,
   TableRef,
   SubqueryRef,
+  RawSubqueryRef,
   InnerJoin,
   LeftJoin,
   CrossJoin,

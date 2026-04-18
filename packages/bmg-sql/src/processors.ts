@@ -63,6 +63,7 @@ function getAlias(spec: TableSpec): string | undefined {
   switch (spec.kind) {
     case 'table_ref':
     case 'subquery_ref':
+    case 'raw_subquery_ref':
       return spec.alias;
     case 'inner_join':
     case 'left_join':
@@ -328,6 +329,8 @@ function requalifyTableSpec(spec: TableSpec, remap: (old: string) => string): Ta
     case 'table_ref':
       return { ...spec, alias: remap(spec.alias) };
     case 'subquery_ref':
+      return { ...spec, alias: remap(spec.alias) };
+    case 'raw_subquery_ref':
       return { ...spec, alias: remap(spec.alias) };
     case 'inner_join':
       return {

@@ -80,6 +80,50 @@ export function BmgSql<T = Tuple>(
   return new SqlRelation<T>(adapter, expr, builder, relType);
 }
 
+/**
+ * Create a SqlRelation from an opaque raw-SQL subquery.
+ *
+ * `sql` is embedded verbatim, aliased, and projected to `attrs`. The
+ * fragment must return rows with those column names. `params` are
+ * inlined as bind parameters in the order they appear.
+ *
+ * Use this when a relation cannot be expressed with the relational
+ * operators — e.g., a table-valued function, a database-specific
+ * construct, or a pre-existing query.
+ *
+ * @example
+ *   BmgSql.fromSubquery<{ sid: string }>(
+ *     adapter,
+ *     'SELECT sid FROM suppliers WHERE city = ?',
+ *     ['sid'],
+ *     { params: ['London'] },
+ *   )
+ */
+BmgSql.fromSubquery = function <T = Tuple>(
+  adapter: DatabaseAdapter,
+  sql: string,
+  attrs: string[],
+  options?: BmgSqlOptions & { params?: unknown[] },
+): SqlRelation<T> {
+  const builder = new SqlBuilder();
+  const alias = builder.qualify();
+  const expr = {
+    kind: 'select' as const,
+    quantifier: 'all' as const,
+    selectList: attrs.map(a => builder.selectItem(alias, a)),
+    from: {
+      tableSpec: {
+        kind: 'raw_subquery_ref' as const,
+        sql,
+        params: options?.params,
+        alias,
+      },
+    },
+  };
+  const relType = new RelationType(attrs, options?.keys ?? []);
+  return new SqlRelation<T>(adapter, expr, builder, relType);
+};
+
 export class SqlRelation<T = Tuple> implements AsyncRelation<T> {
   constructor(
     readonly adapter: DatabaseAdapter,
