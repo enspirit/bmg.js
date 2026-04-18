@@ -3,7 +3,7 @@
 Source: bmg-rb `spec/integration/sequel/base/*.yml` @ SHA `fa8c7e0`
 (imported 2026-04-16).
 
-**Totals:** 19 source files · 89 cases · 43 ported (7 divergent, 2 known-bug).
+**Totals:** 19 source files · 89 cases · 43 ported (4 divergent, 2 known-bug).
 
 ## Per-file status
 
@@ -22,7 +22,7 @@ Source: bmg-rb `spec/integration/sequel/base/*.yml` @ SHA `fa8c7e0`
 | [prefix.md](./prefix.md) | 1 | 0 | **fallback only** | pushed-down prefix via rename would be cleaner |
 | [project.md](./project.md) | 3 | 3 | full (DISTINCT-aware via RelationType) | |
 | [rename.md](./rename.md) | 4 | 4 | full (pushed down) | restrict literals parameterized (`?`) vs bmg-rb inlined |
-| [restrict.md](./restrict.md) | 11 | 9 | full (pushed down), with caveats | 3 ported, 6 divergent (NULL-in-IN, alias-in-WHERE, union push-down), 2 blocked (match predicate missing) |
+| [restrict.md](./restrict.md) | 11 | 9 | full (pushed down), with caveats | 6 ported, 3 divergent (alias-in-WHERE, union push-down), 2 blocked (match predicate missing). NULL-in-IN fixed in unblocker A. |
 | [rxmatch.md](./rxmatch.md) | 2 | 0 | **not implemented** | operator missing entirely |
 | [suffix.md](./suffix.md) | 1 | 0 | **fallback only** | see prefix |
 | [summarize.md](./summarize.md) | 10 | 7 | full (GROUP BY + CTE wrap) | 6 ported, .05 known-bug (join alias), 3 blocked: .07 layered join bugs, .09/.10 distinct_count missing from core API |

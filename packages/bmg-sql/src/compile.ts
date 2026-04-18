@@ -134,8 +134,21 @@ export function compilePredicate(
       case 'in': {
         const left = compilePredicateScalar(p.left);
         if (p.values.length === 0) return '1 = 0';
-        const placeholders = p.values.map(v => addParam(ctx, v)).join(', ');
-        return `${left} IN (${placeholders})`;
+        // SQL `IN (NULL, ...)` does not match NULL rows. Split null out:
+        // `(col IS NULL OR col IN (non-nulls))`. Parens required because
+        // the result is an implicit OR that must bind correctly inside
+        // AND / NOT. Mirrors @enspirit/predicate's toSql.
+        const hasNull = p.values.some(v => v === null);
+        const nonNulls = p.values.filter(v => v !== null);
+        if (!hasNull) {
+          const placeholders = nonNulls.map(v => addParam(ctx, v)).join(', ');
+          return `${left} IN (${placeholders})`;
+        }
+        if (nonNulls.length === 0) {
+          return `${left} IS NULL`;
+        }
+        const placeholders = nonNulls.map(v => addParam(ctx, v)).join(', ');
+        return `(${left} IS NULL OR ${left} IN (${placeholders}))`;
       }
 
       case 'and': {

@@ -75,6 +75,52 @@ describe('toSql', () => {
       expect(sql).toBe('1 = 0');
       expect(params).toEqual([]);
     });
+
+    it('null-only list becomes IS NULL', () => {
+      const { sql, params } = toSql(Pred.in('city', [null]));
+      expect(sql).toBe('"city" IS NULL');
+      expect(params).toEqual([]);
+    });
+
+    it('list with only nulls (multiple) still becomes IS NULL', () => {
+      const { sql, params } = toSql(Pred.in('city', [null, null]));
+      expect(sql).toBe('"city" IS NULL');
+      expect(params).toEqual([]);
+    });
+
+    it('null + one value splits null out', () => {
+      const { sql, params } = toSql(Pred.in('city', [null, 'London']));
+      expect(sql).toBe('("city" IS NULL OR "city" IN ($1))');
+      expect(params).toEqual(['London']);
+    });
+
+    it('null + multiple values splits null out, preserves order', () => {
+      const { sql, params } = toSql(Pred.in('city', [null, 'London', 'Paris']));
+      expect(sql).toBe('("city" IS NULL OR "city" IN ($1, $2))');
+      expect(params).toEqual(['London', 'Paris']);
+    });
+
+    it('nulls anywhere in the list are partitioned out', () => {
+      const { sql, params } = toSql(Pred.in('city', ['London', null, 'Paris']));
+      expect(sql).toBe('("city" IS NULL OR "city" IN ($1, $2))');
+      expect(params).toEqual(['London', 'Paris']);
+    });
+
+    it('null-split form parenthesizes correctly inside AND', () => {
+      const p = Pred.and(
+        Pred.in('city', [null, 'London']),
+        Pred.gt('status', 10),
+      );
+      const { sql, params } = toSql(p);
+      expect(sql).toBe('("city" IS NULL OR "city" IN ($1)) AND "status" > $2');
+      expect(params).toEqual(['London', 10]);
+    });
+
+    it('null-split form parenthesizes correctly inside NOT', () => {
+      const { sql, params } = toSql(Pred.not(Pred.in('city', [null, 'London'])));
+      expect(sql).toBe('NOT ("city" IS NULL OR "city" IN ($1))');
+      expect(params).toEqual(['London']);
+    });
   });
 
   describe('and', () => {

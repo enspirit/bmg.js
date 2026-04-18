@@ -20,10 +20,9 @@ iteration**. Stop conditions are at the bottom.
   `join` (0/14), `matching.06`, `summarize.05`, `summarize.07`.
   Belongs on its own branch with its own plan — bundling it here would
   dilute review.
-- **Stopped?** yes — option (b) exhausted (non-join operators
-  iterated). Loop paused, not completed. Resume when the join-alias
-  refactor lands, then tackle `join` and `left_join` in a follow-up
-  porting pass.
+- **Stopped?** no — user opted into a small-unblocker pass (A→D).
+  Unblocker A (NULL-in-IN) landed: restrict.03/.04/.05 flipped from
+  divergent to ported. Loop continues with B, C, D.
 
 Update the three bullets above at the end of every iteration.
 

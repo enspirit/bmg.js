@@ -87,8 +87,22 @@ function compilePredicate(predicate: Predicate, ctx: CompileContext): string {
       if (predicate.values.length === 0) {
         return '1 = 0'; // contradiction
       }
-      const placeholders = predicate.values.map(v => addParam(ctx, v)).join(', ');
-      return `${left} IN (${placeholders})`;
+      // SQL `IN (NULL, ...)` does not match NULL rows (NULL IN NULL is
+      // UNKNOWN). Split null out: `(col IS NULL OR col IN (non-nulls))`.
+      // Parens are necessary because the result is an implicit OR that
+      // must bind correctly inside AND / NOT. Stable partition preserves
+      // original ordering of non-null values.
+      const hasNull = predicate.values.some(v => v === null);
+      const nonNulls = predicate.values.filter(v => v !== null);
+      if (!hasNull) {
+        const placeholders = nonNulls.map(v => addParam(ctx, v)).join(', ');
+        return `${left} IN (${placeholders})`;
+      }
+      if (nonNulls.length === 0) {
+        return `${left} IS NULL`;
+      }
+      const placeholders = nonNulls.map(v => addParam(ctx, v)).join(', ');
+      return `(${left} IS NULL OR ${left} IN (${placeholders}))`;
     }
 
     case 'and': {

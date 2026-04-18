@@ -3,18 +3,19 @@
 - **Source:** [spec/integration/sequel/base/restrict.yml](https://github.com/enspirit/bmg/blob/fa8c7e0/spec/integration/sequel/base/restrict.yml)
 - **Imported SHA:** `fa8c7e0`
 - **Total cases:** 11
-- **Ported:** 9/11 (3 strictly ported, 6 divergent, 2 blocked)
+- **Ported:** 9/11 (6 strictly ported, 3 divergent, 2 blocked)
 - **bmg-sql support:** full (WHERE push-down); several optimizations missing
 
-**Summary of divergences surfaced by porting:**
-- NULL-in-IN: `@enspirit/predicate`'s `toSql.ts` does not split `null` out
-  of an `IN (...)` list. bmg-rb emits `(col IS NULL) OR (col IN (...))`;
-  bmg-sql emits `col IN (?, ?, NULL)` which does NOT match NULL rows.
-  Affects restrict.03, .04, .05. Fix belongs in `@enspirit/predicate`.
-- Single-element IN: bmg-rb degrades `IN ('S2')` to `= 'S2'`; bmg-sql
-  keeps `IN (?)`. Affects restrict.04.
-- IS NULL collapse: bmg-rb collapses `IN (NULL)` to `IS NULL`; bmg-sql
-  emits `IN (?)` with a null param (matches nothing). Affects restrict.05.
+**Resolved by unblocker A (NULL-in-IN split):**
+- .03, .05 are now semantically equivalent to bmg-rb. Both
+  `@enspirit/predicate`'s `toSql.ts` and bmg-sql's `compile.ts`
+  partition nulls out of `InPredicate.values`, emitting
+  `col IS NULL` / `(col IS NULL OR col IN (non-nulls))` as appropriate.
+- .04 is ported with a minor cosmetic note: bmg-rb degrades the
+  1-element post-split IN to `=` (`IS NULL OR sid = 'S2'`); bmg-sql
+  keeps `IN (?)`. Same query, same rows.
+
+**Remaining divergences:**
 - Rename push-down into WHERE: bmg-rb resolves the renamed alias back to
   the underlying column inside WHERE. bmg-sql leaves the predicate on
   the SELECT alias — **emits invalid SQL in strict dialects**. Affects
@@ -69,13 +70,11 @@ WHERE (`t1`.`sid` IN ('S1', 'S2'))
 
 ### restrict.03 — IN list mixing NULL and values (NULL pulled out via OR)
 
-**Status:** divergent
+**Status:** ported
 
-**Delta:** bmg-sql emits `WHERE "t1"."sid" IN (?, ?, ?)` with params
-`[null, 'S1', 'S2']`. SQL `IN (NULL, ...)` does **not** match NULL rows,
-so rows with `sid IS NULL` are silently dropped. bmg-rb avoids this by
-splitting NULL out via OR. Fix belongs in `@enspirit/predicate`'s
-`toSql.ts` (detect null in `InPredicate.values`).
+**Note:** NULL split was added to both `@enspirit/predicate`'s `toSql.ts`
+and bmg-sql's `compile.ts`. Emits
+`WHERE ("t1"."sid" IS NULL OR "t1"."sid" IN (?, ?))`.
 
 **Ruby:**
 ```ruby
@@ -92,11 +91,11 @@ WHERE ((`t1`.`sid` IS NULL) OR (`t1`.`sid` IN ('S1', 'S2')))
 
 ### restrict.04 — NULL + single value (IN degenerates to `=`)
 
-**Status:** divergent
+**Status:** ported (minor cosmetic delta)
 
-**Delta:** same NULL-in-IN issue as restrict.03, plus bmg-rb's
-single-value-IN→`=` optimization is also absent. bmg-sql emits
-`IN (?, ?)` with `[null, 'S2']`.
+**Delta:** bmg-rb degrades the 1-element post-split IN to `=`
+(`IS NULL OR sid = 'S2'`); bmg-sql keeps `IN (?)`
+(`(sid IS NULL OR sid IN (?))`). Semantically equivalent.
 
 **Ruby:**
 ```ruby
@@ -113,12 +112,9 @@ WHERE ((`t1`.`sid` IS NULL) OR (`t1`.`sid` = 'S2'))
 
 ### restrict.05 — List containing only NULL → `IS NULL`
 
-**Status:** divergent
+**Status:** ported
 
-**Delta:** bmg-sql emits `IN (?)` with `[null]` — this matches zero rows
-in standard SQL (NULL IN NULL is UNKNOWN). bmg-rb collapses to
-`IS NULL`. Worst case of the NULL-in-IN family; fix belongs in
-`@enspirit/predicate`.
+**Note:** Null-only lists collapse to `WHERE "t1"."sid" IS NULL`.
 
 **Ruby:**
 ```ruby

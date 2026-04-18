@@ -25,44 +25,37 @@ describe('black-box: restrict', () => {
     expect(compiled.params).toEqual(['S1', 'S2']);
   });
 
-  // restrict.03 — DIVERGENT: bmg-rb splits NULL out via OR
-  // (`(sid IS NULL) OR (sid IN ('S1','S2'))`) because SQL `IN (NULL, ...)`
-  // does NOT match NULL rows. bmg-sql's predicate compiler does not do this
-  // split: it emits a plain `IN (?, ?, ?)` with a null param. Against a real
-  // DB, NULL-sid rows would be missed. Snapshotted for regression detection.
-  it('restrict.03 — IN list mixing NULL and values (DIVERGENT: no NULL split)', () => {
+  it('restrict.03 — IN list mixing NULL and values', () => {
     const rel = suppliers.restrict(Pred.in('sid', [null, 'S1', 'S2']));
     const compiled = rel.toSql();
     expect(compiled.sql).toBe(
       'SELECT "t1"."sid", "t1"."name", "t1"."city", "t1"."status" FROM "suppliers" "t1"' +
-      ' WHERE "t1"."sid" IN (?, ?, ?)',
+      ' WHERE ("t1"."sid" IS NULL OR "t1"."sid" IN (?, ?))',
     );
-    expect(compiled.params).toEqual([null, 'S1', 'S2']);
+    expect(compiled.params).toEqual(['S1', 'S2']);
   });
 
-  // restrict.04 — DIVERGENT: same NULL-in-IN issue as restrict.03; bmg-rb
-  // also degrades the 1-element IN to `=`. bmg-sql keeps `IN (?, ?)`.
-  it('restrict.04 — NULL + single value (DIVERGENT: no NULL split / no IN→= degrade)', () => {
+  // restrict.04 — minor cosmetic delta: bmg-rb degrades the 1-element
+  // post-split IN to `=` (`IS NULL OR sid = 'S2'`); bmg-sql keeps
+  // `IN (?)`. Semantically equivalent — same query, same rows.
+  it('restrict.04 — NULL + single value', () => {
     const rel = suppliers.restrict(Pred.in('sid', [null, 'S2']));
     const compiled = rel.toSql();
     expect(compiled.sql).toBe(
       'SELECT "t1"."sid", "t1"."name", "t1"."city", "t1"."status" FROM "suppliers" "t1"' +
-      ' WHERE "t1"."sid" IN (?, ?)',
+      ' WHERE ("t1"."sid" IS NULL OR "t1"."sid" IN (?))',
     );
-    expect(compiled.params).toEqual([null, 'S2']);
+    expect(compiled.params).toEqual(['S2']);
   });
 
-  // restrict.05 — DIVERGENT: bmg-rb collapses `[nil]` to `IS NULL`. bmg-sql
-  // emits `IN (?)` with a null param — semantically wrong (matches nothing).
-  // Snapshotted so a future predicate-compiler fix flips the assertion.
-  it('restrict.05 — List containing only NULL (DIVERGENT: no IS NULL collapse)', () => {
+  it('restrict.05 — List containing only NULL', () => {
     const rel = suppliers.restrict(Pred.in('sid', [null]));
     const compiled = rel.toSql();
     expect(compiled.sql).toBe(
       'SELECT "t1"."sid", "t1"."name", "t1"."city", "t1"."status" FROM "suppliers" "t1"' +
-      ' WHERE "t1"."sid" IN (?)',
+      ' WHERE "t1"."sid" IS NULL',
     );
-    expect(compiled.params).toEqual([null]);
+    expect(compiled.params).toEqual([]);
   });
 
   it('restrict.06 — Chained restricts combine via AND', () => {
