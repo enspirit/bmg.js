@@ -3,7 +3,7 @@
 Source: bmg-rb `spec/integration/sequel/base/*.yml` @ SHA `fa8c7e0`
 (imported 2026-04-16).
 
-**Totals:** 19 source files · 89 cases · 36 ported (7 divergent, 1 known-bug).
+**Totals:** 19 source files · 89 cases · 43 ported (7 divergent, 2 known-bug).
 
 ## Per-file status
 
@@ -25,7 +25,7 @@ Source: bmg-rb `spec/integration/sequel/base/*.yml` @ SHA `fa8c7e0`
 | [restrict.md](./restrict.md) | 11 | 9 | full (pushed down), with caveats | 3 ported, 6 divergent (NULL-in-IN, alias-in-WHERE, union push-down), 2 blocked (match predicate missing) |
 | [rxmatch.md](./rxmatch.md) | 2 | 0 | **not implemented** | operator missing entirely |
 | [suffix.md](./suffix.md) | 1 | 0 | **fallback only** | see prefix |
-| [summarize.md](./summarize.md) | 10 | 0 | full (GROUP BY + CTE wrap) | distinct_count + Summarizer API divergence TBD |
+| [summarize.md](./summarize.md) | 10 | 7 | full (GROUP BY + CTE wrap) | 6 ported, .05 known-bug (join alias), 3 blocked: .07 layered join bugs, .09/.10 distinct_count missing from core API |
 | [transform.md](./transform.md) | 4 | 0 | unknown coverage | Ruby `String`/`Integer`/`Date` class literals need TS mapping |
 | [union.md](./union.md) | 3 | 2 | UNION only | UNION ALL blocked: core Relation.union() has no options arg |
 
@@ -46,10 +46,12 @@ Source: bmg-rb `spec/integration/sequel/base/*.yml` @ SHA `fa8c7e0`
 - **transform** — Ruby uses class literals (`String`, `Integer`, `Date`)
   as type tokens. TS port needs a type-token convention — decide during
   port.
-- **summarize** — bmg-rb uses `Bmg::Summarizer.min(:qty)` /
-  `.distinct_count(:qty)` for named aggregators. TS port needs to decide
-  equivalent API (string aggregator names like `'min'`, `'distinct_count'`,
-  or typed helpers).
+- **summarize** — for standard aggregators (`min`, `max`, `sum`, `avg`,
+  `count`), bmg-js uses the verbose `AggregatorSpec` form
+  `{ qty: { op: 'sum', attr: 'qty' } }` — no separate helper class.
+  For `distinct_count`, the op is absent from bmg core's `AggregatorName`
+  type (and in-memory `applyAggregator`), and from bmg-sql's
+  `compilableOps` allowlist, so `.09`/`.10` remain blocked.
 
 ## Gate
 

@@ -10,9 +10,10 @@ iteration**. Stop conditions are at the bottom.
 
 ## Current state
 
-- **Ported operators:** 10 / 14
-- **Last completed:** `restrict` (9/11 cases — 3 ported, 6 divergent, 2 blocked)
-- **Next up:** `summarize` (skipping `join` per option b — see below)
+- **Ported operators:** 11 / 14
+- **Last completed:** `summarize` (7/10 cases — 6 ported, 1 known-bug via
+  `it.fails`, 3 blocked)
+- **Next up:** `transform` (last non-join operator)
 - **Stopped?** no — user chose option (b): skip join-dependent operators,
   continue with non-join work. `left_join` and `join` remain blocked on
   the join-alias bug and are left for a later refactor pass.
@@ -170,8 +171,10 @@ Only operators supported by bmg-sql today. Port in this order.
   fix, out of scope per option (b))
 - [x] **restrict** (9/11 cases — 3 ported, 6 divergent, 2 blocked)
   — surfaced NULL-in-IN gap, alias-in-WHERE bug, no UNION push-down
-- [ ] **summarize** (10 cases) — aggregator API decision needed
-  (decide `'sum'` string tokens vs typed helpers — match bmg-rb's `:sum`)
+- [x] **summarize** (7/10 cases — 6 ported, 1 known-bug via `it.fails`,
+  3 blocked: .07 layered join bugs, .09/.10 distinct_count missing from
+  core API) — settled on verbose `{ qty: { op: 'sum', attr: 'qty' } }`
+  form as the bmg-js equivalent of bmg-rb's `:qty => :sum`
 - [ ] **join** (14 cases — BLOCKED on join alias bug; revisit after bug
   fix, out of scope per option (b))
 - [ ] **transform** (4 cases) — decide class-token mapping (`String` →
