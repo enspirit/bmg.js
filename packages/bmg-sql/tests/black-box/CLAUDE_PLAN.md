@@ -10,13 +10,16 @@ iteration**. Stop conditions are at the bottom.
 
 ## Current state
 
-- **Ported operators:** 11 / 14
-- **Last completed:** `summarize` (7/10 cases — 6 ported, 1 known-bug via
-  `it.fails`, 3 blocked)
-- **Next up:** `transform` (last non-join operator)
-- **Stopped?** no — user chose option (b): skip join-dependent operators,
-  continue with non-join work. `left_join` and `join` remain blocked on
-  the join-alias bug and are left for a later refactor pass.
+- **Ported operators:** 12 / 14 (iteration complete for all non-join
+  operators; `join` and `left_join` remain blocked per option (b))
+- **Last completed:** `transform` (0/4 cases — all blocked, test file
+  written with `it.todo`)
+- **Next up:** **option (b) is exhausted.** Remaining work is either
+  (a) fix the cross-cutting join-alias bug in `processJoin` /
+  `processRequalify` to unblock `left_join` / `join` / `matching.06` /
+  `summarize.05` / `.07`, or accept 12/14 and stop the loop.
+- **Stopped?** awaiting user decision — no more non-join operators
+  available to port.
 
 Update the three bullets above at the end of every iteration.
 
@@ -177,9 +180,10 @@ Only operators supported by bmg-sql today. Port in this order.
   form as the bmg-js equivalent of bmg-rb's `:qty => :sum`
 - [ ] **join** (14 cases — BLOCKED on join alias bug; revisit after bug
   fix, out of scope per option (b))
-- [ ] **transform** (4 cases) — decide class-token mapping (`String` →
-  `'string'` or `'varchar(255)'`); if CAST emission is missing in
-  bmg-sql, mark all `blocked` and move on
+- [x] **transform** (0/4 — all blocked) — bmg core `Transformation`
+  is JS-function-only; bmg-sql has no `processTransform` / CAST
+  emission. Cross-package feature; test file kept as `it.todo`s so the
+  blocker stays visible.
 
 ---
 

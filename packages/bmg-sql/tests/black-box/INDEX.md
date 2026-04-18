@@ -26,7 +26,7 @@ Source: bmg-rb `spec/integration/sequel/base/*.yml` @ SHA `fa8c7e0`
 | [rxmatch.md](./rxmatch.md) | 2 | 0 | **not implemented** | operator missing entirely |
 | [suffix.md](./suffix.md) | 1 | 0 | **fallback only** | see prefix |
 | [summarize.md](./summarize.md) | 10 | 7 | full (GROUP BY + CTE wrap) | 6 ported, .05 known-bug (join alias), 3 blocked: .07 layered join bugs, .09/.10 distinct_count missing from core API |
-| [transform.md](./transform.md) | 4 | 0 | unknown coverage | Ruby `String`/`Integer`/`Date` class literals need TS mapping |
+| [transform.md](./transform.md) | 4 | 0 | **none — fully blocked** | bmg core `Transformation` is JS-function-only; bmg-sql has no `processTransform` / CAST emission. All 4 cases `it.todo`. |
 | [union.md](./union.md) | 3 | 2 | UNION only | UNION ALL blocked: core Relation.union() has no options arg |
 
 ## New bmg-sql bug surfaced by porting
@@ -43,9 +43,11 @@ Source: bmg-rb `spec/integration/sequel/base/*.yml` @ SHA `fa8c7e0`
 - **constants / prefix / suffix** — currently fall back to in-memory
   evaluation. They execute, but the compiled SQL will not match bmg-rb's
   single-query output. Cases will be `divergent` until push-down is added.
-- **transform** — Ruby uses class literals (`String`, `Integer`, `Date`)
-  as type tokens. TS port needs a type-token convention — decide during
-  port.
+- **transform** — fully blocked. bmg core's `Transformation` type is
+  JS-function-only (no type-token channel); bmg-sql's `SqlRelation.transform`
+  just falls back to in-memory. Unblocking is a cross-package feature:
+  add a typed-token extension to `Transformation`, a `processTransform`
+  emitting CAST / date(), and a dialect hook for the varchar spelling.
 - **summarize** — for standard aggregators (`min`, `max`, `sum`, `avg`,
   `count`), bmg-js uses the verbose `AggregatorSpec` form
   `{ qty: { op: 'sum', attr: 'qty' } }` — no separate helper class.
