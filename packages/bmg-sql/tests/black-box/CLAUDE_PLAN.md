@@ -11,12 +11,11 @@ iteration**. Stop conditions are at the bottom.
 ## Current state
 
 - **Ported operators:** 14 / 14 — all operators iterated (+ prefix, suffix, page, rxmatch added outside the original set)
-- **Last completed:** LIKE predicate + rxmatch operator (cross-package)
-- **Totals:** 89 cases · **84 ported** (4 divergent, 0 known-bug, 5
+- **Last completed:** UNION ALL option + constants push-down
+- **Totals:** 89 cases · **85 ported** (~5 divergent, 0 known-bug, 4
   blocked via `it.todo`)
-- **Stopped?** yes — loop paused. Remaining 5 blocked cases need new
-  capabilities (transform type-tokens, UNION ALL option, constants
-  push-down).
+- **Stopped?** yes — loop paused. Remaining 4 blocked cases are all
+  `transform.*` (needs type-token channel and `processTransform`).
 
 Update the four bullets above at the end of every iteration.
 
@@ -119,18 +118,35 @@ Net: +4 ported cases (80 → 84/89).
 
 ---
 
-## Next up (if resumed)
+## Unblocker pass 4 — completed 2026-04-24
 
-Sorted by estimated effort × value. See INDEX.md "Blockers summary"
-for the ground truth.
+| # | Unblocker                       | Cases unblocked          |
+|---|---------------------------------|--------------------------|
+| 5 | UNION ALL option on `union()`   | union.03                 |
+| 6 | `constants` push-down test port | constants.01 (already pushed down — just needed the snapshot test) |
+
+Item 5 is cross-package: `Relation.union(other, { all: true })` and
+`AsyncRelation.union(...)` plumb a new `UnionOptions` type through
+core → bmg-sql's `processMerge(all: boolean)`. In-memory skips the
+dedup loop when `all: true`.
+
+Item 6 was smaller than expected: `processConstants` was already
+wired up on `SqlRelation.constants`; only the black-box test was
+missing. Added a minimal snapshot.
+
+Net: +1 ported case (84 → 85/89). constants.01 was previously
+"fallback only" (executed correctly but had no snapshot) — now a
+regular ported case.
+
+---
+
+## Next up (if resumed)
 
 1. **Transform type-token API** — 4 cases; needs declarative marker
    in `Transformation` plus a `processTransform` with CAST emission.
-2. **UNION ALL option** — 1 case (union.03). Needs a cross-package
-   API change to `Relation.union()` options.
-3. **constants push-down** — 1 case (constants.01). Localized.
-4. **Union push-down into branches** (restrict.10/.11) — localized
-   bmg-sql processor improvements; currently divergent.
+   This is the only remaining blocker and the biggest single reshape.
+2. **Union push-down into branches** (restrict.10/.11) — localized
+   bmg-sql processor improvement; currently divergent (2 cases).
 
 ---
 
@@ -274,7 +290,7 @@ Only operators supported by bmg-sql today. Port in this order.
   `BmgSql.fromSubquery`)
 - [x] **extend** (1/1) — string-ref form works
 - [x] **project** (3/3) — DISTINCT optimization verified
-- [x] **union** (2/3) — UNION ALL (.03) blocked on core API
+- [x] **union** (3/3) — UNION ALL (.03) ported in unblocker pass 4 item 5
 - [x] **minus** (3/3) — subquery-in-FROM used instead of CTE
 - [x] **rename** (4/4) — params asserted for restrict literals
 - [x] **allbut** (5/5) — .04 divergent (key-inference gap)
@@ -314,8 +330,6 @@ unblocker (as happened in the A→D pass), it can happen outside the
 loop.
 
 **Still blocked:**
-- **constants** — SQL push-down missing; falls back to in-memory.
-- **UNION ALL** — `Relation.union()` has no options arg (1 case).
 - **transform** — cross-package: needs type-token channel and
   `processTransform` / CAST emission (4 cases).
 
@@ -326,6 +340,10 @@ loop.
 
 **Resolved by unblocker pass 3:**
 - ~~**rxmatch** / **LIKE predicate**~~ — added (item 4).
+
+**Resolved by unblocker pass 4:**
+- ~~**UNION ALL option**~~ — added (item 5).
+- ~~**constants**~~ — already pushed down; test added (item 6).
 
 **Resolved by the unblocker pass (A→D):**
 - ~~**page**~~ — `Relation.page()` surfaced by **unblocker C**.

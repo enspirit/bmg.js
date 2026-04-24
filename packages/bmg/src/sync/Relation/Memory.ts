@@ -46,6 +46,7 @@ import type {
   TypedOrdering,
   TypedPredicate,
   RxmatchOptions,
+  UnionOptions,
   TypedExtension,
   RenameMap,
   Renamed,
@@ -128,8 +129,8 @@ export class MemoryRelation<T = Tuple> implements Relation<T> {
 
   // === Set operators ===
 
-  union(right: RelationOperand<T>): Relation<T> {
-    return union(this as any, right as any) as unknown as Relation<T>;
+  union(right: RelationOperand<T>, options?: UnionOptions): Relation<T> {
+    return union(this as any, right as any, options) as unknown as Relation<T>;
   }
 
   minus(right: RelationOperand<T>): Relation<T> {

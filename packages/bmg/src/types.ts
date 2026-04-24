@@ -75,6 +75,17 @@ export interface RxmatchOptions {
   caseSensitive?: boolean;
 }
 
+/** Options for the `union` operator. */
+export interface UnionOptions {
+  /**
+   * Skip deduplication (`UNION ALL` in SQL, straight concatenation in
+   * memory). Caller is responsible for the relation invariant — only
+   * use this when the branches are known to be disjoint, or when
+   * duplicates are acceptable. Defaults to false (`UNION`).
+   */
+  all?: boolean;
+}
+
 /**
  * Typed join keys for array form: keys must exist on BOTH operands.
  * Example: suppliers.join(parts, ['city']) - 'city' must be a key of both.
@@ -259,7 +270,7 @@ export interface Relation<T = Tuple> {
 
   // === Set operators (require same type) ===
 
-  union(right: RelationOperand<T>): Relation<T>
+  union(right: RelationOperand<T>, options?: UnionOptions): Relation<T>
   minus(right: RelationOperand<T>): Relation<T>
   intersect(right: RelationOperand<T>): Relation<T>
 

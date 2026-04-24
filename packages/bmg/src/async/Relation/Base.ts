@@ -1,5 +1,5 @@
 import type { AsyncRelation, AsyncRelationOperand } from '../types';
-import type { Tuple, TypedPredicate, TypedExtension, AttrName, Relation, RenameMap, Renamed, Prefixed, Suffixed, Transformation, JoinKeys, LeftJoinDefaults, Aggregators, AutowrapOptions, TextOptions, GroupOptions, WrapOptions, Ordering, TypedOrdering, PageOptions, RxmatchOptions } from '../../types';
+import type { Tuple, TypedPredicate, TypedExtension, AttrName, Relation, RenameMap, Renamed, Prefixed, Suffixed, Transformation, JoinKeys, LeftJoinDefaults, Aggregators, AutowrapOptions, TextOptions, GroupOptions, WrapOptions, Ordering, TypedOrdering, PageOptions, RxmatchOptions, UnionOptions } from '../../types';
 import { MemoryRelation } from '../../sync/Relation';
 import {
   restrict as restrictOp,
@@ -119,9 +119,9 @@ export class BaseAsyncRelation<T = Tuple> implements AsyncRelation<T> {
 
   // === Set operations ===
 
-  union(other: AsyncRelationOperand<T>): AsyncRelation<T> {
+  union(other: AsyncRelationOperand<T>, options?: UnionOptions): AsyncRelation<T> {
     return new BaseAsyncRelation(
-      unionOp(this.source, other)
+      unionOp(this.source, other, options)
     ) as unknown as AsyncRelation<T>;
   }
 

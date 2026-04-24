@@ -22,6 +22,7 @@ import type {
   JoinKeys,
   LeftJoinDefaults,
   RxmatchOptions,
+  UnionOptions,
   Aggregators,
   AutowrapOptions,
   TextOptions,
@@ -332,12 +333,13 @@ export class SqlRelation<T = Tuple> implements AsyncRelation<T> {
   // Set operations
   // ===========================================================================
 
-  union(other: AsyncRelationOperand<T>): AsyncRelation<T> {
+  union(other: AsyncRelationOperand<T>, options?: UnionOptions): AsyncRelation<T> {
     const rightExpr = this.extractCompatibleExpr(other);
     if (rightExpr) {
-      return this.withExpr(processMerge(this.expr, rightExpr, 'union', false, this.builder));
+      const all = options?.all === true;
+      return this.withExpr(processMerge(this.expr, rightExpr, 'union', all, this.builder));
     }
-    return this.fallback().union(other);
+    return this.fallback().union(other, options);
   }
 
   minus(other: AsyncRelationOperand<T>): AsyncRelation<T> {

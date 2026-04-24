@@ -24,9 +24,12 @@ describe('black-box: union', () => {
     );
   });
 
-  // union.03 — UNION ALL via `all: true` option
-  // Blocked: Relation.union() in bmg core does not accept an options arg.
-  // Surfacing it is a cross-package change (core types + Memory + async Base)
-  // out of scope for test porting.
-  it.todo('union.03 — UNION ALL via all: true option (blocked: cross-package API change needed)');
+  it('union.03 — UNION ALL via all: true option', () => {
+    const rel = suppliers.union(suppliers, { all: true });
+    expect(rel.toSql().sql).toBe(
+      '(SELECT "t1"."sid", "t1"."name", "t1"."city", "t1"."status" FROM "suppliers" "t1")' +
+      ' UNION ALL ' +
+      '(SELECT "t1"."sid", "t1"."name", "t1"."city", "t1"."status" FROM "suppliers" "t1")',
+    );
+  });
 });

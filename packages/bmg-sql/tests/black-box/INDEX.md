@@ -3,7 +3,7 @@
 Source: bmg-rb `spec/integration/sequel/base/*.yml` @ SHA `fa8c7e0`
 (imported 2026-04-16).
 
-**Totals:** 19 source files · 89 cases · 84 ported (4 divergent, 0 known-bug).
+**Totals:** 19 source files · 89 cases · 85 ported (~5 divergent, 0 known-bug), 4 blocked (all `transform`).
 
 ## Per-file status
 
@@ -11,7 +11,7 @@ Source: bmg-rb `spec/integration/sequel/base/*.yml` @ SHA `fa8c7e0`
 |---|---:|---:|---|---|
 | [allbut.md](./allbut.md) | 5 | 5 | full (pushed down, DISTINCT-aware) | .04 divergent: redundant DISTINCT after key-prefix restrict |
 | [base.md](./base.md) | 2 | 2 | full | baseline `.toSql()` with no operators; .02 ported via `BmgSql.fromSubquery` (unblocker D) |
-| [constants.md](./constants.md) | 1 | 0 | **fallback only** | falls back to in-memory; SQL push-down TBD |
+| [constants.md](./constants.md) | 1 | 1 | full (pushed down) | literals parameterized (same as extend/restrict) |
 | [extend.md](./extend.md) | 1 | 1 | full (pushed down) | type quirk: string-ref form infers literal type |
 | [join.md](./join.md) | 14 | 14 | full (INNER + CROSS) | .06 and .09 divergent (join-shape reordering — bmg-rb optimizes; bmg-sql emits in source order) |
 | [left_join.md](./left_join.md) | 8 | 8 | full (LEFT JOIN + defaults → COALESCE) | 1 divergent re-shape on .06 |
@@ -27,7 +27,7 @@ Source: bmg-rb `spec/integration/sequel/base/*.yml` @ SHA `fa8c7e0`
 | [suffix.md](./suffix.md) | 1 | 1 | full (pushed down via rename) | same implementation as prefix |
 | [summarize.md](./summarize.md) | 10 | 10 | full (GROUP BY + CTE wrap) | all ported; .05 and .07 unblocked by join-alias + WHERE-qualifier fix |
 | [transform.md](./transform.md) | 4 | 0 | **none — fully blocked** | bmg core `Transformation` is JS-function-only; bmg-sql has no `processTransform` / CAST emission. All 4 cases `it.todo`. |
-| [union.md](./union.md) | 3 | 2 | UNION only | UNION ALL blocked: core Relation.union() has no options arg |
+| [union.md](./union.md) | 3 | 3 | full (UNION + UNION ALL) | `Relation.union(other, { all: true })` lands for UNION ALL |
 
 ## Join-alias bug — FIXED
 
@@ -51,9 +51,6 @@ outer-left alias. Unblocks ~25 cases across `join`, `left_join`,
 
 ## Blockers summary
 
-- **constants** — currently falls back to in-memory evaluation. The
-  compiled SQL will not match bmg-rb's single-query output. 1 case
-  `divergent` until push-down is added.
 - **transform** — fully blocked. bmg core's `Transformation` type is
   JS-function-only (no type-token channel); bmg-sql's `SqlRelation.transform`
   just falls back to in-memory. Unblocking is a cross-package feature:

@@ -3,8 +3,8 @@
 - **Source:** [spec/integration/sequel/base/union.yml](https://github.com/enspirit/bmg/blob/fa8c7e0/spec/integration/sequel/base/union.yml)
 - **Imported SHA:** `fa8c7e0`
 - **Total cases:** 3
-- **Ported:** 2/3 (1 blocked)
-- **bmg-sql support:** full — UNION; UNION ALL supported in `processMerge` but not exposed on `Relation.union()` surface
+- **Ported:** 3/3
+- **bmg-sql support:** full — UNION and UNION ALL (via `{ all: true }` option).
 - **Test file:** `union.test.ts`
 
 ## Cases
@@ -49,9 +49,7 @@ SELECT ... UNION SELECT ... UNION SELECT ...
 
 ### union.03 — UNION ALL via `all: true` option
 
-**Status:** blocked — Relation.union() API does not accept options
-
-**Warnings:** `processMerge()` in bmg-sql accepts an `all: boolean` flag, but `SqlRelation.union()` hardcodes `false`. Exposing the option requires extending `Relation.union()` in bmg core (`types.ts`, `lib-definitions.ts`, `Memory.ts`, `async/types.ts`, `async/Relation/Base.ts`) plus the SqlRelation method. Cross-package change — out of scope for test porting.
+**Status:** ported — `Relation.union(other, { all: true })` / `AsyncRelation.union(other, { all: true })`.
 
 **Ruby:**
 ```ruby

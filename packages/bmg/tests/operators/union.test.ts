@@ -48,6 +48,21 @@ describe('.union', () => {
     expect(isEqual(res, expected)).to.be.true;
   })
 
+  describe('with { all: true }', () => {
+    it('keeps duplicates from overlapping branches', () => {
+      const result = left.union(right, { all: true }).toArray();
+      // 4 rows total: 2 from left, 2 from right, including the duplicate Bob.
+      expect(result).toHaveLength(4);
+      expect(result.filter(t => t.id === 2)).toHaveLength(2);
+    })
+
+    it('still emits all rows when branches are disjoint', () => {
+      const disjoint = Bmg([{ id: 4, name: 'Dana' }]);
+      const result = left.union(disjoint, { all: true }).toArray();
+      expect(result).toHaveLength(3);
+    })
+  })
+
   describe('DEE and DUM', () => {
     it('DUM is identity: R union DUM = R', () => {
       const result = left.union(Bmg([]));
