@@ -10,35 +10,48 @@ A TypeScript implementation of BMG, a relational algebra originally implemented 
 
 The aim is to provide relational algebra operators for arrays of JavaScript objects, NOT to implement an SQL compiler.
 
+## Repository Structure
+
+This is a pnpm workspace monorepo:
+```
+packages/
+├── bmg/          @enspirit/bmg-js  — core relational algebra (in-memory)
+```
+
 ## Commands
 
 ```bash
-npm run test          # Run all tests (vitest)
-npm run test:watch    # Run tests in watch mode
-npm run build         # Build the library (generates lib-definitions, bundles, and types)
+# From root (runs across all packages):
+pnpm test             # Run all tests
+pnpm build            # Build all packages
+
+# From packages/bmg/:
+pnpm test             # Run bmg tests (vitest)
+pnpm test:watch       # Run tests in watch mode
+pnpm build            # Build (generates lib-definitions, bundles with tsup, and types)
 ```
 
 Run a single test file:
 ```bash
-npx vitest run tests/operators/restrict.test.ts
+npx vitest run packages/bmg/tests/operators/restrict.test.ts
 ```
 
 ## Architecture
 
-**Entry point:** `src/index.ts` - Exports `Bmg` factory function, all operators, and types
+**Entry point:** `packages/bmg/src/index.ts` - Exports `Bmg` factory function, all operators, and types
 
 **Core abstractions:**
-- `Relation<T>` interface (`src/types.ts`) - Defines all relational operators with full TypeScript generics
-- `MemoryRelation<T>` (`src/Relation/Memory.ts`) - In-memory implementation wrapping an array of tuples
-- `AsyncRelation<T>` (`src/async-types.ts`) - Async version for streaming data sources
-- `BaseAsyncRelation<T>` (`src/AsyncRelation/Base.ts`) - Async implementation using AsyncIterable
+- `Relation<T>` interface (`packages/bmg/src/types.ts`) - Defines all relational operators with full TypeScript generics
+- `MemoryRelation<T>` (`packages/bmg/src/sync/Relation/Memory.ts`) - In-memory implementation wrapping an array of tuples
+- `AsyncRelation<T>` (`packages/bmg/src/async/types.ts`) - Async version for streaming data sources
+- `BaseAsyncRelation<T>` (`packages/bmg/src/async/Relation/Base.ts`) - Async implementation using AsyncIterable
 
 **Operators pattern:** Each operator exists as:
-1. Standalone function in `src/operators/<name>.ts` - Works on arrays directly
+1. Standalone function in `packages/bmg/src/sync/operators/<name>.ts` - Works on arrays directly
 2. Method on `MemoryRelation` - Delegates to standalone function
-3. Async version in `src/async-operators/<name>.ts` for AsyncRelation
+3. Async version in `packages/bmg/src/async/operators/<name>.ts` for AsyncRelation
 
-**Test fixtures:** `tests/fixtures.ts` provides standard SUPPLIERS relation for tests.
+**Test fixtures:** `packages/bmg/tests/fixtures.ts` provides standard SUPPLIERS relation for tests.
 
 ## Relational Algebra Rules
 
@@ -84,6 +97,6 @@ npx vitest run tests/operators/restrict.test.ts
 
 ## Implemented Operators
 
-**Relational:** restrict, where, exclude, project, allbut, extend, rename, prefix, suffix, constants, union, minus, intersect, matching, not_matching, join, left_join, cross_product, cross_join, image, summarize, group, ungroup, wrap, unwrap, autowrap, transform
+**Relational:** restrict, where, exclude, rxmatch, project, allbut, extend, rename, prefix, suffix, constants, union, minus, intersect, matching, not_matching, join, left_join, cross_product, cross_join, image, summarize, page, group, ungroup, wrap, unwrap, autowrap, transform
 
 **Non-relational:** one, yByX, toArray, isRelation, isEqual, toText

@@ -1,0 +1,14 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: bmg_test
+      POSTGRES_USER: bmg
+      POSTGRES_PASSWORD: bmg
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: pg_isready -U bmg -d bmg_test
+      interval: 2s
+      timeout: 5s
+      retries: 10

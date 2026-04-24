@@ -1,0 +1,57 @@
+{
+  "name": "@enspirit/bmg-pg",
+  "version": "0.1.0",
+  "description": "PostgreSQL adapter for bmg-sql relational algebra",
+  "keywords": [
+    "postgresql",
+    "postgres",
+    "sql",
+    "relational",
+    "algebra",
+    "bmg"
+  ],
+  "license": "MIT",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/enspirit/bmg.js"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:integration": "vitest run --config vitest.integration.config.ts"
+  },
+  "dependencies": {
+    "@enspirit/bmg-sql": "workspace:^"
+  },
+  "peerDependencies": {
+    "pg": "^8.0.0"
+  },
+  "peerDependenciesMeta": {
+    "pg": {
+      "optional": false
+    }
+  },
+  "devDependencies": {
+    "@types/pg": "^8.11.0",
+    "pg": "^8.13.0",
+    "tsup": "^8.5.1",
+    "typescript": "^5.0.0",
+    "vitest": "^4.0.16"
+  }
+}
