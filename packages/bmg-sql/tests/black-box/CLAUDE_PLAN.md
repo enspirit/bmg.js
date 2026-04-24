@@ -10,16 +10,15 @@ iteration**. Stop conditions are at the bottom.
 
 ## Current state
 
-- **Ported operators:** 12 / 14 (all non-join operators iterated;
-  `join` and `left_join` remain blocked on the cross-cutting
-  join-alias bug, deferred to a dedicated branch)
-- **Last completed:** Unblocker D — `BmgSql.fromSubquery` factory
-- **Totals:** 89 cases · **53 ported** (4 divergent, 2 known-bug via
-  `it.fails`, 30 blocked via `it.todo`)
-- **Stopped?** yes — loop paused after an "unblocker pass" (A→D,
-  see next section). Remaining work requires decisions the port
-  loop is not authorized to make (join-alias refactor, new
-  operators, cross-package API shape).
+- **Ported operators:** 14 / 14 — all operators iterated
+- **Last completed:** Join-alias refactor (`processJoin` builds ON after
+  requalify; `requalifyTableSpec` rewrites `on` predicates;
+  `buildSelectQualifier` looks up attr qualifiers in select list)
+- **Totals:** 89 cases · **72 ported** (5 divergent, 0 known-bug, 17
+  blocked via `it.todo`)
+- **Stopped?** yes — loop paused. Remaining 17 blocked cases need new
+  capabilities (prefix/suffix/constants push-down, CROSS JOIN, LEFT JOIN
+  defaults, LIKE predicate, transform type-tokens, UNION ALL option).
 
 Update the four bullets above at the end of every iteration.
 
@@ -51,26 +50,63 @@ reshape the codebase mid-loop.
 
 ---
 
+## Join-alias refactor — completed 2026-04-24
+
+Pre-existing bug: `buildJoinPredicate` (in `relation.ts`) built the
+`ON` predicate using each relation's own `SqlBuilder`, so both operands
+started at `t1`; `processRequalify` renamed the right side's tables but
+not the already-built `on` predicate, producing `ON t1.sid = t1.sid`.
+
+**Fixes (one commit):**
+1. `processJoin(left, right, keys, kind, builder)` now accepts **keys**
+   (not a pre-built predicate) and builds ON **after**
+   `processRequalify` via a select-list-aware `buildJoinOn` helper. This
+   both fixes the baseline "both t1" bug and resolves each join key's
+   qualifier from the respective select list, so multi-way joins
+   (`a.join(b, ['x']).join(c, ['y'])`) emit correct references even
+   when `y` lives on a nested table.
+2. `requalifyTableSpec` for `inner_join` / `left_join` now also calls
+   `requalifyPredicate(spec.on, remap)`, walking `AttrRef` nodes and
+   rewriting qualifier prefixes. Fixes nested-join-under-EXISTS cases
+   (matching.06) and layered-summarize joins (summarize.07).
+3. `buildSelectQualifier` (in `compile.ts`) now looks up each attr's
+   qualifier in the SELECT list (falling back to the left table alias
+   only if absent). Fixes WHERE predicates that reference right-side
+   join columns (summarize.07, left_join.07, and the general
+   restrict-after-join pattern).
+
+Removed from `SqlRelation`: `buildJoinPredicate`, `getLeftAlias`,
+`getRightAlias`, `getSpecAlias` — all now derived inside processors.
+
+**Net impact:** +19 cases (53 → 72/89) across `join.*` (10 of 14),
+`left_join.*` (6 of 8), `matching.06`, `summarize.05`, `summarize.07`.
+Two divergences recorded (join/left_join — source-order join emission
+vs. bmg-rb's INNER-before-LEFT reordering optimization).
+
+---
+
 ## Next up (if resumed)
 
 Sorted by estimated effort × value. See INDEX.md "Blockers summary"
 for the ground truth.
 
-1. **Join-alias bug** — biggest value (unblocks join 14 + left_join 8
-   + matching.06 + summarize.05/.07 ≈ **25 cases**). Needs a
-   non-trivial reshape of `processJoin` / `processRequalify` and
-   `buildJoinPredicate` so the ON predicate uses the requalified
-   right-side alias. Belongs on its own branch.
-2. **prefix / suffix / constants push-down** — 3 cases across three
-   operators; each a medium-sized processor addition.
-3. **UNION ALL option** — 1 case (union.03). Needs a cross-package
-   API change to `Relation.union()` options.
-4. **LIKE predicate** (`rxmatch.01-02`, `restrict.08-09`) — add a
-   `match` predicate kind to `@enspirit/predicate` and wire it
-   through bmg-sql (with dialect hook for `ESCAPE`). 4 cases.
+1. **prefix / suffix push-down** — unblocks prefix.01, suffix.01,
+   join.02, join.10, left_join.02-form cases. Medium processor
+   addition; a prefix is essentially a bulk rename.
+2. **CROSS JOIN push-down** — 2 cases (join.08, join.09). Small
+   processor (`processCrossJoin`) + expose on `SqlRelation.cross_join`.
+3. **LEFT JOIN defaults / COALESCE** — 2 cases (left_join.03,
+   left_join.08). Needs `defaults` arg on `left_join` in bmg core and
+   `coalesce` emission in bmg-sql.
+4. **LIKE predicate** (`rxmatch.01-02`, `restrict.08-09`) — 4 cases.
+   Add a `match` predicate kind to `@enspirit/predicate` and wire it
+   through bmg-sql (with dialect hook for `ESCAPE`).
 5. **Transform type-token API** — 4 cases; needs declarative marker
    in `Transformation` plus a `processTransform` with CAST emission.
-6. **Alias-in-WHERE-after-rename** (restrict.07) and **union
+6. **UNION ALL option** — 1 case (union.03). Needs a cross-package
+   API change to `Relation.union()` options.
+7. **constants push-down** — 1 case (constants.01). Localized.
+8. **Alias-in-WHERE-after-rename** (restrict.07) and **union
    push-down into branches** (restrict.10/.11) — localized bmg-sql
    processor improvements; currently divergent.
 
@@ -221,16 +257,18 @@ Only operators supported by bmg-sql today. Port in this order.
 - [x] **rename** (4/4) — params asserted for restrict literals
 - [x] **allbut** (5/5) — .04 divergent (key-inference gap)
 - [x] **not_matching** (4/4) — .04 ported via unblocker D
-- [x] **matching** (6/7) — .06 known-bug (`it.fails`, join-alias);
-  .07 ported via unblocker D
-- [ ] **left_join** (0/8 — BLOCKED on join-alias bug; deferred to a
-  dedicated refactor branch)
+- [x] **matching** (7/7) — all ported (.06 unblocked by join-alias
+  fix, .07 via unblocker D)
+- [x] **left_join** (6/8) — .03/.08 blocked on defaults/COALESCE API;
+  .06 divergent on source-order join emission
 - [x] **restrict** (9/11) — unblocker A ported .03/.04/.05. Remaining:
   .07 divergent (alias-in-WHERE-after-rename), .10/.11 divergent (no
   UNION push-down), .08/.09 blocked (LIKE predicate missing)
-- [x] **summarize** (9/10) — unblocker B ported .09/.10. .05
-  known-bug (`it.fails`, join-alias); .07 blocked (layered join bugs)
-- [ ] **join** (0/14 — BLOCKED on join-alias bug; deferred)
+- [x] **summarize** (10/10) — all ported (.05/.07 unblocked by
+  join-alias + WHERE-qualifier fix; .09/.10 by unblocker B)
+- [x] **join** (10/14) — .02/.10 blocked (prefix push-down);
+  .08/.09 blocked (CROSS JOIN push-down); .06 divergent on bracketed
+  join shape
 - [x] **transform** (0/4) — all blocked: bmg core `Transformation`
   is JS-function-only; bmg-sql has no `processTransform` / CAST
   emission. Test file kept as `it.todo`s so the blocker stays visible.
@@ -252,8 +290,11 @@ loop.
 **Still blocked:**
 - **rxmatch** — operator missing in bmg core and bmg-sql.
 - **constants** — SQL push-down missing; falls back to in-memory.
-- **prefix** — SQL push-down missing; falls back to in-memory.
+- **prefix** — SQL push-down missing; falls back to in-memory (also
+  blocks join.02, join.10).
 - **suffix** — SQL push-down missing; falls back to in-memory.
+- **CROSS JOIN push-down** — blocks join.08, join.09.
+- **LEFT JOIN defaults / COALESCE** — blocks left_join.03, left_join.08.
 
 **Resolved by the unblocker pass (A→D):**
 - ~~**page**~~ — `Relation.page()` surfaced by **unblocker C**.
@@ -261,6 +302,14 @@ loop.
   (`BmgSql.fromSubquery`).
 - ~~**matching.07**, **not_matching.04**~~ — same raw-SQL factory
   dependency, both resolved by **unblocker D**.
+
+**Resolved by the join-alias refactor:**
+- ~~**join-alias bug**~~ — INNER/LEFT join predicates now use
+  post-requalify aliases and resolve each key from the select list;
+  nested `on` predicates are requalified when their spec is; WHERE
+  attributes resolve to the right alias via select-list lookup.
+  Unblocks join (10 cases), left_join (6), matching.06, summarize.05,
+  summarize.07.
 
 ---
 

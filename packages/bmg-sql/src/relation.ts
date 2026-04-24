@@ -31,7 +31,7 @@ import type {
   PageOptions,
 } from '@enspirit/bmg-js';
 import { BaseAsyncRelation } from '@enspirit/bmg-js/async';
-import { isPredicate, fromObject, eq, and, not, attr } from '@enspirit/predicate';
+import { isPredicate, fromObject, not } from '@enspirit/predicate';
 import type { Predicate } from '@enspirit/predicate';
 
 import type { SqlExpr } from './ast';
@@ -183,35 +183,6 @@ export class SqlRelation<T = Tuple> implements AsyncRelation<T> {
     return fromObject(p as Record<string, unknown>);
   }
 
-  /**
-   * Build a join ON predicate from join keys.
-   * Maps common attribute names to qualified t1.attr = t2.attr predicates.
-   */
-  private buildJoinPredicate(
-    leftAlias: string,
-    rightAlias: string,
-    keys?: JoinKeys
-  ): Predicate | undefined {
-    if (!keys) return undefined;
-
-    if (Array.isArray(keys)) {
-      // Array form: ['sid', 'city'] → t1.sid = t2.sid AND t1.city = t2.city
-      if (keys.length === 0) return undefined;
-      const preds = keys.map((k: string) =>
-        eq(attr(`${leftAlias}.${k}`), attr(`${rightAlias}.${k}`))
-      );
-      return preds.length === 1 ? preds[0] : and(...preds);
-    } else {
-      // Object form: { sid: 'supplier_id' } → t1.sid = t2.supplier_id
-      const entries = Object.entries(keys);
-      if (entries.length === 0) return undefined;
-      const preds = entries.map(([leftKey, rightKey]) =>
-        eq(attr(`${leftAlias}.${leftKey}`), attr(`${rightAlias}.${rightKey as string}`))
-      );
-      return preds.length === 1 ? preds[0] : and(...preds);
-    }
-  }
-
   // ===========================================================================
   // Type-preserving operators (push to SQL when possible)
   // ===========================================================================
@@ -359,13 +330,11 @@ export class SqlRelation<T = Tuple> implements AsyncRelation<T> {
 
   join<U>(other: AsyncRelationOperand<U>, keys?: JoinKeys): AsyncRelation<T & U> {
     const rightExpr = this.extractCompatibleExpr(other);
-    if (rightExpr && this.expr.kind === 'select' && this.expr.from) {
-      const leftAlias = this.getLeftAlias();
-      const rightAlias = this.getRightAlias(rightExpr);
-      const on = this.buildJoinPredicate(leftAlias, rightAlias, keys);
-      if (on) {
+    if (rightExpr && keys && this.expr.kind === 'select' && this.expr.from) {
+      const hasKeys = Array.isArray(keys) ? keys.length > 0 : Object.keys(keys).length > 0;
+      if (hasKeys) {
         return this.withExpr(
-          processJoin(this.expr, rightExpr, on, 'inner_join', this.builder)
+          processJoin(this.expr, rightExpr, keys, 'inner_join', this.builder)
         ) as unknown as AsyncRelation<T & U>;
       }
     }
@@ -374,13 +343,11 @@ export class SqlRelation<T = Tuple> implements AsyncRelation<T> {
 
   left_join<U>(other: AsyncRelationOperand<U>, keys?: JoinKeys): AsyncRelation<T & Partial<U>> {
     const rightExpr = this.extractCompatibleExpr(other);
-    if (rightExpr && this.expr.kind === 'select' && this.expr.from) {
-      const leftAlias = this.getLeftAlias();
-      const rightAlias = this.getRightAlias(rightExpr);
-      const on = this.buildJoinPredicate(leftAlias, rightAlias, keys);
-      if (on) {
+    if (rightExpr && keys && this.expr.kind === 'select' && this.expr.from) {
+      const hasKeys = Array.isArray(keys) ? keys.length > 0 : Object.keys(keys).length > 0;
+      if (hasKeys) {
         return this.withExpr(
-          processJoin(this.expr, rightExpr, on, 'left_join', this.builder)
+          processJoin(this.expr, rightExpr, keys, 'left_join', this.builder)
         ) as unknown as AsyncRelation<T & Partial<U>>;
       }
     }
@@ -538,27 +505,4 @@ export class SqlRelation<T = Tuple> implements AsyncRelation<T> {
     return this.adapter.stream<T>(sql, params)[Symbol.asyncIterator]();
   }
 
-  // ===========================================================================
-  // Private helpers for join alias resolution
-  // ===========================================================================
-
-  private getLeftAlias(): string {
-    if (this.expr.kind === 'select' && this.expr.from) {
-      return this.getSpecAlias(this.expr.from.tableSpec);
-    }
-    return 't1';
-  }
-
-  private getRightAlias(rightExpr: SqlExpr): string {
-    if (rightExpr.kind === 'select' && rightExpr.from) {
-      return this.getSpecAlias(rightExpr.from.tableSpec);
-    }
-    return 't2';
-  }
-
-  private getSpecAlias(spec: any): string {
-    if (spec.alias) return spec.alias;
-    if (spec.left) return this.getSpecAlias(spec.left);
-    return 't1';
-  }
 }

@@ -3,14 +3,15 @@
 - **Source:** [spec/integration/sequel/base/join.yml](https://github.com/enspirit/bmg/blob/fa8c7e0/spec/integration/sequel/base/join.yml)
 - **Imported SHA:** `fa8c7e0`
 - **Total cases:** 14
-- **Ported:** 0/14
-- **bmg-sql support:** full — INNER JOIN + CROSS JOIN (empty key list)
+- **Ported:** 10/14. `.02`/`.10` blocked (prefix push-down); `.08`/`.09` blocked (CROSS JOIN push-down).
+- **bmg-sql support:** full INNER JOIN push-down; CROSS JOIN not wired (cross_product falls back to in-memory).
+- **Test file:** `join.test.ts`
 
 ## Cases
 
 ### join.01 — Simple inner join on single key
 
-**Status:** todo
+**Status:** ported
 
 **Ruby:**
 ```ruby
@@ -29,9 +30,7 @@ INNER JOIN `supplies` AS 't2' ON (`t1`.`sid` = `t2`.`sid`)
 
 ### join.02 — Join after rename + prefix
 
-**Status:** todo
-
-**Warnings:** Depends on prefix push-down (currently fallback-only). May be `blocked` or `divergent`.
+**Status:** blocked — `prefix` push-down not implemented (falls back to in-memory)
 
 **Ruby:**
 ```ruby
@@ -46,9 +45,7 @@ supplies
 
 ### join.03 — Join with rename on right-side that creates conflicting attribute
 
-**Status:** todo
-
-**Warnings:** `supplies.rename(:qty => :city)` makes right-side's `city` conflict with left's `city`. bmg-rb resolves this by… projecting away the conflicting column on the right? Inspect expected output carefully — right side only contributes `pid`, suggesting bmg-rb either drops the conflict or the join keys propagate in a specific way. Investigate semantic during port.
+**Status:** ported — bmg-sql drops the right-side's conflicting `city` column in the merged select list (right only contributes `pid`). Matches bmg-rb.
 
 **Ruby:**
 ```ruby
@@ -62,7 +59,7 @@ suppliers
 
 ### join.04 — Chained joins (3 relations)
 
-**Status:** todo
+**Status:** ported
 
 **Ruby:**
 ```ruby
@@ -83,7 +80,7 @@ INNER JOIN `parts` AS 't3' ON (`t1`.`pid` = `t3`.`pid`)
 
 ### join.05 — Chained joins (4 relations)
 
-**Status:** todo
+**Status:** ported
 
 **Ruby:**
 ```ruby
@@ -99,9 +96,7 @@ supplies
 
 ### join.06 — Right side is itself a join (sub-join as right operand)
 
-**Status:** todo
-
-**Warnings:** bmg-rb flattens the sub-join into the parent FROM clause rather than wrapping it in a subquery. Verify bmg-sql does the same flattening.
+**Status:** ported — bmg-sql emits the bracketed form `A JOIN B JOIN C ON x ON y` (accepted by SQLite/Postgres as equivalent to the flat form).
 
 **Ruby:**
 ```ruby
@@ -115,7 +110,7 @@ suppliers
 
 ### join.07 — Mixed chained + sub-join
 
-**Status:** todo
+**Status:** ported
 
 **Ruby:**
 ```ruby
@@ -130,7 +125,7 @@ suppliers
 
 ### join.08 — Cross join (empty key list)
 
-**Status:** todo
+**Status:** blocked — `cross_join` / `join(other, [])` push-down not implemented
 
 **Ruby:**
 ```ruby
@@ -149,9 +144,7 @@ CROSS JOIN `cities` AS 't2'
 
 ### join.09 — Cross join then inner join (FROM ordering reshuffled)
 
-**Status:** todo
-
-**Warnings:** bmg-rb reorders FROM to `cities CROSS JOIN suppliers INNER JOIN parts ON (suppliers.city = parts.city)`. The cross-join inversion is an optimization — may `divergent` in bmg-sql; note expected ordering carefully.
+**Status:** blocked — `cross_join` push-down not implemented
 
 **Ruby:**
 ```ruby
@@ -166,9 +159,7 @@ suppliers
 
 ### join.10 — Join with explicit attribute-mapping + prefix
 
-**Status:** todo
-
-**Warnings:** Uses hash-form key `:sid => :supplier_sid` to express "left.sid = right.supplier_sid". bmg-js equivalent: `join(other, { sid: 'supplier_sid' })` or similar. Verify API.
+**Status:** blocked — `prefix` push-down not implemented (falls back to in-memory)
 
 **Ruby:**
 ```ruby
@@ -183,9 +174,11 @@ supplies
 
 ### join.11 — Restricts on both sides push through to WHERE
 
-**Status:** todo
-
-**Warnings:** bmg-rb merges the restrict from both sides into a single WHERE after the INNER JOIN. Verify bmg-sql does the same merge.
+**Status:** ported — both restricts land in WHERE. bmg-js's WHERE qualifier
+resolves `pid` (the join key) to the left-contributed alias `t1` in the
+merged select list, so both conjuncts read `t1.pid = 'P1'`. Since the join
+condition enforces `t1.pid = t2.pid`, this is semantically equivalent to
+bmg-rb's `t1.pid = 'P1' AND t2.pid = 'P1'`.
 
 **Ruby:**
 ```ruby
@@ -200,7 +193,7 @@ supplies
 
 ### join.12 — Restricts on different attributes
 
-**Status:** todo
+**Status:** ported
 
 **Ruby:**
 ```ruby
@@ -215,9 +208,10 @@ supplies
 
 ### join.13 — Self-join with contradictory restricts
 
-**Status:** todo
-
-**Warnings:** Both sides of `supplies` with conflicting `pid` values. Semantically empty but bmg-rb does NOT short-circuit — it emits the full query and lets SQL return empty. Good test for "don't over-optimize".
+**Status:** ported — same qualifier resolution as .11: both restricts on
+`pid` qualify to `t1` (the left side) because `pid` is a join key. With
+`t1.pid = 'P1' AND t1.pid = 'P2'` the query is semantically empty, as
+bmg-rb's `t1.pid = 'P1' AND t2.pid = 'P2'` would also be given the equi-join.
 
 **Ruby:**
 ```ruby
@@ -232,9 +226,7 @@ supplies
 
 ### join.14 — Self-join on all key attributes (identity join)
 
-**Status:** todo
-
-**Warnings:** Left projection is just the left side's columns; bmg-rb does not duplicate right-side attrs because all are key attrs.
+**Status:** ported — all 3 keys emit `AND`-joined equi-predicates; select list has only left columns because all right attrs are in the join keys.
 
 **Ruby:**
 ```ruby

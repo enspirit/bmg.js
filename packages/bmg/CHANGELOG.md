@@ -14,6 +14,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Exports**: Updated package exports to standard ESM/CJS dual format (`.js`/`.cjs`).
 - **Structured predicates**: `restrict()`, `where()`, and `exclude()` now accept structured predicate AST nodes from `@enspirit/predicate` alongside plain objects and functions.
 
+### Fixed
+
+- **`@enspirit/bmg-sql`: join-alias bug**: fixed a long-standing bug where INNER / LEFT join ON clauses emitted both operands qualified as `t1`, producing incorrect SQL (`ON t1.sid = t1.sid`). The fix also affects:
+  - Nested joins under `matching()` / `not_matching()` — the inner `ON` was previously not requalified when the enclosing semi-join was.
+  - Multi-way joins (`a.join(b, [x]).join(c, [y])`) — each key's qualifier is now resolved from the select list, so a key that lives on a nested table resolves to that table's alias.
+  - `restrict()` after a join on a right-side attribute — WHERE qualifiers now resolve from the select list instead of defaulting to the leftmost table alias.
+
 - **`distinct_count` aggregator**: new aggregator name alongside `count`/`sum`/`avg`/`min`/`max`/`collect`. Counts distinct non-null values of an attribute. Usage: `r.summarize(['city'], { n: { op: 'distinct_count', attr: 'sid' } })`. In `@enspirit/bmg-sql` this compiles to `COUNT(DISTINCT col)`.
 
 - **`page` operator**: pagination on `Relation` and `AsyncRelation`. Sorts by an ordering then slices to a page. Default `pageSize` is 20, pages are 1-indexed. Usage: `r.page(['name', 'sid'], 2, { pageSize: 10 })` or with direction: `r.page([['status', 'desc'], 'name'], 1)`. New types: `OrderingDirection`, `Ordering`, `TypedOrdering<T>`, `PageOptions`. In `@enspirit/bmg-sql` this compiles to `ORDER BY ... LIMIT ... OFFSET ...`.

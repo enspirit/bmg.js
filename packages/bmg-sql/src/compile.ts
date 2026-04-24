@@ -358,15 +358,26 @@ function compileSelect(expr: SelectExpr, ctx: CompileContext): string {
 
 /**
  * Build a qualifier function for WHERE predicates in a SELECT.
- * Maps attribute names to the first table alias in the FROM clause.
+ * Looks up each attribute's qualifier in the select list (so columns
+ * contributed by the right side of a join resolve to the right alias).
+ * Falls back to the primary FROM alias if the name isn't in the select
+ * list.
  */
 function buildSelectQualifier(expr: SelectExpr, ctx: CompileContext): (name: string) => string {
-  const alias = expr.from ? getTableAlias(expr.from.tableSpec) : undefined;
-  if (alias) {
-    return (name: string) =>
-      `${ctx.dialect.quoteIdentifier(alias)}.${ctx.dialect.quoteIdentifier(name)}`;
+  const fallback = expr.from ? getTableAlias(expr.from.tableSpec) : undefined;
+  const lookup = new Map<string, string>();
+  for (const item of expr.selectList) {
+    if (item.expr.kind === 'column_ref') {
+      lookup.set(item.alias, item.expr.qualifier);
+    }
   }
-  return (name: string) => ctx.dialect.quoteIdentifier(name);
+  return (name: string) => {
+    const q = lookup.get(name) ?? fallback;
+    if (q) {
+      return `${ctx.dialect.quoteIdentifier(q)}.${ctx.dialect.quoteIdentifier(name)}`;
+    }
+    return ctx.dialect.quoteIdentifier(name);
+  };
 }
 
 function compileSetOp(

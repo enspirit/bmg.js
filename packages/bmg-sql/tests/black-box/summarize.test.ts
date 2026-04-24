@@ -48,13 +48,7 @@ describe('black-box: summarize', () => {
     expect(compiled.params).toEqual(['P1']);
   });
 
-  // summarize.05 — DIVERGENT (known bug): bmg-sql emits the join predicate
-  // as `"t1"."sid" = "t1"."sid"` instead of `"t1"."sid" = "t2"."sid"` — the
-  // same join-alias bug that blocks left_join.* and matching.06. Marked
-  // with it.fails() against the correct expected SQL, so when the bug is
-  // fixed in processJoin/buildJoinPredicate, this will start passing and
-  // .fails() will invert to alert us.
-  it.fails('summarize.05 — Summarize over a join (known bug: wrong join ON aliases)', () => {
+  it('summarize.05 — Summarize over a join', () => {
     const rel = suppliers
       .join(supplies, ['sid'])
       .summarize(['sid'], { qty: SUM_QTY, count: 'count' });
@@ -83,15 +77,25 @@ describe('black-box: summarize', () => {
     expect(compiled.params).toEqual([2]);
   });
 
-  // summarize.07 — Blocked: layered bugs. The join-alias bug fires
-  // (`ON "t1"."sid" = "t1"."sid"`), the inner subquery is not requalified
-  // (re-uses `"t1"` inside it, colliding with the outer `t1`), and the
-  // outer WHERE references the wrong alias (`"t1"."qty"` when qty lives
-  // on the right-side derived table). All three are rooted in the same
-  // processJoin / processRequalify refactor that blocks left_join. Not
-  // articulable as a single correct-SQL expected string without fixing
-  // the underlying processor family.
-  it.todo('summarize.07 — Join against a summarized relation (blocked: join alias + subquery requalify bugs)');
+  it('summarize.07 — Join against a summarized relation', () => {
+    // bmg-rb emits this as `WITH t3 AS (...) SELECT ... FROM suppliers t1
+    // INNER JOIN t3 ...`. bmg-sql emits the summary as a derived-table
+    // subquery embedded in FROM — same semantics, different shape (same
+    // precedent as minus.03 / summarize.06). The inner subquery reuses
+    // alias "t1" inside its own scope; that shadows but does not clash
+    // with the outer suppliers "t1" (separate scope).
+    const rel = suppliers
+      .join(supplies.summarize(['sid'], { qty: SUM_QTY }), ['sid'])
+      .restrict({ qty: 2 });
+    const compiled = rel.toSql();
+    expect(compiled.sql).toBe(
+      'SELECT "t1"."sid", "t1"."name", "t1"."city", "t1"."status", "t4"."qty"' +
+      ' FROM "suppliers" "t1" JOIN (SELECT "t1"."sid", SUM("t1"."qty") AS "qty"' +
+      ' FROM "supplies" "t1" GROUP BY "t1"."sid") "t4"' +
+      ' ON "t1"."sid" = "t4"."sid" WHERE "t4"."qty" = ?',
+    );
+    expect(compiled.params).toEqual([2]);
+  });
 
   it('summarize.08 — Min via AggregatorSpec helper form', () => {
     const rel = supplies.summarize([], { min_qty: { op: 'min', attr: 'qty' } });

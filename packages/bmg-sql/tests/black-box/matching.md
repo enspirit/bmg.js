@@ -3,7 +3,7 @@
 - **Source:** [spec/integration/sequel/base/matching.yml](https://github.com/enspirit/bmg/blob/fa8c7e0/spec/integration/sequel/base/matching.yml)
 - **Imported SHA:** `fa8c7e0`
 - **Total cases:** 7
-- **Ported:** 6/7 (1 known-bug via `it.fails`). .07 ported by unblocker D.
+- **Ported:** 7/7. .06 unblocked by the join-alias fix; .07 via `BmgSql.fromSubquery`.
 - **bmg-sql support:** full — semi-join via `WHERE EXISTS (...)` (commit 9a676bb)
 - **Test file:** `matching.test.ts`
 
@@ -116,13 +116,7 @@ WHERE (EXISTS (
 
 ### matching.06 — Matching against an inner-join
 
-**Status:** divergent — **KNOWN BUG in bmg-sql**
-
-**Bug:** When the right-side of `matching()` is itself a join, the inner `JOIN ... ON` clause emits the wrong aliases: `"t1"."pid" = "t1"."pid"` (referencing the outer relation instead of the inner join's operands). Correct form would be `"t7"."pid" = "t8"."pid"`.
-
-**Impact:** This query returns incorrect results against a real database — the EXISTS subquery reduces to a cartesian product filtered only on the outer equi-join, not on the inner `pid = pid`. Fix is in `processSemiJoin` or the inner-join compilation when embedded in an EXISTS subquery — needs alias rewiring so the nested join operates on its own aliases.
-
-**Test marker:** `it.fails()` with the CORRECT expected SQL. When the bug is fixed, the test will start passing and `it.fails()` will invert it to a fail, alerting us to remove the marker.
+**Status:** ported (unblocked by join-alias fix)
 
 **Ruby:**
 ```ruby

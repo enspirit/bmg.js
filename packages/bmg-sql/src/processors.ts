@@ -337,12 +337,14 @@ function requalifyTableSpec(spec: TableSpec, remap: (old: string) => string): Ta
         ...spec,
         left: requalifyTableSpec(spec.left, remap),
         right: requalifyTableSpec(spec.right, remap),
+        on: requalifyPredicate(spec.on, remap),
       };
     case 'left_join':
       return {
         ...spec,
         left: requalifyTableSpec(spec.left, remap),
         right: requalifyTableSpec(spec.right, remap),
+        on: requalifyPredicate(spec.on, remap),
       };
     case 'cross_join':
       return {
@@ -353,18 +355,104 @@ function requalifyTableSpec(spec: TableSpec, remap: (old: string) => string): Ta
   }
 }
 
+/**
+ * Rewrite qualifier prefixes in a predicate's AttrRef nodes.
+ *
+ * AttrRef names are stored as strings; `"t1.col"` denotes a qualified
+ * column. This helper splits on the first dot, remaps the qualifier,
+ * and leaves unqualified names alone.
+ */
+function requalifyPredicate(pred: Predicate, remap: (old: string) => string): Predicate {
+  switch (pred.kind) {
+    case 'eq':
+    case 'neq':
+    case 'lt':
+    case 'lte':
+    case 'gt':
+    case 'gte':
+      return {
+        ...pred,
+        left: requalifyPredicateScalar(pred.left, remap),
+        right: requalifyPredicateScalar(pred.right, remap),
+      };
+    case 'in':
+      return { ...pred, left: requalifyPredicateScalar(pred.left, remap) };
+    case 'and':
+      return { ...pred, operands: pred.operands.map(p => requalifyPredicate(p, remap)) };
+    case 'or':
+      return { ...pred, operands: pred.operands.map(p => requalifyPredicate(p, remap)) };
+    case 'not':
+      return { ...pred, operand: requalifyPredicate(pred.operand, remap) };
+    case 'tautology':
+    case 'contradiction':
+      return pred;
+  }
+}
+
+function requalifyPredicateScalar(
+  s: { kind: 'attr'; name: string } | { kind: 'literal'; value: unknown },
+  remap: (old: string) => string
+): typeof s {
+  if (s.kind !== 'attr') return s;
+  const dot = s.name.indexOf('.');
+  if (dot < 0) return s;
+  const qual = s.name.slice(0, dot);
+  const rest = s.name.slice(dot + 1);
+  return { ...s, name: `${remap(qual)}.${rest}` };
+}
+
 // ============================================================================
 // processJoin — INNER JOIN / LEFT JOIN
 // ============================================================================
 
+/** Join keys: array (shared names) or object ({leftKey: rightKey}). */
+export type JoinKeys = string[] | Record<string, string>;
+
+/**
+ * Build an equi-join predicate `l.a = r.a AND ...`, looking up each
+ * attribute's *current* qualifier in the respective select list. This
+ * matters for multi-way joins: the attribute's alias may belong to a
+ * nested table inside a join tree, not the outermost primary alias.
+ */
+function buildJoinOn(left: SelectExpr, right: SelectExpr, keys: JoinKeys): Predicate {
+  const entries: [string, string][] = Array.isArray(keys)
+    ? keys.map(k => [k, k])
+    : Object.entries(keys);
+  const leftPrimary = getPrimaryAlias(left.from);
+  const rightPrimary = getPrimaryAlias(right.from);
+  const preds = entries.map(([lk, rk]) => {
+    const lq = qualifierFor(left, lk, leftPrimary);
+    const rq = qualifierFor(right, rk, rightPrimary);
+    return predEq(predAttr(`${lq}.${lk}`), predAttr(`${rq}.${rk}`));
+  });
+  if (preds.length === 0) {
+    // Degenerate: no equi-predicates. Use tautology (callers normally
+    // filter this out / use cross_join instead).
+    return { kind: 'tautology' } as Predicate;
+  }
+  return preds.length === 1 ? preds[0] : predAnd(...preds);
+}
+
+/** Find the qualifier of `attr` in a select list, falling back to `fallback`. */
+function qualifierFor(sel: SelectExpr, attr: string, fallback: string | undefined): string {
+  const item = sel.selectList.find(i => i.alias === attr);
+  if (item && item.expr.kind === 'column_ref') return item.expr.qualifier;
+  if (!fallback) throw new Error(`Cannot resolve qualifier for attribute ${attr}`);
+  return fallback;
+}
+
 /**
  * Join two SQL expressions.
  * Merges select lists, FROM clauses, and WHERE clauses.
+ *
+ * `keys` is the list/map of equi-join attributes; the ON predicate is
+ * built *after* requalification, using the final left/right aliases, so
+ * callers don't have to know (or guess) those aliases.
  */
 export function processJoin(
   left: SqlExpr,
   right: SqlExpr,
-  on: Predicate,
+  keys: JoinKeys,
   joinKind: 'inner_join' | 'left_join',
   builder: SqlBuilder
 ): SqlExpr {
@@ -387,6 +475,12 @@ export function processJoin(
   if (!leftSel.from || !rightSel.from) {
     throw new Error('Cannot join expressions without FROM clauses');
   }
+
+  // Build ON predicate now that both sides have stable aliases.
+  // Look up each key's qualifier in the respective select list so that
+  // multi-way joins (where the key may belong to a nested table) emit
+  // correct references.
+  const on = buildJoinOn(leftSel, rightSel, keys);
 
   const joinSpec: TableSpec = {
     kind: joinKind,
