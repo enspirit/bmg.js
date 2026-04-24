@@ -14,15 +14,14 @@ describe('black-box: left_join', () => {
   });
 
   it('left_join.02 — Left join with attribute-mapping (hash key)', () => {
-    // bmg-rb folds the rename back into the ON and emits `t2.sid = t1.sid`.
-    // bmg-js keeps the rename visible in the select list and uses the
-    // renamed key in the ON clause (`t1.sid = t3.id`) — semantically
-    // equivalent; divergent only in literal SQL shape.
+    // buildJoinOn resolves `id` on the right side (renamed from `sid`)
+    // to the underlying column `sid`, matching bmg-rb's `ON t1.sid = t2.sid`
+    // shape. The rename is still visible in the select list.
     const rel = suppliers.left_join(supplies.rename({ sid: 'id' }), { sid: 'id' });
     expect(rel.toSql().sql).toBe(
       'SELECT "t1"."sid", "t1"."name", "t1"."city", "t1"."status",' +
       ' "t3"."sid" AS "id", "t3"."pid", "t3"."qty"' +
-      ' FROM "suppliers" "t1" LEFT JOIN "supplies" "t3" ON "t1"."sid" = "t3"."id"',
+      ' FROM "suppliers" "t1" LEFT JOIN "supplies" "t3" ON "t1"."sid" = "t3"."sid"',
     );
   });
 

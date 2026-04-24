@@ -73,21 +73,17 @@ describe('black-box: restrict', () => {
     expect(compiled.params).toEqual(['S1', 'S2', 'S3']);
   });
 
-  // restrict.07 — DIVERGENT (and arguably broken): bmg-rb pushes the predicate
-  // through the rename and references the underlying column (`name`). bmg-sql
-  // leaves the predicate referencing the SELECT alias (`firstname`). Most SQL
-  // dialects (Postgres, standard SQL) do NOT allow aliases in WHERE, so the
-  // emitted SQL would fail at execution time. Fix requires rename-aware
-  // processWhere — out of scope for test porting. Snapshotted so the next
-  // bmg-sql change to rename/where lights this up.
-  it('restrict.07 — Restrict after rename (DIVERGENT: alias not pushed through)', () => {
+  it('restrict.07 — Restrict after rename', () => {
+    // buildSelectQualifier resolves `firstname` via the select list to
+    // its underlying column `name`, so the WHERE references the physical
+    // column as bmg-rb does.
     const rel = suppliers
       .rename({ name: 'firstname' } as const)
       .restrict({ firstname: 'Smith' });
     const compiled = rel.toSql();
     expect(compiled.sql).toBe(
       'SELECT "t1"."sid", "t1"."name" AS "firstname", "t1"."city", "t1"."status" FROM "suppliers" "t1"' +
-      ' WHERE "t1"."firstname" = ?',
+      ' WHERE "t1"."name" = ?',
     );
     expect(compiled.params).toEqual(['Smith']);
   });

@@ -3,16 +3,15 @@
 - **Source:** [spec/integration/sequel/base/suffix.yml](https://github.com/enspirit/bmg/blob/fa8c7e0/spec/integration/sequel/base/suffix.yml)
 - **Imported SHA:** `fa8c7e0`
 - **Total cases:** 1
-- **Ported:** 0/1
-- **bmg-sql support:** **fallback only** — same situation as prefix.
+- **Ported:** 1/1
+- **bmg-sql support:** full — same implementation as prefix.
+- **Test file:** `suffix.test.ts`
 
 ## Cases
 
 ### suffix.01 — Suffix all attribute names with `_supplier`
 
-**Status:** blocked (SQL push-down not implemented)
-
-**Warnings:** See prefix.md. Same fallback story; same push-down fix (thin layer over rename).
+**Status:** ported
 
 **Ruby:**
 ```ruby

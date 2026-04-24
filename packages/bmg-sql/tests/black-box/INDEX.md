@@ -3,7 +3,7 @@
 Source: bmg-rb `spec/integration/sequel/base/*.yml` @ SHA `fa8c7e0`
 (imported 2026-04-16).
 
-**Totals:** 19 source files · 89 cases · 72 ported (5 divergent, 0 known-bug).
+**Totals:** 19 source files · 89 cases · 76 ported (3 divergent, 0 known-bug).
 
 ## Per-file status
 
@@ -13,18 +13,18 @@ Source: bmg-rb `spec/integration/sequel/base/*.yml` @ SHA `fa8c7e0`
 | [base.md](./base.md) | 2 | 2 | full | baseline `.toSql()` with no operators; .02 ported via `BmgSql.fromSubquery` (unblocker D) |
 | [constants.md](./constants.md) | 1 | 0 | **fallback only** | falls back to in-memory; SQL push-down TBD |
 | [extend.md](./extend.md) | 1 | 1 | full (pushed down) | type quirk: string-ref form infers literal type |
-| [join.md](./join.md) | 14 | 10 | full (INNER) | 10 ported (1 divergent re-shape on .06/.07); .02/.10 blocked (prefix push-down); .08/.09 blocked (CROSS JOIN push-down) |
+| [join.md](./join.md) | 14 | 12 | full (INNER) | 12 ported; .08/.09 blocked (CROSS JOIN push-down); .06 divergent (bracketed join shape) |
 | [left_join.md](./left_join.md) | 8 | 6 | full (LEFT JOIN) | 6 ported (1 divergent re-shape on .06); .03/.08 blocked (defaults/COALESCE API) |
 | [matching.md](./matching.md) | 7 | 7 | full (EXISTS) | all ported; .06 unblocked by join-alias fix; .07 uses `BmgSql.fromSubquery` |
 | [minus.md](./minus.md) | 3 | 3 | full (EXCEPT) | derived-table wrap instead of CTE for post-minus ops |
 | [not_matching.md](./not_matching.md) | 4 | 4 | full (NOT EXISTS) | .04 ported via `BmgSql.fromSubquery` (unblocker D) |
 | [page.md](./page.md) | 5 | 5 | full (pushed down) | surfaced by unblocker C (Relation.page() added to core + bmg-sql) |
-| [prefix.md](./prefix.md) | 1 | 0 | **fallback only** | pushed-down prefix via rename would be cleaner |
+| [prefix.md](./prefix.md) | 1 | 1 | full (pushed down via rename) | delegates to `rename` with a generated renaming map |
 | [project.md](./project.md) | 3 | 3 | full (DISTINCT-aware via RelationType) | |
 | [rename.md](./rename.md) | 4 | 4 | full (pushed down) | restrict literals parameterized (`?`) vs bmg-rb inlined |
-| [restrict.md](./restrict.md) | 11 | 9 | full (pushed down), with caveats | 6 ported, 3 divergent (alias-in-WHERE, union push-down), 2 blocked (match predicate missing). NULL-in-IN fixed in unblocker A. |
+| [restrict.md](./restrict.md) | 11 | 9 | full (pushed down), with caveats | 7 ported (.07 unblocked by WHERE-qualifier fix), 2 divergent (union push-down), 2 blocked (match predicate missing). NULL-in-IN fixed in unblocker A. |
 | [rxmatch.md](./rxmatch.md) | 2 | 0 | **not implemented** | operator missing entirely |
-| [suffix.md](./suffix.md) | 1 | 0 | **fallback only** | see prefix |
+| [suffix.md](./suffix.md) | 1 | 1 | full (pushed down via rename) | same implementation as prefix |
 | [summarize.md](./summarize.md) | 10 | 10 | full (GROUP BY + CTE wrap) | all ported; .05 and .07 unblocked by join-alias + WHERE-qualifier fix |
 | [transform.md](./transform.md) | 4 | 0 | **none — fully blocked** | bmg core `Transformation` is JS-function-only; bmg-sql has no `processTransform` / CAST emission. All 4 cases `it.todo`. |
 | [union.md](./union.md) | 3 | 2 | UNION only | UNION ALL blocked: core Relation.union() has no options arg |
@@ -56,9 +56,9 @@ outer-left alias. Unblocks ~25 cases across `join`, `left_join`,
 - **CROSS JOIN push-down** (`join.08-.09`) — `SqlRelation.cross_join` /
   `.join(other, [])` currently fall back to in-memory. Add a
   `processCrossJoin` that builds a `cross_join` `TableSpec`.
-- **constants / prefix / suffix** — currently fall back to in-memory
-  evaluation. They execute, but the compiled SQL will not match bmg-rb's
-  single-query output. Cases will be `divergent` until push-down is added.
+- **constants** — currently falls back to in-memory evaluation. The
+  compiled SQL will not match bmg-rb's single-query output. 1 case
+  `divergent` until push-down is added.
 - **left_join defaults / COALESCE** (`left_join.03`, `.08`) — bmg-rb
   supports `.left_join(other, keys, {col: default})` which emits
   `coalesce(t.col, default) AS col`. bmg-js has no defaults arg.

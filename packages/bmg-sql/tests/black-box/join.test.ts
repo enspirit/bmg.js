@@ -13,9 +13,17 @@ describe('black-box: join', () => {
     );
   });
 
-  // join.02 — blocked: requires `prefix` push-down (currently falls back
-  // to in-memory). Would produce joined SQL without the prefix shape.
-  it.todo('join.02 — Join after rename + prefix (blocked: prefix push-down)');
+  it('join.02 — Join after rename + prefix', () => {
+    const rel = supplies
+      .rename({ sid: 'supplier_sid' })
+      .join(suppliers.prefix('supplier_'), ['supplier_sid']);
+    expect(rel.toSql().sql).toBe(
+      'SELECT "t1"."sid" AS "supplier_sid", "t1"."pid", "t1"."qty",' +
+      ' "t2"."name" AS "supplier_name", "t2"."city" AS "supplier_city",' +
+      ' "t2"."status" AS "supplier_status"' +
+      ' FROM "supplies" "t1" JOIN "suppliers" "t2" ON "t1"."sid" = "t2"."sid"',
+    );
+  });
 
   it('join.03 — Right-side rename creating conflicting attribute', () => {
     // right.qty is renamed to city, which conflicts with left.city. The
@@ -33,11 +41,11 @@ describe('black-box: join', () => {
     const rel = supplies.join(suppliers, ['sid']).join(parts, ['pid']);
     expect(rel.toSql().sql).toBe(
       'SELECT "t1"."sid", "t1"."pid", "t1"."qty",' +
-      ' "t2"."name", "t2"."city", "t2"."status",' +
-      ' "t3"."color", "t3"."weight"' +
+      ' "t3"."name", "t3"."city", "t3"."status",' +
+      ' "t4"."color", "t4"."weight"' +
       ' FROM "supplies" "t1"' +
-      ' JOIN "suppliers" "t2" ON "t1"."sid" = "t2"."sid"' +
-      ' JOIN "parts" "t3" ON "t1"."pid" = "t3"."pid"',
+      ' JOIN "suppliers" "t3" ON "t1"."sid" = "t3"."sid"' +
+      ' JOIN "parts" "t4" ON "t1"."pid" = "t4"."pid"',
     );
   });
 
@@ -48,13 +56,13 @@ describe('black-box: join', () => {
       .join(cities, ['city']);
     expect(rel.toSql().sql).toBe(
       'SELECT "t1"."sid", "t1"."pid", "t1"."qty",' +
-      ' "t4"."name", "t4"."city", "t4"."status",' +
-      ' "t5"."color", "t5"."weight",' +
-      ' "t6"."country"' +
+      ' "t5"."name", "t5"."city", "t5"."status",' +
+      ' "t6"."color", "t6"."weight",' +
+      ' "t7"."country"' +
       ' FROM "supplies" "t1"' +
-      ' JOIN "suppliers" "t4" ON "t1"."sid" = "t4"."sid"' +
-      ' JOIN "parts" "t5" ON "t1"."pid" = "t5"."pid"' +
-      ' JOIN "cities" "t6" ON "t4"."city" = "t6"."city"',
+      ' JOIN "suppliers" "t5" ON "t1"."sid" = "t5"."sid"' +
+      ' JOIN "parts" "t6" ON "t1"."pid" = "t6"."pid"' +
+      ' JOIN "cities" "t7" ON "t5"."city" = "t7"."city"',
     );
   });
 
@@ -96,8 +104,27 @@ describe('black-box: join', () => {
   it.todo('join.08 — Cross join (empty key list) (blocked: CROSS JOIN push-down)');
   it.todo('join.09 — Cross then inner (blocked: CROSS JOIN push-down)');
 
-  // join.10 — blocked: requires `prefix` push-down.
-  it.todo('join.10 — Join with hash-form key + prefix (blocked: prefix push-down)');
+  it('join.10 — Join with hash-form key + prefix', () => {
+    const rel = supplies
+      .join(suppliers.prefix('supplier_'), { sid: 'supplier_sid' })
+      .join(parts.prefix('part_'), { pid: 'part_pid' });
+    const compiled = rel.toSql();
+    expect(compiled.sql).toContain(
+      'JOIN "suppliers"',
+    );
+    expect(compiled.sql).toContain(
+      'JOIN "parts"',
+    );
+    // Full snapshot deferred to keep alias numbering resilient — the
+    // correctness gates we care about are (a) prefix pushes to the
+    // select list, (b) the hash-form join key resolves `sid` to the
+    // physical column on the left and `supplier_sid` to `sid` on the
+    // prefixed right (same for part_pid → pid).
+    expect(compiled.sql).toMatch(/ON "t1"\."sid" = "t\d+"\."sid"/);
+    expect(compiled.sql).toMatch(/ON "t1"\."pid" = "t\d+"\."pid"/);
+    expect(compiled.sql).toMatch(/"name" AS "supplier_name"/);
+    expect(compiled.sql).toMatch(/"name" AS "part_name"/);
+  });
 
   // join.11 — bmg-rb merges right-side's restrict into the top-level
   // WHERE as a separate `t2.pid = 'P1'` conjunct. bmg-js emits both
@@ -110,8 +137,8 @@ describe('black-box: join', () => {
     const compiled = rel.toSql();
     expect(compiled.sql).toBe(
       'SELECT "t1"."sid", "t1"."pid", "t1"."qty",' +
-      ' "t9"."name", "t9"."color", "t9"."weight", "t9"."city"' +
-      ' FROM "supplies" "t1" JOIN "parts" "t9" ON "t1"."pid" = "t9"."pid"' +
+      ' "t12"."name", "t12"."color", "t12"."weight", "t12"."city"' +
+      ' FROM "supplies" "t1" JOIN "parts" "t12" ON "t1"."pid" = "t12"."pid"' +
       ' WHERE "t1"."pid" = ? AND "t1"."pid" = ?',
     );
     expect(compiled.params).toEqual(['P1', 'P1']);
@@ -122,9 +149,9 @@ describe('black-box: join', () => {
     const compiled = rel.toSql();
     expect(compiled.sql).toBe(
       'SELECT "t1"."sid", "t1"."pid", "t1"."qty",' +
-      ' "t10"."name", "t10"."color", "t10"."weight", "t10"."city"' +
-      ' FROM "supplies" "t1" JOIN "parts" "t10" ON "t1"."pid" = "t10"."pid"' +
-      ' WHERE "t1"."pid" = ? AND "t10"."name" = ?',
+      ' "t13"."name", "t13"."color", "t13"."weight", "t13"."city"' +
+      ' FROM "supplies" "t1" JOIN "parts" "t13" ON "t1"."pid" = "t13"."pid"' +
+      ' WHERE "t1"."pid" = ? AND "t13"."name" = ?',
     );
     expect(compiled.params).toEqual(['P1', 'Nut']);
   });
@@ -139,7 +166,7 @@ describe('black-box: join', () => {
     const compiled = rel.toSql();
     expect(compiled.sql).toBe(
       'SELECT "t1"."sid", "t1"."pid", "t1"."qty"' +
-      ' FROM "supplies" "t1" JOIN "supplies" "t11" ON "t1"."sid" = "t11"."sid"' +
+      ' FROM "supplies" "t1" JOIN "supplies" "t14" ON "t1"."sid" = "t14"."sid"' +
       ' WHERE "t1"."pid" = ? AND "t1"."pid" = ?',
     );
     expect(compiled.params).toEqual(['P1', 'P2']);

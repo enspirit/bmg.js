@@ -409,10 +409,14 @@ function requalifyPredicateScalar(
 export type JoinKeys = string[] | Record<string, string>;
 
 /**
- * Build an equi-join predicate `l.a = r.a AND ...`, looking up each
- * attribute's *current* qualifier in the respective select list. This
- * matters for multi-way joins: the attribute's alias may belong to a
- * nested table inside a join tree, not the outermost primary alias.
+ * Build an equi-join predicate `l.col = r.col AND ...`, resolving each
+ * key to its *underlying* qualified column via the select list. This
+ * matters because:
+ *   - Multi-way joins contribute attrs from nested tables.
+ *   - After `rename`/`prefix`, a key name in the relation's interface
+ *     maps to a different physical column — and SQL column aliases
+ *     aren't visible in ON, so the predicate must reference the
+ *     physical column.
  */
 function buildJoinOn(left: SelectExpr, right: SelectExpr, keys: JoinKeys): Predicate {
   const entries: [string, string][] = Array.isArray(keys)
@@ -421,9 +425,9 @@ function buildJoinOn(left: SelectExpr, right: SelectExpr, keys: JoinKeys): Predi
   const leftPrimary = getPrimaryAlias(left.from);
   const rightPrimary = getPrimaryAlias(right.from);
   const preds = entries.map(([lk, rk]) => {
-    const lq = qualifierFor(left, lk, leftPrimary);
-    const rq = qualifierFor(right, rk, rightPrimary);
-    return predEq(predAttr(`${lq}.${lk}`), predAttr(`${rq}.${rk}`));
+    const [lq, lc] = resolveKey(left, lk, leftPrimary);
+    const [rq, rc] = resolveKey(right, rk, rightPrimary);
+    return predEq(predAttr(`${lq}.${lc}`), predAttr(`${rq}.${rc}`));
   });
   if (preds.length === 0) {
     // Degenerate: no equi-predicates. Use tautology (callers normally
@@ -433,12 +437,23 @@ function buildJoinOn(left: SelectExpr, right: SelectExpr, keys: JoinKeys): Predi
   return preds.length === 1 ? preds[0] : predAnd(...preds);
 }
 
-/** Find the qualifier of `attr` in a select list, falling back to `fallback`. */
-function qualifierFor(sel: SelectExpr, attr: string, fallback: string | undefined): string {
+/**
+ * Resolve a relation-attribute name to the underlying qualified SQL
+ * column (qualifier, column). If the select list has a column_ref
+ * aliased to `attr`, use its physical qualifier+column; otherwise
+ * fall back to `(fallback, attr)`.
+ */
+function resolveKey(
+  sel: SelectExpr,
+  attr: string,
+  fallback: string | undefined
+): [string, string] {
   const item = sel.selectList.find(i => i.alias === attr);
-  if (item && item.expr.kind === 'column_ref') return item.expr.qualifier;
+  if (item && item.expr.kind === 'column_ref') {
+    return [item.expr.qualifier, item.expr.column];
+  }
   if (!fallback) throw new Error(`Cannot resolve qualifier for attribute ${attr}`);
-  return fallback;
+  return [fallback, attr];
 }
 
 /**

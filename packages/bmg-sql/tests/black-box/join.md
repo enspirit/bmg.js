@@ -3,7 +3,7 @@
 - **Source:** [spec/integration/sequel/base/join.yml](https://github.com/enspirit/bmg/blob/fa8c7e0/spec/integration/sequel/base/join.yml)
 - **Imported SHA:** `fa8c7e0`
 - **Total cases:** 14
-- **Ported:** 10/14. `.02`/`.10` blocked (prefix push-down); `.08`/`.09` blocked (CROSS JOIN push-down).
+- **Ported:** 12/14. `.08`/`.09` blocked (CROSS JOIN push-down).
 - **bmg-sql support:** full INNER JOIN push-down; CROSS JOIN not wired (cross_product falls back to in-memory).
 - **Test file:** `join.test.ts`
 
@@ -30,7 +30,7 @@ INNER JOIN `supplies` AS 't2' ON (`t1`.`sid` = `t2`.`sid`)
 
 ### join.02 — Join after rename + prefix
 
-**Status:** blocked — `prefix` push-down not implemented (falls back to in-memory)
+**Status:** ported (unblocked by prefix push-down)
 
 **Ruby:**
 ```ruby
@@ -159,7 +159,7 @@ suppliers
 
 ### join.10 — Join with explicit attribute-mapping + prefix
 
-**Status:** blocked — `prefix` push-down not implemented (falls back to in-memory)
+**Status:** ported (unblocked by prefix push-down)
 
 **Ruby:**
 ```ruby

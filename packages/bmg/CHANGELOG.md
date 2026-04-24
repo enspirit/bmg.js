@@ -20,6 +20,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Nested joins under `matching()` / `not_matching()` — the inner `ON` was previously not requalified when the enclosing semi-join was.
   - Multi-way joins (`a.join(b, [x]).join(c, [y])`) — each key's qualifier is now resolved from the select list, so a key that lives on a nested table resolves to that table's alias.
   - `restrict()` after a join on a right-side attribute — WHERE qualifiers now resolve from the select list instead of defaulting to the leftmost table alias.
+- **`@enspirit/bmg-sql`: JOIN ON and WHERE now reference underlying columns, not SELECT aliases**: after `rename` / `prefix` / `suffix`, an attribute's name in the relation's interface can differ from its physical column. JOIN `ON` and WHERE clauses previously emitted the alias name (e.g., `t1.firstname` after `rename({name: 'firstname'})`), which is invalid SQL in most dialects. They now resolve to the physical column (`t1.name`) via the select-list lookup.
+
+### Added
+
+- **`@enspirit/bmg-sql`: prefix / suffix push-down**: `SqlRelation.prefix()` and `.suffix()` now compile to SQL instead of falling back to in-memory. Delegates to `.rename()` with a generated renaming map covering every attribute (respecting the `except` option).
 
 - **`distinct_count` aggregator**: new aggregator name alongside `count`/`sum`/`avg`/`min`/`max`/`collect`. Counts distinct non-null values of an attribute. Usage: `r.summarize(['city'], { n: { op: 'distinct_count', attr: 'sid' } })`. In `@enspirit/bmg-sql` this compiles to `COUNT(DISTINCT col)`.
 

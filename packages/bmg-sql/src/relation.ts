@@ -285,10 +285,26 @@ export class SqlRelation<T = Tuple> implements AsyncRelation<T> {
   }
 
   prefix<P extends string, Ex extends keyof T = never>(pfx: P, options?: { except?: Ex[] }): AsyncRelation<Prefixed<T, P, Ex>> {
+    if (this.relType) {
+      const except = new Set((options?.except ?? []) as string[]);
+      const renaming: Record<string, string> = {};
+      for (const a of this.relType.attrs) {
+        if (!except.has(a)) renaming[a] = `${pfx}${a}`;
+      }
+      return this.rename(renaming as any) as unknown as AsyncRelation<Prefixed<T, P, Ex>>;
+    }
     return this.fallback().prefix(pfx, options);
   }
 
   suffix<S extends string, Ex extends keyof T = never>(sfx: S, options?: { except?: Ex[] }): AsyncRelation<Suffixed<T, S, Ex>> {
+    if (this.relType) {
+      const except = new Set((options?.except ?? []) as string[]);
+      const renaming: Record<string, string> = {};
+      for (const a of this.relType.attrs) {
+        if (!except.has(a)) renaming[a] = `${a}${sfx}`;
+      }
+      return this.rename(renaming as any) as unknown as AsyncRelation<Suffixed<T, S, Ex>>;
+    }
     return this.fallback().suffix(sfx, options);
   }
 

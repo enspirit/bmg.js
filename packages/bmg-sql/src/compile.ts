@@ -358,23 +358,34 @@ function compileSelect(expr: SelectExpr, ctx: CompileContext): string {
 
 /**
  * Build a qualifier function for WHERE predicates in a SELECT.
- * Looks up each attribute's qualifier in the select list (so columns
- * contributed by the right side of a join resolve to the right alias).
- * Falls back to the primary FROM alias if the name isn't in the select
- * list.
+ *
+ * Resolves each attribute name to its underlying qualified column via
+ * the select list:
+ *   - A join can pull attrs from the right side → their qualifier is
+ *     the right-side alias, not the FROM's primary alias.
+ *   - After `rename` / `prefix` / `suffix`, an attribute's name in the
+ *     relation's interface differs from its physical column name. SQL
+ *     column aliases aren't visible in WHERE, so the predicate must
+ *     reference the physical column.
+ *
+ * Falls back to `(fallback_alias, name)` for attrs not in the select
+ * list (e.g., correlated refs from an outer query).
  */
 function buildSelectQualifier(expr: SelectExpr, ctx: CompileContext): (name: string) => string {
   const fallback = expr.from ? getTableAlias(expr.from.tableSpec) : undefined;
-  const lookup = new Map<string, string>();
+  const lookup = new Map<string, { qualifier: string; column: string }>();
   for (const item of expr.selectList) {
     if (item.expr.kind === 'column_ref') {
-      lookup.set(item.alias, item.expr.qualifier);
+      lookup.set(item.alias, { qualifier: item.expr.qualifier, column: item.expr.column });
     }
   }
   return (name: string) => {
-    const q = lookup.get(name) ?? fallback;
-    if (q) {
-      return `${ctx.dialect.quoteIdentifier(q)}.${ctx.dialect.quoteIdentifier(name)}`;
+    const hit = lookup.get(name);
+    if (hit) {
+      return `${ctx.dialect.quoteIdentifier(hit.qualifier)}.${ctx.dialect.quoteIdentifier(hit.column)}`;
+    }
+    if (fallback) {
+      return `${ctx.dialect.quoteIdentifier(fallback)}.${ctx.dialect.quoteIdentifier(name)}`;
     }
     return ctx.dialect.quoteIdentifier(name);
   };
