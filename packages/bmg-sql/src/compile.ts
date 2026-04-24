@@ -58,7 +58,15 @@ function compileScalar(expr: ScalarExpr, ctx: CompileContext): string {
 
     case 'func_call': {
       const args = expr.args.map(a => compileScalar(a, ctx)).join(', ');
-      return `${expr.func.toUpperCase()}(${args})`;
+      // Emit the function name as given — callers choose the casing
+      // (e.g., 'COALESCE' uppercase, 'date' lowercase to match SQLite's
+      // built-in spelling).
+      return `${expr.func}(${args})`;
+    }
+
+    case 'cast': {
+      const inner = compileScalar(expr.expr, ctx);
+      return `CAST(${inner} AS ${expr.type})`;
     }
 
     case 'star':

@@ -43,6 +43,7 @@ function hasComputedAttributes(expr: SelectExpr): boolean {
   return expr.selectList.some(item =>
     item.expr.kind === 'aggregate' ||
     item.expr.kind === 'func_call' ||
+    item.expr.kind === 'cast' ||
     item.expr.kind === 'sql_literal'
   );
 }
@@ -315,6 +316,8 @@ function requalifyScalar(expr: SelectItem['expr'], remap: (old: string) => strin
         : expr;
     case 'func_call':
       return { ...expr, args: expr.args.map(a => requalifyScalar(a, remap)) };
+    case 'cast':
+      return { ...expr, expr: requalifyScalar(expr.expr, remap) };
     case 'sql_literal':
       return expr;
   }
@@ -525,6 +528,59 @@ export function processJoin(
 }
 
 // ============================================================================
+// processTransform — CAST / date() coercion on select items
+// ============================================================================
+
+/**
+ * Token-only pipeline: function steps disqualify push-down. A caller
+ * should check this before calling processTransform and fall back when
+ * functions are present.
+ */
+export type TransformToken = 'string' | 'integer' | 'date';
+
+/**
+ * Map of attr → list of token steps. Empty list / missing key means
+ * "pass through unchanged". Caller shapes the input; this processor
+ * does no routing over {function | array | object} forms.
+ */
+export type TransformSpec = Record<string, TransformToken[]>;
+
+/**
+ * Push a token-only transform into the select list by wrapping each
+ * affected item's expression with CAST / date() calls matching the
+ * token's SQL shape.
+ */
+export function processTransform(
+  expr: SqlExpr,
+  spec: TransformSpec,
+  builder: SqlBuilder,
+): SqlExpr {
+  const select = ensureSelect(expr, builder);
+  const items: SelectItem[] = select.selectList.map(item => {
+    const steps = spec[item.alias];
+    if (!steps || steps.length === 0) return item;
+    return { ...item, expr: buildCastPipeline(item.expr as any, steps) };
+  });
+  return { ...select, selectList: items };
+}
+
+/** Apply tokens left-to-right, wrapping the inner expression each time. */
+function buildCastPipeline(inner: any, steps: TransformToken[]): any {
+  return steps.reduce((acc, token) => wrapWithToken(acc, token), inner);
+}
+
+function wrapWithToken(inner: any, token: TransformToken): any {
+  switch (token) {
+    case 'string':
+      return { kind: 'cast' as const, expr: inner, type: 'varchar(255)' };
+    case 'integer':
+      return { kind: 'cast' as const, expr: inner, type: 'integer' };
+    case 'date':
+      return { kind: 'func_call' as const, func: 'date', args: [inner] };
+  }
+}
+
+// ============================================================================
 // applyLeftJoinDefaults — wrap right-side attrs in COALESCE(col, default)
 // ============================================================================
 
@@ -558,7 +614,7 @@ export function applyLeftJoinDefaults(
 function buildCoalesce(inner: any, value: unknown): any {
   return {
     kind: 'func_call' as const,
-    func: 'coalesce',
+    func: 'COALESCE',
     args: [inner, { kind: 'sql_literal' as const, value }],
   };
 }

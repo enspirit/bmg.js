@@ -103,4 +103,42 @@ describe('.transform', () => {
     })
   })
 
+  describe('tokens (declarative type coercion)', () => {
+    it("'string' token stringifies values", () => {
+      const data = Bmg([{ id: 1, value: 10 }]);
+      const result = data.transform({ id: 'string', value: 'string' });
+      const expected = Bmg([{ id: '1', value: '10' }]);
+      expect(result.isEqual(expected)).to.be.true;
+    });
+
+    it("'integer' token truncates to int", () => {
+      const data = Bmg([{ n: '42.9' }, { n: '-3.5' }]);
+      const result = data.transform({ n: 'integer' });
+      const expected = Bmg([{ n: 42 }, { n: -3 }]);
+      expect(result.isEqual(expected)).to.be.true;
+    });
+
+    it("composed pipeline [token, token] applies left-to-right", () => {
+      const data = Bmg([{ n: 42 }]);
+      const result = data.transform({ n: ['string', 'integer'] });
+      // 42 → '42' → 42
+      const expected = Bmg([{ n: 42 }]);
+      expect(result.isEqual(expected)).to.be.true;
+    });
+
+    it("bare token applies to every attribute", () => {
+      const data = Bmg([{ a: 1, b: 2 }]);
+      const result = data.transform('string');
+      const expected = Bmg([{ a: '1', b: '2' }]);
+      expect(result.isEqual(expected)).to.be.true;
+    });
+
+    it("mixed function + token pipelines work", () => {
+      const data = Bmg([{ x: 10 }]);
+      const result = data.transform({ x: [(v: unknown) => (v as number) + 1, 'string'] });
+      const expected = Bmg([{ x: '11' }]);
+      expect(result.isEqual(expected)).to.be.true;
+    });
+  });
+
 });

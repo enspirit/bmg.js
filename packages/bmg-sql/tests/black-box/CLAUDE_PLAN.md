@@ -11,11 +11,13 @@ iteration**. Stop conditions are at the bottom.
 ## Current state
 
 - **Ported operators:** 14 / 14 — all operators iterated (+ prefix, suffix, page, rxmatch added outside the original set)
-- **Last completed:** UNION ALL option + constants push-down
-- **Totals:** 89 cases · **85 ported** (~5 divergent, 0 known-bug, 4
-  blocked via `it.todo`)
-- **Stopped?** yes — loop paused. Remaining 4 blocked cases are all
-  `transform.*` (needs type-token channel and `processTransform`).
+- **Last completed:** transform type-token channel (CAST + date() emission)
+- **Totals:** 89 cases · **89 ported** (~5 divergent, 0 known-bug, 0
+  blocked). Every bmg-rb black-box case is now covered.
+- **Stopped?** yes — nothing blocked remains. Remaining non-port work
+  is the ~5 divergent snapshots (cosmetic reshaping bmg-rb does that
+  we don't; union push-down into branches for restrict.10/.11; and
+  the allbut.04 redundant DISTINCT).
 
 Update the four bullets above at the end of every iteration.
 
@@ -140,13 +142,42 @@ regular ported case.
 
 ---
 
+## Unblocker pass 5 — completed 2026-04-24
+
+| # | Unblocker                  | Cases unblocked                               |
+|---|----------------------------|-----------------------------------------------|
+| 7 | transform type-token API   | transform.01, transform.02, transform.03, transform.04 |
+
+Cross-package:
+- **bmg core**: added `TransformToken = 'string' | 'integer' | 'date'`
+  and `TransformStep = TransformFunc | TransformToken`. `Transformation`
+  now accepts tokens anywhere a function was accepted. In-memory
+  interpretation: `'string'` → `String(v)`, `'integer'` →
+  `Math.trunc(Number(v))`, `'date'` → `new Date(v)`. Shared helper
+  `support/applyTransform.ts` used by both sync and async operators.
+- **bmg-sql**: new `CastExpr` AST node (`CAST(expr AS type)`),
+  `processTransform` processor that wraps select items in CAST or
+  `date()` according to the pipeline, and a `toTokenSpec` helper in
+  `SqlRelation.transform` that distinguishes push-downable token-only
+  transforms from function-containing ones (falls back for the latter).
+- **Compile**: `func_call` now emits the function name as-given
+  (callers pick casing). Updated `applyLeftJoinDefaults` to use
+  uppercase `COALESCE` to preserve its existing output.
+
+Net: +4 ported cases (85 → 89/89). Every black-box case is now
+ported. Remaining work is the ~5 divergent snapshots.
+
+---
+
 ## Next up (if resumed)
 
-1. **Transform type-token API** — 4 cases; needs declarative marker
-   in `Transformation` plus a `processTransform` with CAST emission.
-   This is the only remaining blocker and the biggest single reshape.
-2. **Union push-down into branches** (restrict.10/.11) — localized
+1. **Union push-down into branches** (restrict.10/.11) — localized
    bmg-sql processor improvement; currently divergent (2 cases).
+2. **Reorder optimizations** (join.06/.09, left_join.06) — bmg-rb
+   reorders INNER/CROSS/LEFT joins for a tidier FROM shape. Cosmetic
+   unless it materially affects SQL planners.
+3. **allbut.04** — redundant DISTINCT after key-prefix restrict.
+   Targeted in `RelationType`-based DISTINCT elision.
 
 ---
 
@@ -307,9 +338,9 @@ Only operators supported by bmg-sql today. Port in this order.
 - [x] **join** (14/14) — all ported via join-alias fix + prefix
   push-down (item 1) + CROSS JOIN push-down (item 2); .06/.09 divergent
   on join shape / FROM reorder
-- [x] **transform** (0/4) — all blocked: bmg core `Transformation`
-  is JS-function-only; bmg-sql has no `processTransform` / CAST
-  emission. Test file kept as `it.todo`s so the blocker stays visible.
+- [x] **transform** (4/4) — all ported in unblocker pass 5. Token
+  channel added to `Transformation`; `processTransform` emits
+  CAST / date() via a new `CastExpr` AST node.
 
 ### Operators added outside the original 14 (by unblocker passes)
 
@@ -329,9 +360,7 @@ user-level decision; if the user explicitly authorizes a scoped
 unblocker (as happened in the A→D pass), it can happen outside the
 loop.
 
-**Still blocked:**
-- **transform** — cross-package: needs type-token channel and
-  `processTransform` / CAST emission (4 cases).
+**Still blocked:** (none)
 
 **Resolved by unblocker pass 2:**
 - ~~**prefix**~~, ~~**suffix**~~ — push-down added (item 1).
@@ -344,6 +373,9 @@ loop.
 **Resolved by unblocker pass 4:**
 - ~~**UNION ALL option**~~ — added (item 5).
 - ~~**constants**~~ — already pushed down; test added (item 6).
+
+**Resolved by unblocker pass 5:**
+- ~~**transform** / **CAST + date()**~~ — added (item 7).
 
 **Resolved by the unblocker pass (A→D):**
 - ~~**page**~~ — `Relation.page()` surfaced by **unblocker C**.

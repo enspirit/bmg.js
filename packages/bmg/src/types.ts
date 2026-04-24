@@ -222,7 +222,24 @@ export type RenamingObj = Record<AttrName, AttrName>
 export type JoinKeys = AttrName[] | Record<AttrName, AttrName>
 
 export type TransformFunc = (value: unknown) => unknown
-export type Transformation = TransformFunc | TransformFunc[] | Record<AttrName, TransformFunc | TransformFunc[]>
+
+/**
+ * Declarative transform tokens — type coercions that also map cleanly
+ * to SQL `CAST` / `date()` expressions. Use these (instead of plain JS
+ * functions) when you want the transform to push down to SQL; in
+ * `@enspirit/bmg-sql` a token-only transform compiles to a single-pass
+ * `SELECT ... CAST(col AS ...) AS col` query rather than falling back
+ * to in-memory evaluation.
+ */
+export type TransformToken = 'string' | 'integer' | 'date'
+
+/** A single step in a transform pipeline: a function or a token. */
+export type TransformStep = TransformFunc | TransformToken
+
+export type Transformation =
+  | TransformStep
+  | TransformStep[]
+  | Record<AttrName, TransformStep | TransformStep[]>
 
 // ============================================================================
 // Relation Interface

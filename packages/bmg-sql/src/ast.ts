@@ -48,6 +48,7 @@ export type ScalarExpr =
   | SqlLiteral
   | AggregateExpr
   | FuncCallExpr
+  | CastExpr
   | StarExpr;
 
 /** Reference to a qualified column: qualifier.column */
@@ -75,6 +76,16 @@ export interface FuncCallExpr {
   kind: 'func_call';
   func: string;
   args: ScalarExpr[];
+}
+
+/**
+ * SQL CAST: `CAST(expr AS type)`. `type` is the raw SQL type spelling
+ * (e.g., `'varchar(255)'`, `'integer'`). Emitted verbatim.
+ */
+export interface CastExpr {
+  kind: 'cast';
+  expr: ScalarExpr;
+  type: string;
 }
 
 /** Qualifier.* (select all columns from a table) */

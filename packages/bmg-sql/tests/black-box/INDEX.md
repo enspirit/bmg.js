@@ -3,7 +3,7 @@
 Source: bmg-rb `spec/integration/sequel/base/*.yml` @ SHA `fa8c7e0`
 (imported 2026-04-16).
 
-**Totals:** 19 source files · 89 cases · 85 ported (~5 divergent, 0 known-bug), 4 blocked (all `transform`).
+**Totals:** 19 source files · 89 cases · 89 ported (~5 divergent, 0 known-bug), 0 blocked.
 
 ## Per-file status
 
@@ -26,7 +26,7 @@ Source: bmg-rb `spec/integration/sequel/base/*.yml` @ SHA `fa8c7e0`
 | [rxmatch.md](./rxmatch.md) | 2 | 2 | full (LIKE … ESCAPE '\') | `rxmatch` added to core + bmg-sql |
 | [suffix.md](./suffix.md) | 1 | 1 | full (pushed down via rename) | same implementation as prefix |
 | [summarize.md](./summarize.md) | 10 | 10 | full (GROUP BY + CTE wrap) | all ported; .05 and .07 unblocked by join-alias + WHERE-qualifier fix |
-| [transform.md](./transform.md) | 4 | 0 | **none — fully blocked** | bmg core `Transformation` is JS-function-only; bmg-sql has no `processTransform` / CAST emission. All 4 cases `it.todo`. |
+| [transform.md](./transform.md) | 4 | 4 | full (CAST + date()) | `Transformation` extended with declarative tokens (`'string'`, `'integer'`, `'date'`); token-only transforms push down to SQL. |
 | [union.md](./union.md) | 3 | 3 | full (UNION + UNION ALL) | `Relation.union(other, { all: true })` lands for UNION ALL |
 
 ## Join-alias bug — FIXED
@@ -51,11 +51,6 @@ outer-left alias. Unblocks ~25 cases across `join`, `left_join`,
 
 ## Blockers summary
 
-- **transform** — fully blocked. bmg core's `Transformation` type is
-  JS-function-only (no type-token channel); bmg-sql's `SqlRelation.transform`
-  just falls back to in-memory. Unblocking is a cross-package feature:
-  add a typed-token extension to `Transformation`, a `processTransform`
-  emitting CAST / date(), and a dialect hook for the varchar spelling.
 - **page** — unblocked by unblocker C. `Relation.page(ordering, page,
   { pageSize })` surfaced on core + bmg-sql.
 - **summarize** — all 10 cases now ported. `'distinct_count'` joins

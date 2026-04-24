@@ -1,11 +1,12 @@
 import type { AsyncRelationOperand } from '../types';
 import type { Transformation, Tuple } from '../../types';
+import { applyTransformation } from '../../support/applyTransform';
 
 /**
- * Applies transformation functions to attribute values.
- * - Single function: applies to all values
- * - Array of functions: chains them in order
- * - Object with attr keys: applies per-attribute transformers
+ * Applies transformation functions or tokens to attribute values.
+ * - Single step (function or token): applies to all values
+ * - Array: pipeline applied left-to-right
+ * - Object with attr keys: applies per-attribute pipelines
  */
 export async function* transform<T>(
   operand: AsyncRelationOperand<T>,
@@ -21,23 +22,3 @@ export async function* transform<T>(
     yield transformed;
   }
 }
-
-const applyTransformation = (value: unknown, attr: string, transformation: Transformation): unknown => {
-  if (typeof transformation === 'function') {
-    // Single function - apply to all values
-    return transformation(value);
-  } else if (Array.isArray(transformation)) {
-    // Array of functions - chain them
-    return transformation.reduce((v, fn) => fn(v), value);
-  } else {
-    // Object with attr-specific transformers
-    const fn = transformation[attr];
-    if (fn) {
-      if (Array.isArray(fn)) {
-        return fn.reduce((v, f) => f(v), value);
-      }
-      return fn(value);
-    }
-    return value;
-  }
-};

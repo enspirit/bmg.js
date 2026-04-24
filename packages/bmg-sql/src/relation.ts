@@ -49,6 +49,7 @@ import {
   processRename,
   processExtend,
   processConstants,
+  processTransform,
   processJoin,
   processCrossJoin,
   applyLeftJoinDefaults,
@@ -326,6 +327,13 @@ export class SqlRelation<T = Tuple> implements AsyncRelation<T> {
   }
 
   transform(t: Transformation): AsyncRelation<T> {
+    const spec = toTokenSpec(t, this.relType?.attrs ?? []);
+    if (spec) {
+      return this.withExpr(
+        processTransform(this.expr, spec, this.builder),
+        this.relType,
+      );
+    }
     return this.fallback().transform(t);
   }
 
@@ -557,4 +565,51 @@ export class SqlRelation<T = Tuple> implements AsyncRelation<T> {
     return this.adapter.stream<T>(sql, params)[Symbol.asyncIterator]();
   }
 
+}
+
+/**
+ * Convert a bmg-core Transformation into a push-downable token spec,
+ * or return undefined if any step is a JS function (which must fall
+ * back to in-memory). `knownAttrs` is used to expand the two
+ * shorthands that apply to "all attrs":
+ *   - a bare step (e.g., `'string'`)
+ *   - an array step (e.g., `['string', 'integer']`)
+ */
+function toTokenSpec(
+  t: Transformation,
+  knownAttrs: string[],
+): Record<string, ('string' | 'integer' | 'date')[]> | undefined {
+  const isToken = (s: unknown): s is 'string' | 'integer' | 'date' =>
+    s === 'string' || s === 'integer' || s === 'date';
+  const asTokenArr = (p: unknown): ('string' | 'integer' | 'date')[] | undefined => {
+    if (isToken(p)) return [p];
+    if (Array.isArray(p)) {
+      const out: ('string' | 'integer' | 'date')[] = [];
+      for (const s of p) {
+        if (!isToken(s)) return undefined; // function → fallback
+        out.push(s);
+      }
+      return out;
+    }
+    return undefined;
+  };
+
+  // "All-attrs" shorthand: a bare step or a plain array of steps.
+  if (typeof t !== 'object' || t === null || Array.isArray(t) || typeof t === 'string') {
+    const steps = asTokenArr(t);
+    if (!steps) return undefined;
+    if (knownAttrs.length === 0) return {};
+    const spec: Record<string, ('string' | 'integer' | 'date')[]> = {};
+    for (const a of knownAttrs) spec[a] = steps;
+    return spec;
+  }
+
+  // Per-attribute map.
+  const spec: Record<string, ('string' | 'integer' | 'date')[]> = {};
+  for (const [attr, pipeline] of Object.entries(t as Record<string, unknown>)) {
+    const steps = asTokenArr(pipeline);
+    if (!steps) return undefined; // function found → fallback
+    spec[attr] = steps;
+  }
+  return spec;
 }
