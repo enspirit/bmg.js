@@ -11,14 +11,12 @@ iteration**. Stop conditions are at the bottom.
 ## Current state
 
 - **Ported operators:** 14 / 14 — all operators iterated
-- **Last completed:** Join-alias refactor (`processJoin` builds ON after
-  requalify; `requalifyTableSpec` rewrites `on` predicates;
-  `buildSelectQualifier` looks up attr qualifiers in select list)
-- **Totals:** 89 cases · **72 ported** (5 divergent, 0 known-bug, 17
+- **Last completed:** LEFT JOIN defaults (COALESCE) across core + bmg-sql
+- **Totals:** 89 cases · **80 ported** (4 divergent, 0 known-bug, 9
   blocked via `it.todo`)
-- **Stopped?** yes — loop paused. Remaining 17 blocked cases need new
-  capabilities (prefix/suffix/constants push-down, CROSS JOIN, LEFT JOIN
-  defaults, LIKE predicate, transform type-tokens, UNION ALL option).
+- **Stopped?** yes — loop paused. Remaining 9 blocked cases need new
+  capabilities (LIKE predicate, transform type-tokens, UNION ALL option,
+  constants push-down).
 
 Update the four bullets above at the end of every iteration.
 
@@ -85,30 +83,41 @@ vs. bmg-rb's INNER-before-LEFT reordering optimization).
 
 ---
 
+## Unblocker pass 2 — completed 2026-04-24
+
+After the join-alias refactor landed (72/89), a second scoped
+unblocker pass took the three next-smallest items:
+
+| # | Unblocker                               | Cases unblocked                              |
+|---|-----------------------------------------|----------------------------------------------|
+| 1 | prefix / suffix push-down (+ rename-aware ON/WHERE qualifier lookup) | prefix.01, suffix.01, join.02, join.10, restrict.07 (already ported but divergent; now correct), left_join.02 (corrected) |
+| 2 | CROSS JOIN push-down                   | join.08, join.09                             |
+| 3 | LEFT JOIN defaults / COALESCE          | left_join.03, left_join.08                   |
+
+Net: +8 ported cases (72 → 80/89). restrict.07 no longer divergent
+(was snapshotting broken SQL).
+
+Side effect of item 1: JOIN ON and WHERE now resolve attr names to
+their underlying column (via the select list), not the alias name —
+which is required for correct SQL after rename/prefix/suffix.
+
+---
+
 ## Next up (if resumed)
 
 Sorted by estimated effort × value. See INDEX.md "Blockers summary"
 for the ground truth.
 
-1. **prefix / suffix push-down** — unblocks prefix.01, suffix.01,
-   join.02, join.10, left_join.02-form cases. Medium processor
-   addition; a prefix is essentially a bulk rename.
-2. **CROSS JOIN push-down** — 2 cases (join.08, join.09). Small
-   processor (`processCrossJoin`) + expose on `SqlRelation.cross_join`.
-3. **LEFT JOIN defaults / COALESCE** — 2 cases (left_join.03,
-   left_join.08). Needs `defaults` arg on `left_join` in bmg core and
-   `coalesce` emission in bmg-sql.
-4. **LIKE predicate** (`rxmatch.01-02`, `restrict.08-09`) — 4 cases.
+1. **LIKE predicate** (`rxmatch.01-02`, `restrict.08-09`) — 4 cases.
    Add a `match` predicate kind to `@enspirit/predicate` and wire it
    through bmg-sql (with dialect hook for `ESCAPE`).
-5. **Transform type-token API** — 4 cases; needs declarative marker
+2. **Transform type-token API** — 4 cases; needs declarative marker
    in `Transformation` plus a `processTransform` with CAST emission.
-6. **UNION ALL option** — 1 case (union.03). Needs a cross-package
+3. **UNION ALL option** — 1 case (union.03). Needs a cross-package
    API change to `Relation.union()` options.
-7. **constants push-down** — 1 case (constants.01). Localized.
-8. **Alias-in-WHERE-after-rename** (restrict.07) and **union
-   push-down into branches** (restrict.10/.11) — localized bmg-sql
-   processor improvements; currently divergent.
+4. **constants push-down** — 1 case (constants.01). Localized.
+5. **Union push-down into branches** (restrict.10/.11) — localized
+   bmg-sql processor improvements; currently divergent.
 
 ---
 
@@ -259,23 +268,26 @@ Only operators supported by bmg-sql today. Port in this order.
 - [x] **not_matching** (4/4) — .04 ported via unblocker D
 - [x] **matching** (7/7) — all ported (.06 unblocked by join-alias
   fix, .07 via unblocker D)
-- [x] **left_join** (6/8) — .03/.08 blocked on defaults/COALESCE API;
-  .06 divergent on source-order join emission
-- [x] **restrict** (9/11) — unblocker A ported .03/.04/.05. Remaining:
-  .07 divergent (alias-in-WHERE-after-rename), .10/.11 divergent (no
-  UNION push-down), .08/.09 blocked (LIKE predicate missing)
+- [x] **left_join** (8/8) — all ported via the join-alias fix +
+  LEFT JOIN defaults; .06 divergent on source-order join emission
+- [x] **restrict** (9/11) — unblocker A ported .03/.04/.05;
+  the rename-aware qualifier lookup (unblocker pass 2 item 1) ported
+  .07. Remaining: .10/.11 divergent (no UNION push-down), .08/.09
+  blocked (LIKE predicate missing)
 - [x] **summarize** (10/10) — all ported (.05/.07 unblocked by
   join-alias + WHERE-qualifier fix; .09/.10 by unblocker B)
-- [x] **join** (10/14) — .02/.10 blocked (prefix push-down);
-  .08/.09 blocked (CROSS JOIN push-down); .06 divergent on bracketed
-  join shape
+- [x] **join** (14/14) — all ported via join-alias fix + prefix
+  push-down (item 1) + CROSS JOIN push-down (item 2); .06/.09 divergent
+  on join shape / FROM reorder
 - [x] **transform** (0/4) — all blocked: bmg core `Transformation`
   is JS-function-only; bmg-sql has no `processTransform` / CAST
   emission. Test file kept as `it.todo`s so the blocker stays visible.
 
-### Operators added outside the original 14 (by unblocker pass)
+### Operators added outside the original 14 (by unblocker passes)
 
 - [x] **page** (5/5) — operator added to core + bmg-sql by unblocker C.
+- [x] **prefix** (1/1) — push-down added in unblocker pass 2 item 1.
+- [x] **suffix** (1/1) — push-down added in unblocker pass 2 item 1.
 
 ---
 
@@ -290,11 +302,14 @@ loop.
 **Still blocked:**
 - **rxmatch** — operator missing in bmg core and bmg-sql.
 - **constants** — SQL push-down missing; falls back to in-memory.
-- **prefix** — SQL push-down missing; falls back to in-memory (also
-  blocks join.02, join.10).
-- **suffix** — SQL push-down missing; falls back to in-memory.
-- **CROSS JOIN push-down** — blocks join.08, join.09.
-- **LEFT JOIN defaults / COALESCE** — blocks left_join.03, left_join.08.
+- **UNION ALL** — `Relation.union()` has no options arg (1 case).
+- **transform** — cross-package: needs type-token channel and
+  `processTransform` / CAST emission (4 cases).
+
+**Resolved by unblocker pass 2:**
+- ~~**prefix**~~, ~~**suffix**~~ — push-down added (item 1).
+- ~~**CROSS JOIN push-down**~~ — added (item 2).
+- ~~**LEFT JOIN defaults / COALESCE**~~ — added (item 3).
 
 **Resolved by the unblocker pass (A→D):**
 - ~~**page**~~ — `Relation.page()` surfaced by **unblocker C**.
