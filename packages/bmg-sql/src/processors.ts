@@ -81,12 +81,26 @@ function getAlias(spec: TableSpec): string | undefined {
  * Add a WHERE predicate to a SQL expression.
  * If the expression already has a WHERE, merges with AND.
  * If the expression has GROUP BY or computed attributes, wraps in subquery first.
+ *
+ * Set-op push-down: when the expression is a UNION / INTERSECT /
+ * EXCEPT, the predicate is pushed into both branches recursively —
+ * `σ_p(A ∪ B) = σ_p(A) ∪ σ_p(B)` (and likewise for ∩, \). This matches
+ * bmg-rb's per-branch push-down and avoids the derived-table wrap that
+ * `ensureSelect`/`fromSelf` would otherwise produce.
  */
 export function processWhere(
   expr: SqlExpr,
   predicate: Predicate,
   builder: SqlBuilder
 ): SqlExpr {
+  if (expr.kind === 'union' || expr.kind === 'intersect' || expr.kind === 'except') {
+    return {
+      ...expr,
+      left: processWhere(expr.left, predicate, builder),
+      right: processWhere(expr.right, predicate, builder),
+    };
+  }
+
   let select = ensureSelect(expr, builder);
 
   // If complex (GROUP BY, LIMIT, computed), wrap first

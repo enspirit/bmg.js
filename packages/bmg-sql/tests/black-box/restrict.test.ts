@@ -108,41 +108,34 @@ describe('black-box: restrict', () => {
     expect(compiled.params).toEqual(['%Lon%']);
   });
 
-  // restrict.10 — DIVERGENT: bmg-rb pushes the post-union restrict into BOTH
-  // branches. bmg-sql wraps the UNION in a subquery and applies the restrict
-  // at the outer level. Results are the same but the emitted SQL shape
-  // differs and doesn't match bmg-rb's per-branch push-down.
-  it('restrict.10 — Restrict after UNION (DIVERGENT: no per-branch push-down)', () => {
+  it('restrict.10 — Restrict after UNION (per-branch push-down)', () => {
     const rel = suppliers.union(suppliers).restrict({ city: 'London' });
     const compiled = rel.toSql();
     expect(compiled.sql).toBe(
-      'SELECT "t2".* FROM ' +
-      '((SELECT "t1"."sid", "t1"."name", "t1"."city", "t1"."status" FROM "suppliers" "t1")' +
+      '(SELECT "t1"."sid", "t1"."name", "t1"."city", "t1"."status" FROM "suppliers" "t1" WHERE "t1"."city" = ?)' +
       ' UNION ' +
-      '(SELECT "t1"."sid", "t1"."name", "t1"."city", "t1"."status" FROM "suppliers" "t1"))' +
-      ' "t2" WHERE "t2"."city" = ?',
+      '(SELECT "t1"."sid", "t1"."name", "t1"."city", "t1"."status" FROM "suppliers" "t1" WHERE "t1"."city" = ?)',
     );
-    expect(compiled.params).toEqual(['London']);
+    expect(compiled.params).toEqual(['London', 'London']);
   });
 
-  // restrict.11 — DIVERGENT: bmg-rb collapses the whole chain to a single
-  // restricted branch because the trailing `restrict(city='London')` plus
-  // the Paris-branch inner restrict combine to an unsatisfiable predicate
-  // on the Paris branch. bmg-sql does none of this: both branches keep
-  // their pre-union restricts, the outer restrict wraps the union.
-  it('restrict.11 — Restrict pre- and post-UNION (DIVERGENT: no aggressive branch collapse)', () => {
+  // restrict.11 — still divergent on bmg-rb's aggressive contradiction
+  // collapse: bmg-rb detects that the Paris branch + outer London filter
+  // is unsatisfiable and drops the branch, yielding a single SELECT. bmg-sql
+  // now pushes the outer restrict into both branches (correct) but doesn't
+  // fold `city='Paris' AND city='London'` into a contradiction, so both
+  // branches remain.
+  it('restrict.11 — Restrict pre- and post-UNION (DIVERGENT: no contradiction folding)', () => {
     const rel = suppliers
       .restrict({ city: 'London' })
       .union(suppliers.restrict({ city: 'Paris' }))
       .restrict({ city: 'London' });
     const compiled = rel.toSql();
     expect(compiled.sql).toBe(
-      'SELECT "t3".* FROM ' +
-      '((SELECT "t1"."sid", "t1"."name", "t1"."city", "t1"."status" FROM "suppliers" "t1" WHERE "t1"."city" = ?)' +
+      '(SELECT "t1"."sid", "t1"."name", "t1"."city", "t1"."status" FROM "suppliers" "t1" WHERE "t1"."city" = ? AND "t1"."city" = ?)' +
       ' UNION ' +
-      '(SELECT "t1"."sid", "t1"."name", "t1"."city", "t1"."status" FROM "suppliers" "t1" WHERE "t1"."city" = ?))' +
-      ' "t3" WHERE "t3"."city" = ?',
+      '(SELECT "t1"."sid", "t1"."name", "t1"."city", "t1"."status" FROM "suppliers" "t1" WHERE "t1"."city" = ? AND "t1"."city" = ?)',
     );
-    expect(compiled.params).toEqual(['London', 'Paris', 'London']);
+    expect(compiled.params).toEqual(['London', 'London', 'Paris', 'London']);
   });
 });

@@ -11,13 +11,13 @@ iteration**. Stop conditions are at the bottom.
 ## Current state
 
 - **Ported operators:** 14 / 14 — all operators iterated (+ prefix, suffix, page, rxmatch added outside the original set)
-- **Last completed:** transform type-token channel (CAST + date() emission)
-- **Totals:** 89 cases · **89 ported** (~5 divergent, 0 known-bug, 0
+- **Last completed:** restrict push-down across set ops (restrict.10 flipped to ported)
+- **Totals:** 89 cases · **89 ported** (~4 divergent, 0 known-bug, 0
   blocked). Every bmg-rb black-box case is now covered.
 - **Stopped?** yes — nothing blocked remains. Remaining non-port work
-  is the ~5 divergent snapshots (cosmetic reshaping bmg-rb does that
-  we don't; union push-down into branches for restrict.10/.11; and
-  the allbut.04 redundant DISTINCT).
+  is the ~4 divergent snapshots (bmg-rb's contradiction folding for
+  restrict.11; join.06/.09/left_join.06 FROM reorder optimizations;
+  allbut.04 redundant DISTINCT).
 
 Update the four bullets above at the end of every iteration.
 
@@ -169,10 +169,33 @@ ported. Remaining work is the ~5 divergent snapshots.
 
 ---
 
+## Unblocker pass 6 — completed 2026-04-24
+
+| # | Unblocker                                 | Cases affected                       |
+|---|-------------------------------------------|--------------------------------------|
+| 8 | processWhere pushes across set ops        | restrict.10 (ported), restrict.11 (still divergent — needs contradiction folding) |
+
+Single-file change in `processors.ts`: when `processWhere` sees a
+`union` / `intersect` / `except` expression, it pushes the predicate
+into both branches recursively rather than wrapping the set op in a
+derived table. Matches bmg-rb's per-branch push-down for `restrict.10`.
+
+`restrict.11` remains divergent: bmg-rb additionally detects that
+`city='Paris' AND city='London'` is unsatisfiable and drops the
+whole right branch. bmg-sql pushes the outer restrict into both
+branches (correct) but lacks a contradiction folder.
+
+Net: divergent snapshots shrunk (~5 → ~4). Total ported unchanged
+(89/89).
+
+---
+
 ## Next up (if resumed)
 
-1. **Union push-down into branches** (restrict.10/.11) — localized
-   bmg-sql processor improvement; currently divergent (2 cases).
+1. **Contradiction folding** (restrict.11) — detect unsatisfiable
+   AND of two equality-on-same-attr predicates (`x=a AND x=b`, `a≠b`)
+   and collapse the branch to empty. Small predicate-simplification
+   pass on the predicate AST.
 2. **Reorder optimizations** (join.06/.09, left_join.06) — bmg-rb
    reorders INNER/CROSS/LEFT joins for a tidier FROM shape. Cosmetic
    unless it materially affects SQL planners.
@@ -330,9 +353,9 @@ Only operators supported by bmg-sql today. Port in this order.
   fix, .07 via unblocker D)
 - [x] **left_join** (8/8) — all ported via the join-alias fix +
   LEFT JOIN defaults; .06 divergent on source-order join emission
-- [x] **restrict** (11/11) — all ported. .08/.09 ported via the LIKE
-  predicate in unblocker pass 3. .10/.11 still divergent pending UNION
-  push-down into branches.
+- [x] **restrict** (11/11) — all ported. .08/.09 via the LIKE
+  predicate (pass 3). .10 via set-op push-down (pass 6). .11 still
+  divergent pending contradiction folding.
 - [x] **summarize** (10/10) — all ported (.05/.07 unblocked by
   join-alias + WHERE-qualifier fix; .09/.10 by unblocker B)
 - [x] **join** (14/14) — all ported via join-alias fix + prefix
@@ -376,6 +399,9 @@ loop.
 
 **Resolved by unblocker pass 5:**
 - ~~**transform** / **CAST + date()**~~ — added (item 7).
+
+**Resolved by unblocker pass 6:**
+- ~~**Union push-down into branches (restrict.10)**~~ — added (item 8).
 
 **Resolved by the unblocker pass (A→D):**
 - ~~**page**~~ — `Relation.page()` surfaced by **unblocker C**.

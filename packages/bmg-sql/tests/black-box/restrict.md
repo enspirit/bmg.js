@@ -214,12 +214,7 @@ WHERE (UPPER(`t1`.`city`) LIKE UPPER('%Lon%') ESCAPE '\')
 
 ### restrict.10 — Restrict push-down across UNION
 
-**Status:** divergent
-
-**Delta:** bmg-sql wraps the UNION in a derived table and applies WHERE
-at the outer level (`SELECT "t2".* FROM (union) "t2" WHERE ...`).
-bmg-rb pushes the restrict into each branch. Both queries return the
-same rows; bmg-sql's is one extra subquery hop.
+**Status:** ported — `processWhere` now recursively pushes the predicate into both branches of `union` / `intersect` / `except`, matching bmg-rb's per-branch push-down.
 
 **Ruby:**
 ```ruby
@@ -239,14 +234,16 @@ SELECT ... FROM `suppliers` AS 't1' WHERE (`t1`.`city` = 'London')
 
 ### restrict.11 — Restrict push-down across UNION with existing branch restricts
 
-**Status:** divergent
+**Status:** divergent — per-branch push-down now done; contradiction folding still missing.
 
-**Delta:** bmg-sql keeps both pre-union restricts on their branches
-(`city='London'` / `city='Paris'`) and wraps the UNION with the outer
-`city='London'` restrict. bmg-rb detects that the outer restrict makes
-the Paris branch unsatisfiable and collapses the whole chain to a
-single `WHERE city='London'`. Aggressive optimization; bmg-sql would
-need branch-aware predicate folding to match it.
+**Delta:** As of the per-branch push-down fix, bmg-sql pushes the outer
+`city='London'` restrict into both branches, producing
+`WHERE city='London' AND city='London'` on the left and
+`WHERE city='Paris' AND city='London'` on the right. bmg-rb goes one
+step further: it detects that `city='Paris' AND city='London'` is
+unsatisfiable and drops the whole right branch, collapsing the chain
+to a single `WHERE city='London'`. Adding predicate contradiction
+folding is a next-step optimization.
 
 **Ruby:**
 ```ruby
