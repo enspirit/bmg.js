@@ -3,8 +3,8 @@
 - **Source:** [spec/integration/sequel/base/left_join.yml](https://github.com/enspirit/bmg/blob/fa8c7e0/spec/integration/sequel/base/left_join.yml)
 - **Imported SHA:** `fa8c7e0`
 - **Total cases:** 8
-- **Ported:** 6/8. `.03` and `.08` blocked (defaults/COALESCE API missing).
-- **bmg-sql support:** full LEFT JOIN push-down (join-alias bug fixed). Defaults/COALESCE API not implemented.
+- **Ported:** 8/8.
+- **bmg-sql support:** full LEFT JOIN push-down, including `defaults` → `COALESCE(col, default)` emission.
 - **Test file:** `left_join.test.ts`
 
 ## Cases
@@ -49,7 +49,7 @@ suppliers
 
 ### left_join.03 — Left join with default values (COALESCE)
 
-**Status:** blocked — defaults/COALESCE API not implemented in bmg-js
+**Status:** ported — `.left_join(supplies, ['sid'], { pid: 'P9', qty: 0 })` compiles to `LEFT JOIN ... ON ... , COALESCE(t.pid, 'P9') AS pid, COALESCE(t.qty, 0) AS qty`
 
 **Warnings:** Defaults `{pid: 'P9', qty: 0}` become `COALESCE(col, default) AS 'col'`. Important feature — verify bmg-sql supports this, otherwise `blocked`.
 
@@ -132,7 +132,7 @@ suppliers
 
 ### left_join.08 — Restrict after left_join with defaults → CTE wrap required
 
-**Status:** blocked — defaults/COALESCE API not implemented in bmg-js
+**Status:** ported — bmg-rb emits a CTE; bmg-sql uses a derived-table subquery (same precedent as minus.03 / summarize.06). The COALESCE makes the select "complex", so the subsequent restrict triggers the isComplex wrap in processWhere. WHERE operates on the COALESCEd value.
 
 **Warnings:** When the left_join has defaults (COALESCE) and a subsequent restrict references the defaulted attribute, bmg-rb wraps the left_join in a CTE so the restrict operates on the COALESCEd value. Important correctness test.
 

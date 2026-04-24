@@ -1,5 +1,5 @@
 import type { AsyncRelation, AsyncRelationOperand } from '../types';
-import type { Tuple, TypedPredicate, TypedExtension, AttrName, Relation, RenameMap, Renamed, Prefixed, Suffixed, Transformation, JoinKeys, Aggregators, AutowrapOptions, TextOptions, GroupOptions, WrapOptions, Ordering, TypedOrdering, PageOptions } from '../../types';
+import type { Tuple, TypedPredicate, TypedExtension, AttrName, Relation, RenameMap, Renamed, Prefixed, Suffixed, Transformation, JoinKeys, LeftJoinDefaults, Aggregators, AutowrapOptions, TextOptions, GroupOptions, WrapOptions, Ordering, TypedOrdering, PageOptions } from '../../types';
 import { MemoryRelation } from '../../sync/Relation';
 import {
   restrict as restrictOp,
@@ -154,9 +154,13 @@ export class BaseAsyncRelation<T = Tuple> implements AsyncRelation<T> {
     ) as unknown as AsyncRelation<T & U>;
   }
 
-  left_join<U>(other: AsyncRelationOperand<U>, keys?: JoinKeys): AsyncRelation<T & Partial<U>> {
+  left_join<U>(
+    other: AsyncRelationOperand<U>,
+    keys?: JoinKeys,
+    defaults?: LeftJoinDefaults<U>,
+  ): AsyncRelation<T & Partial<U>> {
     return new BaseAsyncRelation(
-      leftJoinOp(this.source, other, keys)
+      leftJoinOp(this.source, other, keys, defaults as any)
     ) as unknown as AsyncRelation<T & Partial<U>>;
   }
 

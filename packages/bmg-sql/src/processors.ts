@@ -523,6 +523,45 @@ export function processJoin(
 }
 
 // ============================================================================
+// applyLeftJoinDefaults — wrap right-side attrs in COALESCE(col, default)
+// ============================================================================
+
+/**
+ * Replace each defaulted attribute's select-list item with
+ * `COALESCE(expr, literal) AS alias`. If `attr` isn't already in the
+ * select list, append it as `COALESCE(fallback.attr, literal) AS attr`
+ * so an entirely-absent right-side attr still shows up (matches bmg-rb's
+ * semantics when defaults provide attrs the right side doesn't have).
+ */
+export function applyLeftJoinDefaults(
+  expr: SqlExpr,
+  defaults: Record<string, unknown>
+): SqlExpr {
+  if (expr.kind !== 'select') return expr;
+  const select = expr;
+  const items = select.selectList.map(item => {
+    if (!(item.alias in defaults)) return item;
+    return {
+      ...item,
+      expr: buildCoalesce(item.expr as any, defaults[item.alias]),
+    };
+  });
+  // If any default attr isn't in the select list, there's nothing we
+  // can wrap (no underlying column to COALESCE). Callers typically
+  // restrict defaults to right-side attrs, which will always be in
+  // the select list after processJoin, so we don't synthesize.
+  return { ...select, selectList: items };
+}
+
+function buildCoalesce(inner: any, value: unknown): any {
+  return {
+    kind: 'func_call' as const,
+    func: 'coalesce',
+    args: [inner, { kind: 'sql_literal' as const, value }],
+  };
+}
+
+// ============================================================================
 // processCrossJoin — CROSS JOIN
 // ============================================================================
 

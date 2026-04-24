@@ -51,6 +51,7 @@ import type {
   Suffixed,
   Joined,
   LeftJoined,
+  LeftJoinDefaults,
   Wrapped,
   Unwrapped,
   Ungrouped,
@@ -149,8 +150,12 @@ export class MemoryRelation<T = Tuple> implements Relation<T> {
     return join(this as any, right as any, keys as any) as unknown as Relation<Joined<T, R>>;
   }
 
-  left_join<R>(right: RelationOperand<R>, keys?: TypedJoinKeysArray<T, R> | TypedJoinKeysObject<T, R>): Relation<LeftJoined<T, R>> {
-    return left_join(this as any, right as any, keys as any) as unknown as Relation<LeftJoined<T, R>>;
+  left_join<R>(
+    right: RelationOperand<R>,
+    keys?: TypedJoinKeysArray<T, R> | TypedJoinKeysObject<T, R>,
+    defaults?: LeftJoinDefaults<R>,
+  ): Relation<LeftJoined<T, R>> {
+    return left_join(this as any, right as any, keys as any, defaults as any) as unknown as Relation<LeftJoined<T, R>>;
   }
 
   cross_product<R>(right: RelationOperand<R>): Relation<T & R> {

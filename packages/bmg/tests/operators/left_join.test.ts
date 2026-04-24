@@ -155,4 +155,30 @@ describe('.left_join', () => {
     expect(isEqual(res, expected)).to.be.true;
   })
 
+  describe('with defaults', () => {
+    it('substitutes default values for unmatched right-side attributes', () => {
+      const result = orders.left_join(customers, ['customer_id'], { name: 'UNKNOWN' });
+      const expected = Bmg([
+        { oid: 1, customer_id: 'C1', amount: 100, name: 'Alice' },
+        { oid: 2, customer_id: 'C2', amount: 200, name: 'Bob' },
+        { oid: 3, customer_id: 'C3', amount: 150, name: 'UNKNOWN' },
+      ]);
+      expect(result.isEqual(expected)).to.be.true;
+    });
+
+    it('also substitutes when a matched row has null for the defaulted attr', () => {
+      const customers2 = Bmg([
+        { customer_id: 'C1', name: 'Alice' },
+        { customer_id: 'C2', name: null },
+      ]);
+      const result = orders.left_join(customers2, ['customer_id'], { name: 'UNKNOWN' });
+      const expected = Bmg([
+        { oid: 1, customer_id: 'C1', amount: 100, name: 'Alice' },
+        { oid: 2, customer_id: 'C2', amount: 200, name: 'UNKNOWN' },
+        { oid: 3, customer_id: 'C3', amount: 150, name: 'UNKNOWN' },
+      ]);
+      expect(result.isEqual(expected)).to.be.true;
+    });
+  });
+
 });

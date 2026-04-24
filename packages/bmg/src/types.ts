@@ -58,6 +58,15 @@ export type Joined<L, R> = L & Omit<R, CommonKeys<L, R>>;
 export type LeftJoined<L, R> = L & Partial<Omit<R, CommonKeys<L, R>>>;
 
 /**
+ * Default values for unmatched right-side attributes in a `left_join`.
+ * When set, an attribute that would otherwise be `null` (either because
+ * the left row had no match or because the matched row had a NULL
+ * value) takes the default instead. In SQL, this compiles to
+ * `COALESCE(right.col, default)`.
+ */
+export type LeftJoinDefaults<R> = { [K in keyof R]?: R[K] };
+
+/**
  * Typed join keys for array form: keys must exist on BOTH operands.
  * Example: suppliers.join(parts, ['city']) - 'city' must be a key of both.
  */
@@ -252,7 +261,7 @@ export interface Relation<T = Tuple> {
   // === Join operators ===
 
   join<R>(right: RelationOperand<R>, keys?: TypedJoinKeysArray<T, R> | TypedJoinKeysObject<T, R>): Relation<Joined<T, R>>
-  left_join<R>(right: RelationOperand<R>, keys?: TypedJoinKeysArray<T, R> | TypedJoinKeysObject<T, R>): Relation<LeftJoined<T, R>>
+  left_join<R>(right: RelationOperand<R>, keys?: TypedJoinKeysArray<T, R> | TypedJoinKeysObject<T, R>, defaults?: LeftJoinDefaults<R>): Relation<LeftJoined<T, R>>
   cross_product<R>(right: RelationOperand<R>): Relation<T & R>
   cross_join<R>(right: RelationOperand<R>): Relation<T & R>
 

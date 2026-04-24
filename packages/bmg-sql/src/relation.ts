@@ -20,6 +20,7 @@ import type {
   Suffixed,
   Transformation,
   JoinKeys,
+  LeftJoinDefaults,
   Aggregators,
   AutowrapOptions,
   TextOptions,
@@ -48,6 +49,7 @@ import {
   processConstants,
   processJoin,
   processCrossJoin,
+  applyLeftJoinDefaults,
   processMerge,
   processSummarize,
   processSemiJoin,
@@ -364,17 +366,23 @@ export class SqlRelation<T = Tuple> implements AsyncRelation<T> {
     return this.fallback().join(other, keys);
   }
 
-  left_join<U>(other: AsyncRelationOperand<U>, keys?: JoinKeys): AsyncRelation<T & Partial<U>> {
+  left_join<U>(
+    other: AsyncRelationOperand<U>,
+    keys?: JoinKeys,
+    defaults?: LeftJoinDefaults<U>,
+  ): AsyncRelation<T & Partial<U>> {
     const rightExpr = this.extractCompatibleExpr(other);
     if (rightExpr && keys && this.expr.kind === 'select' && this.expr.from) {
       const hasKeys = Array.isArray(keys) ? keys.length > 0 : Object.keys(keys).length > 0;
       if (hasKeys) {
-        return this.withExpr(
-          processJoin(this.expr, rightExpr, keys, 'left_join', this.builder)
-        ) as unknown as AsyncRelation<T & Partial<U>>;
+        let joined = processJoin(this.expr, rightExpr, keys, 'left_join', this.builder);
+        if (defaults && Object.keys(defaults).length > 0) {
+          joined = applyLeftJoinDefaults(joined, defaults as Record<string, unknown>);
+        }
+        return this.withExpr(joined) as unknown as AsyncRelation<T & Partial<U>>;
       }
     }
-    return this.fallback().left_join(other, keys);
+    return this.fallback().left_join(other, keys, defaults);
   }
 
   cross_product<U>(other: AsyncRelationOperand<U>): AsyncRelation<T & U> {

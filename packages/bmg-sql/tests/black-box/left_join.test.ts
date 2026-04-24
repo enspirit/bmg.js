@@ -25,8 +25,16 @@ describe('black-box: left_join', () => {
     );
   });
 
-  // left_join.03 — blocked: defaults/COALESCE API not implemented
-  it.todo('left_join.03 — Left join with COALESCE defaults (blocked: defaults API)');
+  it('left_join.03 — Left join with COALESCE defaults', () => {
+    const rel = suppliers.left_join(supplies, ['sid'], { pid: 'P9', qty: 0 });
+    const compiled = rel.toSql();
+    expect(compiled.sql).toBe(
+      'SELECT "t1"."sid", "t1"."name", "t1"."city", "t1"."status",' +
+      ' COALESCE("t4"."pid", ?) AS "pid", COALESCE("t4"."qty", ?) AS "qty"' +
+      ' FROM "suppliers" "t1" LEFT JOIN "supplies" "t4" ON "t1"."sid" = "t4"."sid"',
+    );
+    expect(compiled.params).toEqual(['P9', 0]);
+  });
 
   it('left_join.04 — Chained left joins', () => {
     const rel = supplies.left_join(suppliers, ['sid']).left_join(parts, ['pid']);
@@ -73,13 +81,32 @@ describe('black-box: left_join', () => {
     const compiled = rel.toSql();
     expect(compiled.sql).toBe(
       'SELECT "t1"."sid", "t1"."name", "t1"."city", "t1"."status",' +
-      ' "t4"."pid", "t4"."qty"' +
-      ' FROM "suppliers" "t1" LEFT JOIN "supplies" "t4" ON "t1"."sid" = "t4"."sid"' +
-      ' WHERE "t4"."qty" = ?',
+      ' "t5"."pid", "t5"."qty"' +
+      ' FROM "suppliers" "t1" LEFT JOIN "supplies" "t5" ON "t1"."sid" = "t5"."sid"' +
+      ' WHERE "t5"."qty" = ?',
     );
     expect(compiled.params).toEqual([50]);
   });
 
-  // left_join.08 — blocked: defaults/COALESCE + CTE wrap
-  it.todo('left_join.08 — Restrict after left_join with defaults (blocked: defaults API)');
+  it('left_join.08 — Restrict after left_join with defaults → derived-table wrap', () => {
+    // bmg-rb wraps the defaulted left_join in a CTE (`WITH t3 AS ...`).
+    // bmg-sql uses a derived-table subquery (same precedent as minus.03 /
+    // summarize.06 / summarize.07) because the COALESCE makes the select
+    // "complex", so the subsequent restrict triggers the isComplex wrap
+    // in processWhere. The WHERE operates on the COALESCEd value (via
+    // the outer alias), matching bmg-rb's semantics.
+    const rel = suppliers
+      .left_join(supplies, ['sid'], { pid: 'P9', qty: 1 })
+      .restrict({ qty: 50 });
+    const compiled = rel.toSql();
+    expect(compiled.sql).toBe(
+      'SELECT "t7"."sid", "t7"."name", "t7"."city", "t7"."status",' +
+      ' "t7"."pid", "t7"."qty" FROM (' +
+      'SELECT "t1"."sid", "t1"."name", "t1"."city", "t1"."status",' +
+      ' COALESCE("t6"."pid", ?) AS "pid", COALESCE("t6"."qty", ?) AS "qty"' +
+      ' FROM "suppliers" "t1" LEFT JOIN "supplies" "t6" ON "t1"."sid" = "t6"."sid"' +
+      ') "t7" WHERE "t7"."qty" = ?',
+    );
+    expect(compiled.params).toEqual(['P9', 1, 50]);
+  });
 });

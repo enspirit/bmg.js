@@ -3,7 +3,7 @@
 Source: bmg-rb `spec/integration/sequel/base/*.yml` @ SHA `fa8c7e0`
 (imported 2026-04-16).
 
-**Totals:** 19 source files · 89 cases · 78 ported (4 divergent, 0 known-bug).
+**Totals:** 19 source files · 89 cases · 80 ported (4 divergent, 0 known-bug).
 
 ## Per-file status
 
@@ -14,7 +14,7 @@ Source: bmg-rb `spec/integration/sequel/base/*.yml` @ SHA `fa8c7e0`
 | [constants.md](./constants.md) | 1 | 0 | **fallback only** | falls back to in-memory; SQL push-down TBD |
 | [extend.md](./extend.md) | 1 | 1 | full (pushed down) | type quirk: string-ref form infers literal type |
 | [join.md](./join.md) | 14 | 14 | full (INNER + CROSS) | .06 and .09 divergent (join-shape reordering — bmg-rb optimizes; bmg-sql emits in source order) |
-| [left_join.md](./left_join.md) | 8 | 6 | full (LEFT JOIN) | 6 ported (1 divergent re-shape on .06); .03/.08 blocked (defaults/COALESCE API) |
+| [left_join.md](./left_join.md) | 8 | 8 | full (LEFT JOIN + defaults → COALESCE) | 1 divergent re-shape on .06 |
 | [matching.md](./matching.md) | 7 | 7 | full (EXISTS) | all ported; .06 unblocked by join-alias fix; .07 uses `BmgSql.fromSubquery` |
 | [minus.md](./minus.md) | 3 | 3 | full (EXCEPT) | derived-table wrap instead of CTE for post-minus ops |
 | [not_matching.md](./not_matching.md) | 4 | 4 | full (NOT EXISTS) | .04 ported via `BmgSql.fromSubquery` (unblocker D) |
@@ -56,9 +56,6 @@ outer-left alias. Unblocks ~25 cases across `join`, `left_join`,
 - **constants** — currently falls back to in-memory evaluation. The
   compiled SQL will not match bmg-rb's single-query output. 1 case
   `divergent` until push-down is added.
-- **left_join defaults / COALESCE** (`left_join.03`, `.08`) — bmg-rb
-  supports `.left_join(other, keys, {col: default})` which emits
-  `coalesce(t.col, default) AS col`. bmg-js has no defaults arg.
 - **transform** — fully blocked. bmg core's `Transformation` type is
   JS-function-only (no type-token channel); bmg-sql's `SqlRelation.transform`
   just falls back to in-memory. Unblocking is a cross-package feature:

@@ -8,23 +8,35 @@ const getRightAttrs = (rightTuples: Tuple[], keyMap: Record<AttrName, AttrName>)
   return Object.keys(rightTuples[0]).filter(attr => !rightKeys.has(attr));
 };
 
-const mergeTuples = (left: Tuple, right: Tuple | null, rightAttrs: AttrName[]): Tuple => {
+const mergeTuples = (
+  left: Tuple,
+  right: Tuple | null,
+  rightAttrs: AttrName[],
+  defaults?: Record<AttrName, unknown>,
+): Tuple => {
   const result = { ...left };
   for (const attr of rightAttrs) {
-    result[attr] = right ? right[attr] : null;
+    const v = right ? right[attr] : null;
+    if ((v === null || v === undefined) && defaults && attr in defaults) {
+      result[attr] = defaults[attr];
+    } else {
+      result[attr] = v;
+    }
   }
   return result;
 };
 
 /**
  * Left outer join: combines tuples, keeping all left tuples.
- * Non-matching left tuples have null for right attributes.
- * Materializes both sides.
+ * Non-matching left tuples have null for right attributes, unless a
+ * `defaults` map provides a substitute (matches the LEFT JOIN +
+ * COALESCE semantics). Materializes both sides.
  */
 export async function* left_join<T, U>(
   left: AsyncRelationOperand<T>,
   right: AsyncRelationOperand<U>,
-  keys?: JoinKeys
+  keys?: JoinKeys,
+  defaults?: Record<AttrName, unknown>,
 ): AsyncIterable<Tuple> {
   // Materialize both sides
   const leftTuples: Tuple[] = [];
@@ -39,17 +51,19 @@ export async function* left_join<T, U>(
 
   const keyMap = normalizeKeys(keys, leftTuples, rightTuples);
   const rightAttrs = getRightAttrs(rightTuples, keyMap);
+  const defaultAttrs = defaults ? Object.keys(defaults) : [];
+  const effectiveRightAttrs = Array.from(new Set([...rightAttrs, ...defaultAttrs]));
 
   for (const leftTuple of leftTuples) {
     let matched = false;
     for (const rightTuple of rightTuples) {
       if (tuplesMatch(leftTuple, rightTuple, keyMap)) {
-        yield mergeTuples(leftTuple, rightTuple, rightAttrs);
+        yield mergeTuples(leftTuple, rightTuple, effectiveRightAttrs, defaults);
         matched = true;
       }
     }
     if (!matched) {
-      yield mergeTuples(leftTuple, null, rightAttrs);
+      yield mergeTuples(leftTuple, null, effectiveRightAttrs, defaults);
     }
   }
 }

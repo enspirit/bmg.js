@@ -1,4 +1,4 @@
-import type { Tuple, TypedPredicate, Relation, TypedExtension, RenameMap, Renamed, Prefixed, Suffixed, Transformation, JoinKeys, AttrName, Aggregators, AutowrapOptions, TextOptions, GroupOptions, WrapOptions, TypedOrdering, PageOptions } from '../types';
+import type { Tuple, TypedPredicate, Relation, TypedExtension, RenameMap, Renamed, Prefixed, Suffixed, Transformation, JoinKeys, LeftJoinDefaults, AttrName, Aggregators, AutowrapOptions, TextOptions, GroupOptions, WrapOptions, TypedOrdering, PageOptions } from '../types';
 
 /**
  * Async version of the Relation interface.
@@ -45,7 +45,7 @@ export interface AsyncRelation<T = Tuple> {
   // === Joins ===
 
   join<U = Tuple>(other: AsyncRelationOperand<U>, keys?: JoinKeys): AsyncRelation<T & U>
-  left_join<U = Tuple>(other: AsyncRelationOperand<U>, keys?: JoinKeys): AsyncRelation<T & Partial<U>>
+  left_join<U = Tuple>(other: AsyncRelationOperand<U>, keys?: JoinKeys, defaults?: LeftJoinDefaults<U>): AsyncRelation<T & Partial<U>>
   cross_product<U = Tuple>(other: AsyncRelationOperand<U>): AsyncRelation<T & U>
   cross_join<U = Tuple>(other: AsyncRelationOperand<U>): AsyncRelation<T & U>
 
