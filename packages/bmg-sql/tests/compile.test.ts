@@ -348,7 +348,7 @@ describe('compile', () => {
       };
       const { sql } = compile(expr);
       expect(sql).toBe(
-        'SELECT "t1"."name", "t2"."pname" FROM "suppliers" "t1", "parts" "t2"'
+        'SELECT "t1"."name", "t2"."pname" FROM "suppliers" "t1" CROSS JOIN "parts" "t2"'
       );
     });
   });

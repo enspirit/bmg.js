@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **`@enspirit/bmg-sql`: prefix / suffix push-down**: `SqlRelation.prefix()` and `.suffix()` now compile to SQL instead of falling back to in-memory. Delegates to `.rename()` with a generated renaming map covering every attribute (respecting the `except` option).
+- **`@enspirit/bmg-sql`: CROSS JOIN push-down**: `SqlRelation.cross_join()` / `.cross_product()` / `.join(other, [])` now compile to `CROSS JOIN` instead of falling back to in-memory. The compile output also switches from the comma form (`FROM a, b`) to explicit `FROM a CROSS JOIN b` for consistency with bmg-rb.
 
 - **`distinct_count` aggregator**: new aggregator name alongside `count`/`sum`/`avg`/`min`/`max`/`collect`. Counts distinct non-null values of an attribute. Usage: `r.summarize(['city'], { n: { op: 'distinct_count', attr: 'sid' } })`. In `@enspirit/bmg-sql` this compiles to `COUNT(DISTINCT col)`.
 

@@ -234,7 +234,7 @@ function compileTableSpec(spec: TableSpec, ctx: CompileContext): string {
     case 'cross_join': {
       const left = compileTableSpec(spec.left, ctx);
       const right = compileTableSpec(spec.right, ctx);
-      return `${left}, ${right}`;
+      return `${left} CROSS JOIN ${right}`;
     }
   }
 }

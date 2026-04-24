@@ -3,7 +3,7 @@
 Source: bmg-rb `spec/integration/sequel/base/*.yml` @ SHA `fa8c7e0`
 (imported 2026-04-16).
 
-**Totals:** 19 source files · 89 cases · 76 ported (3 divergent, 0 known-bug).
+**Totals:** 19 source files · 89 cases · 78 ported (4 divergent, 0 known-bug).
 
 ## Per-file status
 
@@ -13,7 +13,7 @@ Source: bmg-rb `spec/integration/sequel/base/*.yml` @ SHA `fa8c7e0`
 | [base.md](./base.md) | 2 | 2 | full | baseline `.toSql()` with no operators; .02 ported via `BmgSql.fromSubquery` (unblocker D) |
 | [constants.md](./constants.md) | 1 | 0 | **fallback only** | falls back to in-memory; SQL push-down TBD |
 | [extend.md](./extend.md) | 1 | 1 | full (pushed down) | type quirk: string-ref form infers literal type |
-| [join.md](./join.md) | 14 | 12 | full (INNER) | 12 ported; .08/.09 blocked (CROSS JOIN push-down); .06 divergent (bracketed join shape) |
+| [join.md](./join.md) | 14 | 14 | full (INNER + CROSS) | .06 and .09 divergent (join-shape reordering — bmg-rb optimizes; bmg-sql emits in source order) |
 | [left_join.md](./left_join.md) | 8 | 6 | full (LEFT JOIN) | 6 ported (1 divergent re-shape on .06); .03/.08 blocked (defaults/COALESCE API) |
 | [matching.md](./matching.md) | 7 | 7 | full (EXISTS) | all ported; .06 unblocked by join-alias fix; .07 uses `BmgSql.fromSubquery` |
 | [minus.md](./minus.md) | 3 | 3 | full (EXCEPT) | derived-table wrap instead of CTE for post-minus ops |
@@ -53,9 +53,6 @@ outer-left alias. Unblocks ~25 cases across `join`, `left_join`,
 
 - **rxmatch** / **restrict.08-09** — `@enspirit/predicate` does not
   implement a `match`/LIKE predicate kind. Cases blocked until added.
-- **CROSS JOIN push-down** (`join.08-.09`) — `SqlRelation.cross_join` /
-  `.join(other, [])` currently fall back to in-memory. Add a
-  `processCrossJoin` that builds a `cross_join` `TableSpec`.
 - **constants** — currently falls back to in-memory evaluation. The
   compiled SQL will not match bmg-rb's single-query output. 1 case
   `divergent` until push-down is added.

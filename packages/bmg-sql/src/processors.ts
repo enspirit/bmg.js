@@ -523,6 +523,60 @@ export function processJoin(
 }
 
 // ============================================================================
+// processCrossJoin — CROSS JOIN
+// ============================================================================
+
+/**
+ * Cross product of two SQL expressions. Merges select lists and FROMs
+ * like `processJoin`, but emits a CrossJoin spec (no ON clause).
+ */
+export function processCrossJoin(
+  left: SqlExpr,
+  right: SqlExpr,
+  builder: SqlBuilder
+): SqlExpr {
+  let leftSel = ensureSelect(left, builder);
+  if (isComplex(leftSel)) leftSel = builder.fromSelf(leftSel);
+
+  let rightSel = ensureSelect(right, builder);
+  if (isComplex(rightSel)) rightSel = builder.fromSelf(rightSel);
+
+  // Requalify right to avoid alias conflicts
+  rightSel = processRequalify(rightSel, builder) as SelectExpr;
+
+  // Merge select lists: left columns + right columns not already in left
+  const leftAliases = new Set(leftSel.selectList.map(i => i.alias));
+  const rightNewItems = rightSel.selectList.filter(i => !leftAliases.has(i.alias));
+  const mergedSelectList = [...leftSel.selectList, ...rightNewItems];
+
+  if (!leftSel.from || !rightSel.from) {
+    throw new Error('Cannot cross-join expressions without FROM clauses');
+  }
+
+  const joinSpec: TableSpec = {
+    kind: 'cross_join',
+    left: leftSel.from.tableSpec,
+    right: rightSel.from.tableSpec,
+  };
+
+  let where: Predicate | undefined;
+  if (leftSel.where && rightSel.where) {
+    where = predAnd(leftSel.where, rightSel.where);
+  } else {
+    where = leftSel.where ?? rightSel.where;
+  }
+
+  return {
+    kind: 'select',
+    quantifier: leftSel.quantifier === 'distinct' || rightSel.quantifier === 'distinct'
+      ? 'distinct' : 'all',
+    selectList: mergedSelectList,
+    from: { tableSpec: joinSpec },
+    where,
+  };
+}
+
+// ============================================================================
 // processMerge — UNION / EXCEPT / INTERSECT
 // ============================================================================
 

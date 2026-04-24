@@ -98,11 +98,28 @@ describe('black-box: join', () => {
     );
   });
 
-  // join.08-.09 — cross-join push-down. bmg-sql's cross_join currently
-  // falls back to in-memory (no CROSS JOIN emission); .join(other, [])
-  // similarly falls back. Both blocked pending CROSS JOIN push-down.
-  it.todo('join.08 — Cross join (empty key list) (blocked: CROSS JOIN push-down)');
-  it.todo('join.09 — Cross then inner (blocked: CROSS JOIN push-down)');
+  it('join.08 — Cross join (empty key list)', () => {
+    const rel = suppliers.join(cities, []);
+    expect(rel.toSql().sql).toBe(
+      'SELECT "t1"."sid", "t1"."name", "t1"."city", "t1"."status", "t9"."country"' +
+      ' FROM "suppliers" "t1" CROSS JOIN "cities" "t9"',
+    );
+  });
+
+  // join.09 — DIVERGENT: bmg-rb reorders FROM to `cities CROSS JOIN
+  // suppliers INNER JOIN parts ON suppliers.city = parts.city`. bmg-sql
+  // emits in source order. The INNER JOIN's `city` key resolves to the
+  // left contributor in the merged select list (suppliers, t1.city) —
+  // same column bmg-rb picks, just different FROM ordering.
+  it('join.09 — Cross then inner (no reorder)', () => {
+    const rel = suppliers.join(cities, []).join(parts, ['city']);
+    expect(rel.toSql().sql).toBe(
+      'SELECT "t1"."sid", "t1"."name", "t1"."city", "t1"."status", "t10"."country",' +
+      ' "t11"."pid", "t11"."color", "t11"."weight"' +
+      ' FROM "suppliers" "t1" CROSS JOIN "cities" "t10"' +
+      ' JOIN "parts" "t11" ON "t1"."city" = "t11"."city"',
+    );
+  });
 
   it('join.10 — Join with hash-form key + prefix', () => {
     const rel = supplies
@@ -176,10 +193,10 @@ describe('black-box: join', () => {
     const rel = suppliers.join(suppliers, ['sid', 'name', 'city']);
     expect(rel.toSql().sql).toBe(
       'SELECT "t1"."sid", "t1"."name", "t1"."city", "t1"."status"' +
-      ' FROM "suppliers" "t1" JOIN "suppliers" "t9"' +
-      ' ON "t1"."sid" = "t9"."sid"' +
-      ' AND "t1"."name" = "t9"."name"' +
-      ' AND "t1"."city" = "t9"."city"',
+      ' FROM "suppliers" "t1" JOIN "suppliers" "t12"' +
+      ' ON "t1"."sid" = "t12"."sid"' +
+      ' AND "t1"."name" = "t12"."name"' +
+      ' AND "t1"."city" = "t12"."city"',
     );
   });
 });

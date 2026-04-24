@@ -3,8 +3,8 @@
 - **Source:** [spec/integration/sequel/base/join.yml](https://github.com/enspirit/bmg/blob/fa8c7e0/spec/integration/sequel/base/join.yml)
 - **Imported SHA:** `fa8c7e0`
 - **Total cases:** 14
-- **Ported:** 12/14. `.08`/`.09` blocked (CROSS JOIN push-down).
-- **bmg-sql support:** full INNER JOIN push-down; CROSS JOIN not wired (cross_product falls back to in-memory).
+- **Ported:** 14/14.
+- **bmg-sql support:** full INNER JOIN + CROSS JOIN push-down (cross_join / cross_product / `.join(other, [])`).
 - **Test file:** `join.test.ts`
 
 ## Cases
@@ -125,7 +125,7 @@ suppliers
 
 ### join.08 — Cross join (empty key list)
 
-**Status:** blocked — `cross_join` / `join(other, [])` push-down not implemented
+**Status:** ported — both `.join(other, [])` and `.cross_join(other)` now emit `CROSS JOIN`
 
 **Ruby:**
 ```ruby
@@ -144,7 +144,7 @@ CROSS JOIN `cities` AS 't2'
 
 ### join.09 — Cross join then inner join (FROM ordering reshuffled)
 
-**Status:** blocked — `cross_join` push-down not implemented
+**Status:** divergent — bmg-sql emits `suppliers CROSS JOIN cities INNER JOIN parts ON ...` in source order; bmg-rb reorders to `cities CROSS JOIN suppliers INNER JOIN parts ON ...`. The INNER JOIN key still resolves to suppliers.city (left contributor in the merged select list), matching bmg-rb's pick of `suppliers.city`.
 
 **Ruby:**
 ```ruby

@@ -47,6 +47,7 @@ import {
   processExtend,
   processConstants,
   processJoin,
+  processCrossJoin,
   processMerge,
   processSummarize,
   processSemiJoin,
@@ -346,11 +347,17 @@ export class SqlRelation<T = Tuple> implements AsyncRelation<T> {
 
   join<U>(other: AsyncRelationOperand<U>, keys?: JoinKeys): AsyncRelation<T & U> {
     const rightExpr = this.extractCompatibleExpr(other);
-    if (rightExpr && keys && this.expr.kind === 'select' && this.expr.from) {
-      const hasKeys = Array.isArray(keys) ? keys.length > 0 : Object.keys(keys).length > 0;
+    if (rightExpr && this.expr.kind === 'select' && this.expr.from) {
+      const hasKeys = keys && (Array.isArray(keys) ? keys.length > 0 : Object.keys(keys).length > 0);
       if (hasKeys) {
         return this.withExpr(
-          processJoin(this.expr, rightExpr, keys, 'inner_join', this.builder)
+          processJoin(this.expr, rightExpr, keys!, 'inner_join', this.builder)
+        ) as unknown as AsyncRelation<T & U>;
+      }
+      // Empty keys (or no keys) → cross product
+      if (keys !== undefined) {
+        return this.withExpr(
+          processCrossJoin(this.expr, rightExpr, this.builder)
         ) as unknown as AsyncRelation<T & U>;
       }
     }
@@ -371,6 +378,12 @@ export class SqlRelation<T = Tuple> implements AsyncRelation<T> {
   }
 
   cross_product<U>(other: AsyncRelationOperand<U>): AsyncRelation<T & U> {
+    const rightExpr = this.extractCompatibleExpr(other);
+    if (rightExpr && this.expr.kind === 'select' && this.expr.from) {
+      return this.withExpr(
+        processCrossJoin(this.expr, rightExpr, this.builder)
+      ) as unknown as AsyncRelation<T & U>;
+    }
     return this.fallback().cross_product(other);
   }
 
