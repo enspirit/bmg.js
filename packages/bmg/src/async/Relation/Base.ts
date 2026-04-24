@@ -1,11 +1,12 @@
 import type { AsyncRelation, AsyncRelationOperand } from '../types';
-import type { Tuple, TypedPredicate, TypedExtension, AttrName, Relation, RenameMap, Renamed, Prefixed, Suffixed, Transformation, JoinKeys, LeftJoinDefaults, Aggregators, AutowrapOptions, TextOptions, GroupOptions, WrapOptions, Ordering, TypedOrdering, PageOptions } from '../../types';
+import type { Tuple, TypedPredicate, TypedExtension, AttrName, Relation, RenameMap, Renamed, Prefixed, Suffixed, Transformation, JoinKeys, LeftJoinDefaults, Aggregators, AutowrapOptions, TextOptions, GroupOptions, WrapOptions, Ordering, TypedOrdering, PageOptions, RxmatchOptions } from '../../types';
 import { MemoryRelation } from '../../sync/Relation';
 import {
   restrict as restrictOp,
   where as whereOp,
   exclude as excludeOp,
 } from '../operators/restrict';
+import { rxmatch as rxmatchOp } from '../operators/rxmatch';
 import {
   project as projectOp,
   allbut as allbutOp,
@@ -56,6 +57,10 @@ export class BaseAsyncRelation<T = Tuple> implements AsyncRelation<T> {
 
   exclude(p: TypedPredicate<T>): AsyncRelation<T> {
     return new BaseAsyncRelation(excludeOp(this.source, p as any));
+  }
+
+  rxmatch<K extends keyof T & string>(attrs: K[], pattern: string, options?: RxmatchOptions): AsyncRelation<T> {
+    return new BaseAsyncRelation(rxmatchOp(this.source, attrs as AttrName[], pattern, options));
   }
 
   // === Projection operators ===

@@ -1,4 +1,4 @@
-import type { Tuple, TypedPredicate, Relation, TypedExtension, RenameMap, Renamed, Prefixed, Suffixed, Transformation, JoinKeys, LeftJoinDefaults, AttrName, Aggregators, AutowrapOptions, TextOptions, GroupOptions, WrapOptions, TypedOrdering, PageOptions } from '../types';
+import type { Tuple, TypedPredicate, Relation, TypedExtension, RenameMap, Renamed, Prefixed, Suffixed, Transformation, JoinKeys, LeftJoinDefaults, AttrName, Aggregators, AutowrapOptions, TextOptions, GroupOptions, WrapOptions, TypedOrdering, PageOptions, RxmatchOptions } from '../types';
 
 /**
  * Async version of the Relation interface.
@@ -13,6 +13,7 @@ export interface AsyncRelation<T = Tuple> {
   restrict(p: TypedPredicate<T>): AsyncRelation<T>
   where(p: TypedPredicate<T>): AsyncRelation<T>
   exclude(p: TypedPredicate<T>): AsyncRelation<T>
+  rxmatch<K extends keyof T & string>(attrs: K[], pattern: string, options?: RxmatchOptions): AsyncRelation<T>
 
   // === Projection operators ===
 

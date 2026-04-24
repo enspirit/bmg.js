@@ -131,6 +131,16 @@ export function compilePredicate(
         return `${left} ${COMPARISON_OPS[p.kind]} ${right}`;
       }
 
+      case 'match': {
+        const left = compilePredicateScalar(p.left);
+        const wrapped = `%${p.pattern}%`;
+        const right = addParam(ctx, wrapped);
+        if (p.caseSensitive === false) {
+          return `UPPER(${left}) LIKE UPPER(${right}) ESCAPE '\\'`;
+        }
+        return `${left} LIKE ${right} ESCAPE '\\'`;
+      }
+
       case 'in': {
         const left = compilePredicateScalar(p.left);
         if (p.values.length === 0) return '1 = 0';

@@ -123,6 +123,20 @@ describe('toSql', () => {
     });
   });
 
+  describe('match predicate', () => {
+    it('emits case-sensitive LIKE with % wrapping and ESCAPE', () => {
+      const { sql, params } = toSql(Pred.match('city', 'Lon'));
+      expect(sql).toBe(`"city" LIKE $1 ESCAPE '\\'`);
+      expect(params).toEqual(['%Lon%']);
+    });
+
+    it('wraps both sides in UPPER for caseSensitive: false', () => {
+      const { sql, params } = toSql(Pred.match('city', 'Lon', { caseSensitive: false }));
+      expect(sql).toBe(`UPPER("city") LIKE UPPER($1) ESCAPE '\\'`);
+      expect(params).toEqual(['%Lon%']);
+    });
+  });
+
   describe('and', () => {
     it('joins with AND', () => {
       const { sql, params } = toSql(Pred.and(

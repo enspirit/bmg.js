@@ -70,6 +70,15 @@ type LeftJoined<L, R> = L & Partial<Omit<R, CommonKeys<L, R>>>;
  */
 type LeftJoinDefaults<R> = { [K in keyof R]?: R[K] };
 
+/** Options for the \`rxmatch\` operator. */
+interface RxmatchOptions {
+  /**
+   * When false, the match is case-insensitive (both sides wrapped in
+   * \`UPPER()\` in SQL, toUpperCase compared in memory). Defaults to true.
+   */
+  caseSensitive?: boolean;
+}
+
 /**
  * Typed join keys for array form: keys must exist on BOTH operands.
  * Example: suppliers.join(parts, ['city']) - 'city' must be a key of both.
@@ -234,6 +243,7 @@ interface Relation<T = Tuple> {
   restrict(p: TypedPredicate<T>): Relation<T>
   where(p: TypedPredicate<T>): Relation<T>
   exclude(p: TypedPredicate<T>): Relation<T>
+  rxmatch<K extends keyof T & string>(attrs: K[], pattern: string, options?: RxmatchOptions): Relation<T>
 
   // === Projection operators ===
 

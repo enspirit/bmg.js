@@ -97,6 +97,6 @@ npx vitest run packages/bmg/tests/operators/restrict.test.ts
 
 ## Implemented Operators
 
-**Relational:** restrict, where, exclude, project, allbut, extend, rename, prefix, suffix, constants, union, minus, intersect, matching, not_matching, join, left_join, cross_product, cross_join, image, summarize, group, ungroup, wrap, unwrap, autowrap, transform
+**Relational:** restrict, where, exclude, rxmatch, project, allbut, extend, rename, prefix, suffix, constants, union, minus, intersect, matching, not_matching, join, left_join, cross_product, cross_join, image, summarize, page, group, ungroup, wrap, unwrap, autowrap, transform
 
 **Non-relational:** one, yByX, toArray, isRelation, isEqual, toText

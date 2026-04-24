@@ -84,6 +84,29 @@ export interface InPredicate {
 }
 
 // ============================================================================
+// Substring match (LIKE %pattern%)
+// ============================================================================
+
+/**
+ * Matches when the left side is a string containing `pattern` as a
+ * substring. Compiles to `LIKE '%<pattern>%' ESCAPE '\'` in SQL.
+ *
+ * `caseSensitive` defaults to true. When false, both sides are wrapped
+ * in `UPPER()` for a case-insensitive match.
+ *
+ * The pattern is passed verbatim — users should not include `%` or `_`
+ * wildcards themselves (the leading/trailing `%` are added by the
+ * compiler; an embedded `%` in the pattern stays as-is and acts as a
+ * wildcard in the LIKE evaluation).
+ */
+export interface MatchPredicate {
+  kind: 'match';
+  left: ScalarExpr;
+  pattern: string;
+  caseSensitive?: boolean;
+}
+
+// ============================================================================
 // Boolean connectives
 // ============================================================================
 
@@ -121,6 +144,7 @@ export interface Contradiction {
 export type Predicate =
   | ComparisonPredicate
   | InPredicate
+  | MatchPredicate
   | AndPredicate
   | OrPredicate
   | NotPredicate

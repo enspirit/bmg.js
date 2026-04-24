@@ -82,6 +82,16 @@ function compilePredicate(predicate: Predicate, ctx: CompileContext): string {
       return `${left} ${COMPARISON_OPS[predicate.kind]} ${right}`;
     }
 
+    case 'match': {
+      const left = compileScalar(predicate.left, ctx);
+      const wrapped = `%${predicate.pattern}%`;
+      const right = addParam(ctx, wrapped);
+      if (predicate.caseSensitive === false) {
+        return `UPPER(${left}) LIKE UPPER(${right}) ESCAPE '\\'`;
+      }
+      return `${left} LIKE ${right} ESCAPE '\\'`;
+    }
+
     case 'in': {
       const left = compileScalar(predicate.left, ctx);
       if (predicate.values.length === 0) {

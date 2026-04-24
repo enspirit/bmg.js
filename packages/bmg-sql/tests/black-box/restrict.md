@@ -180,13 +180,7 @@ WHERE (`t1`.`name` = 'Smith')
 
 ### restrict.08 — LIKE via `Predicate.match`
 
-**Status:** blocked
-
-**Reason:** `@enspirit/predicate` does not implement a `match`/LIKE
-predicate kind. Adding it requires a new `MatchPredicate` in `types.ts`,
-a builder, an evaluator, and a `toSql` branch emitting
-`LIKE '%x%' ESCAPE '\'`. Cross-package change out of scope for test
-porting.
+**Status:** ported
 
 **Ruby:**
 ```ruby
@@ -203,10 +197,7 @@ WHERE (`t1`.`city` LIKE '%Lon%' ESCAPE '\')
 
 ### restrict.09 — Case-insensitive LIKE via `case_sensitive: false`
 
-**Status:** blocked
-
-**Reason:** same as restrict.08, plus a `case_sensitive` option on the
-match predicate that toggles `UPPER(col) LIKE UPPER('%x%')`.
+**Status:** ported — bmg-js uses `{ caseSensitive: false }` (camelCase).
 
 **Ruby:**
 ```ruby

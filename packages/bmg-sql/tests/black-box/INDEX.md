@@ -3,7 +3,7 @@
 Source: bmg-rb `spec/integration/sequel/base/*.yml` @ SHA `fa8c7e0`
 (imported 2026-04-16).
 
-**Totals:** 19 source files · 89 cases · 80 ported (4 divergent, 0 known-bug).
+**Totals:** 19 source files · 89 cases · 84 ported (4 divergent, 0 known-bug).
 
 ## Per-file status
 
@@ -22,8 +22,8 @@ Source: bmg-rb `spec/integration/sequel/base/*.yml` @ SHA `fa8c7e0`
 | [prefix.md](./prefix.md) | 1 | 1 | full (pushed down via rename) | delegates to `rename` with a generated renaming map |
 | [project.md](./project.md) | 3 | 3 | full (DISTINCT-aware via RelationType) | |
 | [rename.md](./rename.md) | 4 | 4 | full (pushed down) | restrict literals parameterized (`?`) vs bmg-rb inlined |
-| [restrict.md](./restrict.md) | 11 | 9 | full (pushed down), with caveats | 7 ported (.07 unblocked by WHERE-qualifier fix), 2 divergent (union push-down), 2 blocked (match predicate missing). NULL-in-IN fixed in unblocker A. |
-| [rxmatch.md](./rxmatch.md) | 2 | 0 | **not implemented** | operator missing entirely |
+| [restrict.md](./restrict.md) | 11 | 11 | full (pushed down), with caveats | 9 ported; 2 divergent (union push-down). NULL-in-IN fixed in unblocker A; .07 unblocked by WHERE-qualifier fix; .08/.09 unblocked by match predicate. |
+| [rxmatch.md](./rxmatch.md) | 2 | 2 | full (LIKE … ESCAPE '\') | `rxmatch` added to core + bmg-sql |
 | [suffix.md](./suffix.md) | 1 | 1 | full (pushed down via rename) | same implementation as prefix |
 | [summarize.md](./summarize.md) | 10 | 10 | full (GROUP BY + CTE wrap) | all ported; .05 and .07 unblocked by join-alias + WHERE-qualifier fix |
 | [transform.md](./transform.md) | 4 | 0 | **none — fully blocked** | bmg core `Transformation` is JS-function-only; bmg-sql has no `processTransform` / CAST emission. All 4 cases `it.todo`. |
@@ -51,8 +51,6 @@ outer-left alias. Unblocks ~25 cases across `join`, `left_join`,
 
 ## Blockers summary
 
-- **rxmatch** / **restrict.08-09** — `@enspirit/predicate` does not
-  implement a `match`/LIKE predicate kind. Cases blocked until added.
 - **constants** — currently falls back to in-memory evaluation. The
   compiled SQL will not match bmg-rb's single-query output. 1 case
   `divergent` until push-down is added.

@@ -50,6 +50,14 @@ export function evaluate(predicate: Predicate, tuple: Record<string, unknown>): 
       const l = resolveScalar(predicate.left, tuple);
       return predicate.values.includes(l);
     }
+    case 'match': {
+      const l = resolveScalar(predicate.left, tuple);
+      if (typeof l !== 'string') return false;
+      if (predicate.caseSensitive === false) {
+        return l.toUpperCase().includes(predicate.pattern.toUpperCase());
+      }
+      return l.includes(predicate.pattern);
+    }
     case 'and':
       return predicate.operands.every(op => evaluate(op, tuple));
     case 'or':

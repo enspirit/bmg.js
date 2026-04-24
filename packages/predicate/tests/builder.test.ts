@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { Pred, eq, neq, lt, lte, gt, gte, isIn, and, or, not, tautology, contradiction, fromObject, attr, literal } from '../src';
+import { Pred, eq, neq, lt, lte, gt, gte, isIn, match, and, or, not, tautology, contradiction, fromObject, attr, literal } from '../src';
 
 describe('Pred builder', () => {
 
@@ -67,6 +67,23 @@ describe('Pred builder', () => {
     it('with empty values', () => {
       const p = isIn('city', []);
       expect(p.values).toEqual([]);
+    });
+  });
+
+  describe('match predicate', () => {
+    it('creates a case-sensitive match by default', () => {
+      const p = match('city', 'Lon');
+      expect(p).toEqual({
+        kind: 'match',
+        left: { kind: 'attr', name: 'city' },
+        pattern: 'Lon',
+        caseSensitive: undefined,
+      });
+    });
+
+    it('carries caseSensitive: false when set', () => {
+      const p = Pred.match('city', 'Lon', { caseSensitive: false });
+      expect(p.caseSensitive).toBe(false);
     });
   });
 
@@ -143,6 +160,7 @@ describe('Pred builder', () => {
       expect(typeof Pred.gt).toBe('function');
       expect(typeof Pred.gte).toBe('function');
       expect(typeof Pred.in).toBe('function');
+      expect(typeof Pred.match).toBe('function');
       expect(typeof Pred.and).toBe('function');
       expect(typeof Pred.or).toBe('function');
       expect(typeof Pred.not).toBe('function');

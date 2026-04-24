@@ -21,6 +21,7 @@ import type {
   Transformation,
   JoinKeys,
   LeftJoinDefaults,
+  RxmatchOptions,
   Aggregators,
   AutowrapOptions,
   TextOptions,
@@ -32,7 +33,7 @@ import type {
   PageOptions,
 } from '@enspirit/bmg-js';
 import { BaseAsyncRelation } from '@enspirit/bmg-js/async';
-import { isPredicate, fromObject, not } from '@enspirit/predicate';
+import { isPredicate, fromObject, not, or, match } from '@enspirit/predicate';
 import type { Predicate } from '@enspirit/predicate';
 
 import type { SqlExpr } from './ast';
@@ -208,6 +209,18 @@ export class SqlRelation<T = Tuple> implements AsyncRelation<T> {
       return this.withExpr(processWhere(this.expr, not(pred), this.builder));
     }
     return this.fallback().exclude(p);
+  }
+
+  rxmatch<K extends keyof T & string>(
+    attrs: K[],
+    pattern: string,
+    options?: RxmatchOptions,
+  ): AsyncRelation<T> {
+    if (attrs.length === 0) return this;
+    const opts = options?.caseSensitive === false ? { caseSensitive: false } : undefined;
+    const preds = (attrs as string[]).map(a => match(a, pattern, opts));
+    const p = preds.length === 1 ? preds[0] : or(...preds);
+    return this.withExpr(processWhere(this.expr, p, this.builder), this.relType);
   }
 
   // ===========================================================================

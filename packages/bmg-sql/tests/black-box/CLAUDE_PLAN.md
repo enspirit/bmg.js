@@ -10,13 +10,13 @@ iteration**. Stop conditions are at the bottom.
 
 ## Current state
 
-- **Ported operators:** 14 / 14 — all operators iterated
-- **Last completed:** LEFT JOIN defaults (COALESCE) across core + bmg-sql
-- **Totals:** 89 cases · **80 ported** (4 divergent, 0 known-bug, 9
+- **Ported operators:** 14 / 14 — all operators iterated (+ prefix, suffix, page, rxmatch added outside the original set)
+- **Last completed:** LIKE predicate + rxmatch operator (cross-package)
+- **Totals:** 89 cases · **84 ported** (4 divergent, 0 known-bug, 5
   blocked via `it.todo`)
-- **Stopped?** yes — loop paused. Remaining 9 blocked cases need new
-  capabilities (LIKE predicate, transform type-tokens, UNION ALL option,
-  constants push-down).
+- **Stopped?** yes — loop paused. Remaining 5 blocked cases need new
+  capabilities (transform type-tokens, UNION ALL option, constants
+  push-down).
 
 Update the four bullets above at the end of every iteration.
 
@@ -103,20 +103,33 @@ which is required for correct SQL after rename/prefix/suffix.
 
 ---
 
+## Unblocker pass 3 — completed 2026-04-24
+
+| # | Unblocker                               | Cases unblocked                              |
+|---|-----------------------------------------|----------------------------------------------|
+| 4 | LIKE predicate + `rxmatch` operator    | rxmatch.01, rxmatch.02, restrict.08, restrict.09 |
+
+Cross-package: new `MatchPredicate` kind in `@enspirit/predicate`
+(builder/evaluator/toSql/guards), new case in bmg-sql's
+`compilePredicate`, new `rxmatch` operator across core sync/async +
+`SqlRelation`. `rxmatch` is exposed via the `Relation` /
+`AsyncRelation` interfaces (so the original 14 became 15).
+
+Net: +4 ported cases (80 → 84/89).
+
+---
+
 ## Next up (if resumed)
 
 Sorted by estimated effort × value. See INDEX.md "Blockers summary"
 for the ground truth.
 
-1. **LIKE predicate** (`rxmatch.01-02`, `restrict.08-09`) — 4 cases.
-   Add a `match` predicate kind to `@enspirit/predicate` and wire it
-   through bmg-sql (with dialect hook for `ESCAPE`).
-2. **Transform type-token API** — 4 cases; needs declarative marker
+1. **Transform type-token API** — 4 cases; needs declarative marker
    in `Transformation` plus a `processTransform` with CAST emission.
-3. **UNION ALL option** — 1 case (union.03). Needs a cross-package
+2. **UNION ALL option** — 1 case (union.03). Needs a cross-package
    API change to `Relation.union()` options.
-4. **constants push-down** — 1 case (constants.01). Localized.
-5. **Union push-down into branches** (restrict.10/.11) — localized
+3. **constants push-down** — 1 case (constants.01). Localized.
+4. **Union push-down into branches** (restrict.10/.11) — localized
    bmg-sql processor improvements; currently divergent.
 
 ---
@@ -270,10 +283,9 @@ Only operators supported by bmg-sql today. Port in this order.
   fix, .07 via unblocker D)
 - [x] **left_join** (8/8) — all ported via the join-alias fix +
   LEFT JOIN defaults; .06 divergent on source-order join emission
-- [x] **restrict** (9/11) — unblocker A ported .03/.04/.05;
-  the rename-aware qualifier lookup (unblocker pass 2 item 1) ported
-  .07. Remaining: .10/.11 divergent (no UNION push-down), .08/.09
-  blocked (LIKE predicate missing)
+- [x] **restrict** (11/11) — all ported. .08/.09 ported via the LIKE
+  predicate in unblocker pass 3. .10/.11 still divergent pending UNION
+  push-down into branches.
 - [x] **summarize** (10/10) — all ported (.05/.07 unblocked by
   join-alias + WHERE-qualifier fix; .09/.10 by unblocker B)
 - [x] **join** (14/14) — all ported via join-alias fix + prefix
@@ -288,6 +300,8 @@ Only operators supported by bmg-sql today. Port in this order.
 - [x] **page** (5/5) — operator added to core + bmg-sql by unblocker C.
 - [x] **prefix** (1/1) — push-down added in unblocker pass 2 item 1.
 - [x] **suffix** (1/1) — push-down added in unblocker pass 2 item 1.
+- [x] **rxmatch** (2/2) — operator added to core + bmg-sql by
+  unblocker pass 3 (requires the new `match` predicate kind).
 
 ---
 
@@ -300,7 +314,6 @@ unblocker (as happened in the A→D pass), it can happen outside the
 loop.
 
 **Still blocked:**
-- **rxmatch** — operator missing in bmg core and bmg-sql.
 - **constants** — SQL push-down missing; falls back to in-memory.
 - **UNION ALL** — `Relation.union()` has no options arg (1 case).
 - **transform** — cross-package: needs type-token channel and
@@ -310,6 +323,9 @@ loop.
 - ~~**prefix**~~, ~~**suffix**~~ — push-down added (item 1).
 - ~~**CROSS JOIN push-down**~~ — added (item 2).
 - ~~**LEFT JOIN defaults / COALESCE**~~ — added (item 3).
+
+**Resolved by unblocker pass 3:**
+- ~~**rxmatch** / **LIKE predicate**~~ — added (item 4).
 
 **Resolved by the unblocker pass (A→D):**
 - ~~**page**~~ — `Relation.page()` surfaced by **unblocker C**.

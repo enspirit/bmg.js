@@ -377,6 +377,8 @@ function requalifyPredicate(pred: Predicate, remap: (old: string) => string): Pr
       };
     case 'in':
       return { ...pred, left: requalifyPredicateScalar(pred.left, remap) };
+    case 'match':
+      return { ...pred, left: requalifyPredicateScalar(pred.left, remap) };
     case 'and':
       return { ...pred, operands: pred.operands.map(p => requalifyPredicate(p, remap)) };
     case 'or':

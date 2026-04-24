@@ -18,6 +18,7 @@ import type {
   GtPredicate,
   GtePredicate,
   InPredicate,
+  MatchPredicate,
   AndPredicate,
   OrPredicate,
   NotPredicate,
@@ -102,6 +103,29 @@ export function isIn(left: string | ScalarExpr, values: unknown[]): InPredicate 
 }
 
 // ============================================================================
+// Substring match
+// ============================================================================
+
+/**
+ * Substring match: `attr LIKE '%pattern%'`. Opts:
+ *   - caseSensitive (default true): when false, compiles to
+ *     `UPPER(attr) LIKE UPPER('%pattern%')` for dialect-agnostic
+ *     case-insensitive matching.
+ */
+export function match(
+  left: string | ScalarExpr,
+  pattern: string,
+  opts?: { caseSensitive?: boolean },
+): MatchPredicate {
+  return {
+    kind: 'match',
+    left: toScalar(left),
+    pattern,
+    caseSensitive: opts?.caseSensitive,
+  };
+}
+
+// ============================================================================
 // Boolean connectives
 // ============================================================================
 
@@ -179,6 +203,7 @@ export const Pred = {
   gt,
   gte,
   in: isIn,
+  match,
   and,
   or,
   not,

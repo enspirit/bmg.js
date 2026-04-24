@@ -20,6 +20,7 @@ import {
   project,
   rename,
   restrict,
+  rxmatch,
   suffix,
   summarize,
   where,
@@ -44,6 +45,7 @@ import type {
   Tuple,
   TypedOrdering,
   TypedPredicate,
+  RxmatchOptions,
   TypedExtension,
   RenameMap,
   Renamed,
@@ -84,6 +86,10 @@ export class MemoryRelation<T = Tuple> implements Relation<T> {
 
   exclude(p: TypedPredicate<T>): Relation<T> {
     return exclude(this as any, p as any) as unknown as Relation<T>;
+  }
+
+  rxmatch<K extends keyof T & string>(attrs: K[], pattern: string, options?: RxmatchOptions): Relation<T> {
+    return rxmatch(this as any, attrs as string[], pattern, options) as unknown as Relation<T>;
   }
 
   // === Projection operators ===

@@ -5,7 +5,7 @@ import type { Predicate, ScalarExpr } from './types';
 
 const PREDICATE_KINDS = new Set([
   'eq', 'neq', 'lt', 'lte', 'gt', 'gte',
-  'in', 'and', 'or', 'not',
+  'in', 'match', 'and', 'or', 'not',
   'tautology', 'contradiction',
 ]);
 

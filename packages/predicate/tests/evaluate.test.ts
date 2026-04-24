@@ -106,6 +106,24 @@ describe('evaluate', () => {
     });
   });
 
+  describe('match', () => {
+    it('matches case-sensitive substring by default', () => {
+      expect(evaluate(Pred.match('city', 'Lon'), smith)).toBe(true);    // London
+      expect(evaluate(Pred.match('city', 'lon'), smith)).toBe(false);   // case-sensitive
+      expect(evaluate(Pred.match('city', 'Par'), smith)).toBe(false);   // no match
+    });
+
+    it('case-insensitive with caseSensitive: false', () => {
+      const p = Pred.match('city', 'lon', { caseSensitive: false });
+      expect(evaluate(p, smith)).toBe(true);    // London
+      expect(evaluate(p, adams)).toBe(false);   // Athens
+    });
+
+    it('returns false when the value is not a string', () => {
+      expect(evaluate(Pred.match('status', '2'), smith)).toBe(false);   // 20 is a number
+    });
+  });
+
   describe('and', () => {
     it('requires all operands to be true', () => {
       const p = Pred.and(Pred.eq('city', 'London'), Pred.gte('status', 20));

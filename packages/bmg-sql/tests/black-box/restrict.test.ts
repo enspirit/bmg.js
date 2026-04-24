@@ -88,14 +88,25 @@ describe('black-box: restrict', () => {
     expect(compiled.params).toEqual(['Smith']);
   });
 
-  // restrict.08 — LIKE via Predicate.match
-  // Blocked: @enspirit/predicate does not implement a `match`/LIKE predicate.
-  // Adding it is a cross-package change out of scope for test porting.
-  it.todo('restrict.08 — LIKE via Predicate.match (blocked: match predicate missing)');
+  it('restrict.08 — LIKE via Predicate.match', () => {
+    const rel = suppliers.restrict(Pred.match('city', 'Lon'));
+    const compiled = rel.toSql();
+    expect(compiled.sql).toBe(
+      'SELECT "t1"."sid", "t1"."name", "t1"."city", "t1"."status" FROM "suppliers" "t1"' +
+      ` WHERE "t1"."city" LIKE ? ESCAPE '\\'`,
+    );
+    expect(compiled.params).toEqual(['%Lon%']);
+  });
 
-  // restrict.09 — Case-insensitive LIKE via case_sensitive: false
-  // Blocked: same as restrict.08.
-  it.todo('restrict.09 — Case-insensitive LIKE (blocked: match predicate missing)');
+  it('restrict.09 — Case-insensitive LIKE', () => {
+    const rel = suppliers.restrict(Pred.match('city', 'Lon', { caseSensitive: false }));
+    const compiled = rel.toSql();
+    expect(compiled.sql).toBe(
+      'SELECT "t1"."sid", "t1"."name", "t1"."city", "t1"."status" FROM "suppliers" "t1"' +
+      ` WHERE UPPER("t1"."city") LIKE UPPER(?) ESCAPE '\\'`,
+    );
+    expect(compiled.params).toEqual(['%Lon%']);
+  });
 
   // restrict.10 — DIVERGENT: bmg-rb pushes the post-union restrict into BOTH
   // branches. bmg-sql wraps the UNION in a subquery and applies the restrict

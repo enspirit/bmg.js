@@ -1,6 +1,7 @@
 export * from './restrict'
 export * from './where'
 export * from './exclude'
+export * from './rxmatch'
 export * from './constants'
 export * from './rename'
 export * from './prefix'
